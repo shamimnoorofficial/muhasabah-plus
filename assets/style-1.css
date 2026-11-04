@@ -1,0 +1,31 @@
+
+:root{color-scheme:dark;--gold:38 70% 62%}
+::selection{background:hsl(145 100% 39%/.35);color:#fff}
+body{background-image:radial-gradient(1100px 520px at 10% -12%,rgba(0,200,83,.11),transparent 60%),radial-gradient(800px 480px at 100% 0,rgba(170,185,210,.07),transparent 60%),radial-gradient(700px 420px at 50% 118%,rgba(0,200,83,.07),transparent 60%);letter-spacing:-.005em}
+h1,h2,h3{letter-spacing:-.02em}
+.panel{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.012) 42%),hsl(var(--card)/.78);border:1px solid rgba(255,255,255,.075);border-radius:1.15rem;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 14px 40px -14px rgba(0,0,0,.7);animation:rise .22s cubic-bezier(.16,1,.3,1) both}
+.panel:hover{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02) 42%),hsl(var(--card)/.85);border-color:rgba(0,200,83,.25);box-shadow:inset 0 1px 0 rgba(255,255,255,.09),0 18px 48px -14px rgba(0,0,0,.75),0 0 0 1px rgba(0,200,83,.06)}
+main .panel:nth-child(2){animation-delay:.02s}main .panel:nth-child(3){animation-delay:.04s}main .panel:nth-child(n+4){animation-delay:.06s}
+@keyframes rise{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+button[class*="bg-[hsl(var(--primary))]"]{background-image:linear-gradient(180deg,hsl(145 100% 45%),hsl(145 100% 35%));box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 20px -6px rgba(0,200,83,.55);font-weight:600;transition:transform .12s,box-shadow .15s,filter .12s}
+button[class*="bg-[hsl(var(--primary))]"]:hover{filter:brightness(1.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 10px 28px -6px rgba(0,200,83,.7)}
+button{transition:transform .12s cubic-bezier(.16,1,.3,1),background-color .12s,border-color .12s,box-shadow .15s}
+html{-webkit-text-size-adjust:100%}
+a,button,input,select,textarea,label,[role="button"]{touch-action:manipulation}
+@media (hover:none),(pointer:coarse){.backdrop-blur,.backdrop-blur-sm,.backdrop-blur-md,.backdrop-blur-lg,.backdrop-blur-xl,.backdrop-blur-2xl,[style*="backdrop-filter"],nav.side-rail,#mhs-install-bar{-webkit-backdrop-filter:blur(8px)!important;backdrop-filter:blur(8px)!important}.panel:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 14px 40px -14px rgba(0,0,0,.7)}}
+input,select,textarea{background:rgba(255,255,255,.035)!important;border:1px solid rgba(255,255,255,.09)!important;border-radius:.8rem!important;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:none!important;border-color:hsl(145 100% 39%/.6)!important;box-shadow:0 0 0 3px hsl(145 100% 39%/.18)!important}
+img[alt^="Muhasabah"]{border-radius:0!important;box-shadow:none!important;--tw-ring-shadow:0 0 #0000!important;object-fit:contain!important;background:transparent!important;filter:drop-shadow(0 4px 14px rgba(0,230,90,.38))}
+[class*="from-violet-500"]{--tw-gradient-from:rgba(0,200,83,.28)!important;--tw-gradient-to:rgba(170,185,210,.12)!important}
+nav.side-rail{position:fixed;right:calc(.5rem + env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);z-index:30;display:flex;flex-direction:column;gap:.25rem;padding:.375rem;border-radius:1.1rem;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(14,18,27,.82),rgba(8,10,16,.94));box-shadow:0 14px 40px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.05);-webkit-backdrop-filter:blur(20px) saturate(150%)}
+.rail-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;width:3rem;padding:.55rem 0;border-radius:.8rem;color:hsl(var(--muted-foreground));font-size:8.5px;line-height:1;text-transform:uppercase;letter-spacing:.04em}
+.rail-btn:hover{background:rgba(255,255,255,.05);color:hsl(var(--foreground))}
+.rail-btn:active{transform:scale(.94)}
+.rail-btn.is-active{background:hsl(var(--primary)/.14);color:hsl(var(--primary));box-shadow:inset 0 0 0 1px hsl(var(--primary)/.3)}
+.rail-ico{width:1.25rem;height:1.25rem;display:flex;align-items:center;justify-content:center;font-size:16px}
+.rail-lbl{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+main.rail-pad{padding-right:4.75rem!important;padding-bottom:3rem!important}
+.rail-toast{bottom:2rem!important}
+@media (min-width:640px){nav.side-rail{right:calc(.75rem + env(safe-area-inset-right,0px))}main.rail-pad{padding-right:6rem!important}}
+.num{text-shadow:0 0 18px rgba(255,255,255,.04)}
+@media (prefers-reduced-motion:reduce){*,::before,::after{animation:none!important;transition:none!important}}
