@@ -6846,7 +6846,7 @@ var xs = {
       islamicTime: "Islamic Time Conscious",
       fardLock: "Fard / Farz فرض cannot be deleted",
       productiveBlocks: "Productive blocks",
-      hadith: "Life is the sum of time — if you don’t use it properly, It'll destroy you.",
+      hadith: "Life is the sum of time — if you don’t use it properly, it’ll destroy you.",
       dash: "Dash",
       today: "Today",
       backup: "Backup",
@@ -7611,7 +7611,7 @@ function na() {
           })]
         }), i("div", {
           className: "text-[10px] text-[hsl(var(--muted-foreground)/0.7)]",
-          children: "v1.0.0 • Data on device"
+          children: "v1.1.0 • Data on device"
         })]
       })]
     }), f("header", {
@@ -8884,7 +8884,7 @@ Trades:${a.trades.length}`
                 children: "Your data stays on your device. Export to backup, import to restore."
               }), i("div", {
                 className: "mt-1 text-[11px] text-[hsl(var(--muted-foreground)/0.7)]",
-                children: "Muhasabah v1.0.0 · Make Habit, Get Reward · Saved automatically on this device"
+                children: "Muhasabah v1.1.0 · Make Habit, Get Reward · Saved automatically on this device"
               })]
             })]
           }), f("div", {
@@ -8980,7 +8980,7 @@ Trades:${a.trades.length}`
           lang: l
         }), f("div", {
           className: "text-[10px] text-[hsl(var(--muted-foreground)/0.7)]",
-          children: ["v1.0.0 • Saved on this device • ", i(LiveClock, {})]
+          children: ["v1.1.0 • Saved on this device • ", i(LiveClock, {})]
         })]
       })]
     }), i("nav", {
@@ -9604,7 +9604,7 @@ Trades:${a.trades.length}`
             style: {
               fontFamily: "var(--font-display)"
             },
-            children: "Life is the sum of time — if you don’t use it properly, It'll destroy you."
+            children: "Life is the sum of time — if you don’t use it properly, it’ll destroy you."
           }), i("button", {
             onClick: () => {
               nA(!1), He(!0), setTimeout(() => He(!1), 900);

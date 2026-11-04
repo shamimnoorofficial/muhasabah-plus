@@ -1,23 +1,19 @@
 /* Muhasabah service worker — full offline support.
  * Bump VERSION whenever app files change so installed apps update automatically.
  */
-const VERSION = "2026-11-04.16";
+const VERSION = "2026-11-04.17";
 const CORE = "mhs-core-" + VERSION;
 const RUNTIME = "mhs-runtime";
 const PRECACHE = [
   "/",
   "/manifest.webmanifest",
   "/assets/app.js",
-  "/assets/style-1.css",
-  "/assets/style-2.css",
-  "/assets/style-3.css",
-  "/assets/style-4.css",
+  "/assets/app.css",
+  "/pwa/startup.js",
+  "/icons/favicon.png",
 
   "/pwa/bn.js",
   "/pwa/penalties.js",
-  "/pwa/refinements.css",
-  "/pwa/onboard.css",
-  "/pwa/onboard.js",
   "/pwa/store.js",
   "/pwa/app.js",
   "/pwa/journal.js",
@@ -109,11 +105,11 @@ async function networkFirst(request, cacheKey, pending) {
 }
 
 async function cacheFirst(request, cacheName) {
-  const cached = await caches.match(request);
+  const cache = await caches.open(cacheName);
+  const cached = await cache.match(request);
   if (cached) return cached;
   const res = await fetch(request);
   if (res && (res.ok || res.type === "opaque")) {
-    const cache = await caches.open(cacheName);
     cache.put(request, res.clone()).catch(() => {});
   }
   return res;
