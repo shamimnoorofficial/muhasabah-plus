@@ -7080,7 +7080,7 @@ function na() {
       color: "#00C853",
       focus: "Quran daily"
     }),
-    [Eu, nA] = U.useState(!S0.onboarded),
+    [Eu, nA] = U.useState(!0),
     [Xr, tA] = U.useState(() => new Set(Fv.filter(x => x.type === "checkIn" && new Date(x.ts).toDateString() === new Date().toDateString()).map(x => x.habitId))),
     [rA, la] = U.useState([]),
     [lA, He] = U.useState(!1),
