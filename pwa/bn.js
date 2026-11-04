@@ -185,5 +185,9 @@ window.MHSBengali = {
   "Save changes": "পরিবর্তন সংরক্ষণ করুন",
   "Delete entry?": "হিসাবটি মুছবেন?",
   "Are you sure you want to delete this entry? This cannot be undone.": "এই হিসাবটি স্থায়ীভাবে মুছে যাবে। আপনি কি নিশ্চিত?",
-  "Import will replace current data. Continue?": "আমদানি করলে বর্তমান ডেটা বদলে যাবে। এগিয়ে যাবেন?"
+  "Import will replace current data. Continue?": "আমদানি করলে বর্তমান ডেটা বদলে যাবে। এগিয়ে যাবেন?",
+  "User Guide & Onboarding": "ইউজার গাইডলাইন ও অনবোর্ডিং সেটআপ",
+  "Revisit initial setup for language, location, habits and notifications": "ভাষা, নামাজের ওয়াক্ত, নোটিফিকেশন ও প্রাথমিক সেটিংস পুনরায় পরিবর্তন বা পর্যালোচনা করুন",
+  "Restart Walkthrough": "অনবোর্ডিং পুনরায় দেখুন",
+  "App updated to latest version": "মুহাসাবাহ প্লাসের নতুন সংস্করণ স্বয়ংক্রিয়ভাবে আপডেট হয়েছে"
 };
