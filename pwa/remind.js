@@ -46,7 +46,9 @@
       body: "أكملها قبل الموعد لتكسب +{p}، وإلا يُخصم −{p}."
     }
   };
-  function lang() { var c = MHS && MHS.current(); return c && c.lang === "ar" ? "ar" : "en"; }
+  if (typeof T !== "undefined" && T.en) T.bn = Object.fromEntries(Object.entries(T.en).map(function (pair) { return [pair[0], window.MHSBengali[pair[1]] || pair[1]]; }));
+  function lang() { var c = MHS && MHS.current(); return c && ["en", "ar", "bn"].includes(c.lang) ? c.lang : "en"; }
+  Object.assign(T.bn, {"title": "সময়সীমার রিমাইন্ডার", "sub": "কাজ শেষ করার সময় থাকতে সময়সীমার আগে নোটিফিকেশন পান।", "enable": "সময়সীমার আগে মনে করিয়ে দিন", "before": "কতক্ষণ আগে", "min": "মিনিট", "test": "পরীক্ষা করুন", "testTitle": "মুহাসাবার রিমাইন্ডার চালু আছে", "testBody": "প্রতিটি সময়সীমার আগে নোটিফিকেশন পাবেন।", "denied": "নোটিফিকেশন বন্ধ আছে। ব্রাউজার বা ফোনের সেটিংসে এই সাইটের অনুমতি দিন, তারপর আবার চালু করুন।", "unsupported": "এই ব্রাউজারে নোটিফিকেশন সমর্থিত নয়।", "ios": "আইফোন বা আইপ্যাডে প্রথমে হোম স্ক্রিনে অ্যাপ যোগ করে সেখান থেকে খুলুন।", "note": "ইন্টারনেট ছাড়াই এই ডিভাইসে রিমাইন্ডার কাজ করে। অ্যাপ খোলা বা পেছনে চালু থাকতে হয়। পুরোপুরি বন্ধ থাকলে ফোন রিমাইন্ডার নাও দেখাতে পারে।", "left": "মিনিট বাকি", "body": "সময়সীমার আগে সম্পন্ন করলে +{p} পয়েন্ট। অন্যথায় −{p}।"});
   function t(k) { return (T[lang()] || T.en)[k] || T.en[k]; }
 
   function cfg() {

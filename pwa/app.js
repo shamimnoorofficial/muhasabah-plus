@@ -76,7 +76,9 @@
       nudgeBtn: "نسخ"
     }
   };
-  function lang() { var c = MHS && MHS.current(); return c && c.lang === "ar" ? "ar" : "en"; }
+  if (typeof T !== "undefined" && T.en) T.bn = Object.fromEntries(Object.entries(T.en).map(function (pair) { return [pair[0], window.MHSBengali[pair[1]] || pair[1]]; }));
+  function lang() { var c = MHS && MHS.current(); return c && ["en", "ar", "bn"].includes(c.lang) ? c.lang : "en"; }
+  Object.assign(T.bn, {"protOn": "সুরক্ষিত—ব্রাউজার নিজে থেকে ডেটা মুছবে না", "protOff": "সুরক্ষিত নয়—স্টোরেজ কম থাকলে ব্রাউজার ডেটা মুছতে পারে", "folderHelp": "একবার একটি ফোল্ডার বেছে নিন। প্রতিবার পরিবর্তনের পর সেখানে মাস অনুযায়ী তারিখসহ ব্যাকআপ সংরক্ষিত হবে।", "needPerm": "ব্যাকআপ চালিয়ে যেতে অনুমতি প্রয়োজন", "unsupported": "এই ব্রাউজারে সরাসরি ফোল্ডারে লেখা যায় না। ব্যাকআপ ফাইল সংরক্ষণ বা শেয়ার করুন।", "nudgeNever": "আপনার ডেটা শুধু এই ডিভাইসে আছে। ফোন হারিয়ে গেলে বা রিসেট হলে ডেটা রাখতে ব্যাকআপ নিন।", "nudgeDays": "সর্বশেষ ব্যাকআপ {d} দিন আগে। নতুন ব্যাকআপ নিন।"});
   function t(k) { return (T[lang()] || T.en)[k] || T.en[k]; }
 
   /* ---------- helpers ---------- */
@@ -359,23 +361,14 @@
   }
   var silentUpdate = false;
   function showUpdate(reg) {
-    // In a browser tab the app isn't installed yet: apply the new version quietly
-    // (it loads on the next visit) and offer Install instead of an Update banner.
-    if (!standalone()) {
-      silentUpdate = true;
-      if (reg.waiting) reg.waiting.postMessage({ type: "SKIP_WAITING" });
-      if (window.MHSInstall) window.MHSInstall.show();
-      return;
+    if (!reg.waiting) return;
+    function apply() {
+      if (document.hidden || document.querySelector('[role="dialog"], .kb-modal-panel') || (document.activeElement && document.activeElement.matches && document.activeElement.matches('input,textarea,select'))) {
+        setTimeout(apply, 1500); return;
+      }
+      try { reg.waiting.postMessage({ type: "SKIP_WAITING" }); } catch (e) {}
     }
-    if (document.getElementById("mhs-update-bar")) return;
-    var bar = el("div", { id: "mhs-update-bar", role: "status", dir: lang() === "ar" ? "rtl" : "ltr" }, [
-      el("div", { class: "txt" }, [el("b", { text: t("updTitle") }), el("span", { text: t("updText") })]),
-      el("button", { type: "button", class: "go", on: { click: function () {
-        if (reg.waiting) reg.waiting.postMessage({ type: "SKIP_WAITING" }); else location.reload();
-      } } }, [t("updBtn")]),
-      el("button", { type: "button", class: "x", "aria-label": "Dismiss", on: { click: function () { bar.remove(); } } }, ["✕"])
-    ]);
-    document.body.appendChild(bar);
+    apply();
   }
 
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
@@ -384,10 +377,22 @@
     navigator.serviceWorker.addEventListener("controllerchange", function () {
       if (!hadController || reloading || silentUpdate) { hadController = true; return; }
       reloading = true;
-      location.reload();
+      try {
+        toast((window.MHSBengali && window.MHSBengali["App updated to latest version"]) || "✨ মুহাসাবাহ প্লাসের নতুন সংস্করণ স্বয়ংক্রিয়ভাবে আপডেট হয়েছে");
+      } catch (e) {}
+      function reloadWhenReady() {
+        if (document.hidden || document.querySelector('.kb-modal-panel') || (document.activeElement && document.activeElement.matches && document.activeElement.matches('input,textarea,select'))) {
+          setTimeout(reloadWhenReady, 1500);
+          return;
+        }
+        location.reload();
+      }
+      setTimeout(reloadWhenReady, 500);
     });
     window.addEventListener("load", function () {
-      navigator.serviceWorker.register("/sw.js", { scope: "/" }).then(function (reg) {
+      navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" }).then(function (reg) {
+        // Check for updates immediately upon load
+        reg.update().catch(function () {});
         if (reg.waiting && navigator.serviceWorker.controller) showUpdate(reg);
         reg.addEventListener("updatefound", function () {
           var w = reg.installing;
@@ -396,10 +401,13 @@
             if (w.state === "installed" && navigator.serviceWorker.controller) showUpdate(reg);
           });
         });
-        setInterval(function () { reg.update().catch(function () {}); }, 60 * 60 * 1000);
+        // Check for updates regularly and when resuming app
+        setInterval(function () { reg.update().catch(function () {}); }, 30 * 1000);
         document.addEventListener("visibilitychange", function () {
           if (document.visibilityState === "visible") reg.update().catch(function () {});
         });
+        window.addEventListener("focus", function () { reg.update().catch(function () {}); });
+        window.addEventListener("online", function () { reg.update().catch(function () {}); });
       }).catch(function () {});
     });
   }

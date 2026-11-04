@@ -348,7 +348,9 @@
       ended: "انتهت صلوات اليوم"
     }
   };
-  function lang() { var c = window.MHS && window.MHS.current(); return c && c.lang === "ar" ? "ar" : "en"; }
+  if (typeof T !== "undefined" && T.en) T.bn = Object.fromEntries(Object.entries(T.en).map(function (pair) { return [pair[0], window.MHSBengali[pair[1]] || pair[1]]; }));
+  function lang() { var c = window.MHS && window.MHS.current(); return c && ["en", "ar", "bn"].includes(c.lang) ? c.lang : "en"; }
+  Object.assign(T.bn, {"title": "অবস্থান অনুযায়ী নামাজের সময়", "sub": "নামাজের অভ্যাসের সময়সীমা প্রতিদিনের প্রকৃত ওয়াক্ত অনুযায়ী এই ডিভাইসে হিসাব হয়।", "enable": "প্রকৃত নামাজের সময়কে সময়সীমা হিসেবে ব্যবহার করুন", "loc": "অবস্থান", "useLoc": "আমার অবস্থান ব্যবহার করুন", "locating": "অবস্থান খোঁজা হচ্ছে…", "locFail": "অবস্থান পাওয়া যায়নি। অনুমতি দিন বা একটি শহর বেছে নিন।", "locNote": "অবস্থান একবার নিয়ে শুধু এই ডিভাইসে রাখা হয়। কোথাও পাঠানো হয় না।", "noLoc": "অবস্থান নির্ধারিত নয়", "city": "অথবা শহর বাছাই করুন", "pick": "বাছাই করুন…", "method": "গণনা পদ্ধতি", "asr": "আসর", "hanafi": "হানাফি (দেরিতে)", "standard": "শাফেয়ি / মালিকি / হাম্বলি", "today": "আজকের সময়সূচি", "starts": "শুরু", "ends": "শেষ", "forbidden": "নামাজের নিষিদ্ধ সময়", "fSunrise": "সূর্যোদয়", "fZawal": "দ্বিপ্রহর", "fSunset": "সূর্যাস্ত", "names": {"fajr": "ফজর", "dhuhr": "যোহর", "asr": "আসর", "maghrib": "মাগরিব", "isha": "এশা"}, "startsAt": "শুরু", "deadline": "সময়সীমা", "fNow": "নিষিদ্ধ সময়—এখন নামাজ পড়বেন না", "fUntil": "শেষ", "srcGps": "আপনার অবস্থান থেকে", "srcTz": "সময় অঞ্চল থেকে অনুমান—সঠিক সময়ের জন্য অবস্থান দিন", "srcCity": "বাছাই করা শহর", "setLoc": "সঠিক নামাজের সময় ও সময়সীমার জন্য আপনার অবস্থান দিন।", "ended": "আজকের সব নামাজের সময় শেষ"});
   function t(k) { return (T[lang()] || T.en)[k] || T.en[k]; }
   function pname(p) { return (t("names") || T.en.names)[p] || p; }
   function hm(ms) {

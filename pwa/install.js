@@ -24,7 +24,7 @@
   var isMacSafari = !isIOS && /Macintosh/.test(ua) && /Safari/.test(ua) && !/Chrome|Chromium|Edg/.test(ua);
 
   function lang() {
-    try { var c = window.MHS && window.MHS.current(); return c && c.lang === "ar" ? "ar" : "en"; } catch (e) { return "en"; }
+    try { var c = window.MHS && window.MHS.current(); return c && ["en", "ar", "bn"].includes(c.lang) ? c.lang : "en"; } catch (e) { return "en"; }
   }
   var T = {
     en: {
@@ -62,6 +62,8 @@
       desktop: ["اضغط أيقونة التثبيت ⊕ في نهاية شريط العنوان،", "أو افتح قائمة المتصفح ⋮ ← \"تثبيت محاسبة\".", "اضغط \"تثبيت\"."]
     }
   };
+  if (typeof T !== "undefined" && T.en) T.bn = Object.fromEntries(Object.entries(T.en).map(function (pair) { return [pair[0], window.MHSBengali[pair[1]] || pair[1]]; }));
+  Object.assign(T.bn, {"title": "মুহাসাবা ইনস্টল করুন", "close": "বন্ধ করুন", "installNow": "এখন ইনস্টল করুন", "wait": "প্রস্তুত হচ্ছে…", "already": "মুহাসাবা ইতিমধ্যে এই ডিভাইসে ইনস্টল আছে। হোম স্ক্রিন বা অ্যাপের তালিকা থেকে খুলুন।", "openChrome": "Chrome-এ খুলুন", "inAppAndroid": "এই অ্যাপের ভেতরের ব্রাউজারে ইনস্টল করা যায় না। Chrome-এ খুলে ইনস্টল করুন।", "inAppIOS": ["এই ব্রাউজারে অ্যাপ ইনস্টল করা যায় না।", "মেনু থেকে Safari-এ খুলুন।", "শেয়ার থেকে Add to Home Screen বেছে নিন।"], "ios": ["শেয়ার বোতামে চাপুন।", "Add to Home Screen বেছে নিন।", "Add চাপুন। অ্যাপ হোম স্ক্রিনে দেখা যাবে।"], "samsung": ["নিচের মেনুতে চাপুন।", "Add page to → Home screen বেছে নিন।", "Add চাপুন।"], "firefoxAndroid": ["মেনুতে চাপুন।", "Install অথবা Add to Home screen বেছে নিন।", "Add চাপুন।"], "android": ["Chrome-এর ওপরের মেনু খুলুন।", "Install app অথবা Add to Home screen বেছে নিন।", "Install চাপুন।"], "macSafari": ["File → Add to Dock বেছে নিন।", "Add চাপুন।"], "firefoxDesktop": "কম্পিউটারের Firefox-এ ওয়েব অ্যাপ ইনস্টল করা যায় না। Chrome বা Edge-এ খুলুন।", "desktop": ["অ্যাড্রেস বারের ইনস্টল আইকনে চাপুন।", "অথবা মেনু থেকে Install Muhasabah বেছে নিন।", "Install চাপুন।"]});
   function t(k) { return (T[lang()] || T.en)[k] || T.en[k]; }
 
   function isStandalone() {

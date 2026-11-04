@@ -1,12 +1,23 @@
 /* Muhasabah service worker — full offline support.
- * Bump VERSION whenever app files change so installed apps show the update banner.
+ * Bump VERSION whenever app files change so installed apps update automatically.
  */
-const VERSION = "2026-11-04.6";
+const VERSION = "2026-11-04.8";
 const CORE = "mhs-core-" + VERSION;
 const RUNTIME = "mhs-runtime";
 const PRECACHE = [
   "/",
   "/manifest.webmanifest",
+  "/assets/app.js",
+  "/assets/style-1.css",
+  "/assets/style-2.css",
+  "/assets/style-3.css",
+  "/assets/style-4.css",
+
+  "/pwa/bn.js",
+  "/pwa/penalties.js",
+  "/pwa/refinements.css",
+  "/pwa/onboard.css",
+  "/pwa/onboard.js",
   "/pwa/store.js",
   "/pwa/app.js",
   "/pwa/install.js",
@@ -26,7 +37,8 @@ const FONT_FILES = "fonts.gstatic.com";
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CORE).then((cache) =>
-      Promise.all(PRECACHE.map((url) => cache.add(new Request(url, { cache: "reload" })).catch(() => {})))
+      Promise.all(PRECACHE.map((url) => cache.add(new Request(url, { cache: "reload" }))))
+        .then(() => self.skipWaiting())
     )
   );
 });
@@ -131,6 +143,6 @@ self.addEventListener("fetch", (event) => {
   if (url.pathname === "/sw.js" || url.pathname.startsWith("/.netlify/")) return;
 
   if (url.pathname.startsWith("/icons/")) { event.respondWith(cacheFirst(request, CORE)); return; }
-  if (url.pathname.startsWith("/pwa/") || url.pathname === "/manifest.webmanifest") { event.respondWith(shellFast(request)); return; }
+  if (url.pathname.startsWith("/assets/") || url.pathname.startsWith("/pwa/") || url.pathname === "/manifest.webmanifest") { event.respondWith(shellFast(request)); return; }
   event.respondWith(networkFirst(request));
 });
