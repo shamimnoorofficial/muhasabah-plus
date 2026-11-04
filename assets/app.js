@@ -9560,7 +9560,7 @@ Trades:${a.trades.length}`
         })]
       })
     }), Eu && i("div", {
-      className: "fixed inset-0 z-[100] flex items-center justify-center bg-transparent p-4",
+      className: "fixed inset-0 z-[100] flex items-center justify-center bg-[hsl(var(--background))] p-4",
       children: f("div", {
         className: "relative max-w-md w-full p-8 sm:p-10 rounded-[1.5rem] border border-white/10 border-t-white/20 bg-gradient-to-br from-white/[0.08] to-white/[0.03] backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.36),inset_0_1px_0_0_rgba(255,255,255,0.10)] text-center space-y-6 overflow-hidden",
         style: {
