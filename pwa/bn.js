@@ -189,5 +189,18 @@ window.MHSBengali = {
   "User Guide & Onboarding": "ইউজার গাইডলাইন ও অনবোর্ডিং সেটআপ",
   "Revisit initial setup for language, location, habits and notifications": "ভাষা, নামাজের ওয়াক্ত, নোটিফিকেশন ও প্রাথমিক সেটিংস পুনরায় পরিবর্তন বা পর্যালোচনা করুন",
   "Restart Walkthrough": "অনবোর্ডিং পুনরায় দেখুন",
-  "App updated to latest version": "মুহাসাবাহ প্লাসের নতুন সংস্করণ স্বয়ংক্রিয়ভাবে আপডেট হয়েছে"
+  "App updated to latest version": "মুহাসাবাহ প্লাসের নতুন সংস্করণ স্বয়ংক্রিয়ভাবে আপডেট হয়েছে",
+  "📋 Todo List": "📋 টুডু তালিকা",
+  "＋ New Todo": "＋ নতুন টুডু",
+  "New Todo • Todo List": "নতুন টুডু • টুডু তালিকা",
+  "Edit Todo • Todo List": "টুডু সম্পাদনা • টুডু তালিকা",
+  "e.g. Pay bills • Call Ali • Juz memorised": "যেমন: বিল পরিশোধ • আলিকে ফোন • সুরা শেষ করা",
+  "Reward Points": "পুরস্কার পয়েন্ট",
+  "Penalty Points": "কর্তন পয়েন্ট",
+  "Icon": "আইকন",
+  "Complete before the deadline to earn the reward. If the deadline passes without Done, the penalty is deducted automatically once.": "সময়সীমার মধ্যে সম্পন্ন করলে পুরস্কার পাবেন। সময় পেরিয়ে গেলে কর্তন পয়েন্ট একবার স্বয়ংক্রিয়ভাবে কাটা হবে।",
+  "Save Changes": "পরিবর্তন সংরক্ষণ",
+  "Create Todo": "টুডু তৈরি করুন",
+  "Todo Done": "টুডু সম্পন্ন",
+  "Todo Missed": "টুডু বাকি পড়েছে"
 };

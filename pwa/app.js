@@ -87,6 +87,7 @@
     return JSON.stringify({
       app: "Muhasabah",
       habits: obj.habits || [],
+      todos: obj.todos || [],
       ledger: obj.ledger || [],
       lang: obj.lang,
       exportedAt: new Date().toISOString()
