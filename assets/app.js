@@ -7029,6 +7029,82 @@ function js({
   });
 }
 xs.bn = Object.fromEntries(Object.entries(xs.en).map(([key,value]) => [key, window.MHSBengali[value] || value]));
+function MhsFlowChart({ data, mode, zoom, ma7, ma30, inspect, empty, lang }) {
+  const [width, setWidth] = U.useState(600), ref = U.useRef(null);
+  U.useEffect(() => {
+    const observer = new ResizeObserver(entries => setWidth(Math.max(280, entries[0].contentRect.width)));
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+  const count = Math.max(1, Math.ceil(24 / zoom)), offset = Math.max(0, data.length - count), visible = data.slice(offset);
+  const averages = size => visible.map((p, j) => window.MHSFlow.average(data, offset + j, size));
+  const av7 = averages(7), av30 = averages(30);
+  const values = visible.flatMap(p => [p.low, p.high]).concat(ma7 ? av7.filter(v => v !== null) : [], ma30 ? av30.filter(v => v !== null) : []);
+  const low = Math.min(...values, 0), high = Math.max(...values, 0), pad = (high - low) * .12 || 10;
+  const min = low - pad, max = high + pad;
+  const plot = width - 80, step = plot / Math.max(1, visible.length);
+  const x = j => 58 + step * (j + .5), y = v => 18 + (max - v) / (max - min) * 200;
+  const path = values => values.map((v, j) => v === null ? '' : `${j === 0 || values[j - 1] === null ? 'M' : 'L'} ${x(j)} ${y(v)}`).join(' ');
+  const caption = lang === 'bn' ? 'সাম্প্রতিক সময়কাল · বিস্তারিত দেখতে পয়েন্টে চাপুন' : lang === 'ar' ? 'الفترات الأخيرة • اضغط لعرض التفاصيل' : 'Recent periods • Select a point for details';
+  return f('div', { ref, className: 'mhs-flow', children: [
+    visible.length ? f('svg', { viewBox: `0 0 ${width} 280`, 'aria-label': lang === 'bn' ? 'পয়েন্টের প্রবাহ' : 'Point flow', children: [
+      [0,1,2,3,4].map(j => { const v = max - (max - min) * j / 4; return f('g', { children: [
+        i('line', { x1: 52, x2: width - 12, y1: y(v), y2: y(v), stroke: 'hsl(var(--border))', strokeDasharray: '4 4' }),
+        i('text', { x: 46, y: y(v) + 4, textAnchor: 'end', fill: 'hsl(var(--muted-foreground))', fontSize: 10, children: Math.round(v) })
+      ] }, j); }),
+      i('line', { x1: 52, x2: width - 12, y1: y(0), y2: y(0), stroke: 'hsl(var(--muted-foreground))', opacity: .5 }),
+      mode === 'line' && i('path', { 'data-flow-line': true, d: path(visible.map(p => p.close)), fill: 'none', stroke: 'hsl(var(--primary))', strokeWidth: 2 }),
+      [[ma7, av7, '#b58127', 'MA7'], [ma30, av30, '#528fd1', 'MA30']].map(([on, values, color, name]) => on && i('path', { 'data-average': name, d: path(values), fill: 'none', stroke: color, strokeWidth: 2, strokeDasharray: '5 3' }, name)),
+      visible.map((p, j) => { const color = p.close >= p.open ? 'hsl(var(--primary))' : '#ed5148', body = Math.min(18, step * .55);
+        return f('g', { children: [
+          mode === 'candle' ? f('g', { children: [i('line', { x1: x(j), x2: x(j), y1: y(p.high), y2: y(p.low), stroke: color, strokeWidth: 1.5 }), i('rect', { x: x(j) - body / 2, y: Math.min(y(p.open), y(p.close)), width: body, height: Math.max(2, Math.abs(y(p.open) - y(p.close))), fill: color, rx: 2 })] }) : i('circle', { cx: x(j), cy: y(p.close), r: 4, fill: color }),
+          i('rect', { x: x(j) - step / 2, y: 10, width: step, height: 226, fill: 'transparent', tabIndex: 0, role: 'button', 'aria-label': `${p.date}: ${p.close}`, onClick: () => inspect(p), onKeyDown: ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); inspect(p); } }, children: i('title', { children: `${p.date} • ${p.open} → ${p.close} • ${p.trades.length}` }) }),
+          j % Math.max(1, Math.ceil(visible.length / Math.max(2, Math.floor(width / 90)))) === 0 && i('text', { x: x(j), y: 254, textAnchor: 'middle', fontSize: 10, fill: 'hsl(var(--muted-foreground))', children: p.date.slice(5) })
+        ] }, p.key);
+      })
+    ] }) : i('p', { className: 'mhs-flow-empty', children: empty }),
+    visible.length > 0 && i('p', { className: 'mhs-flow-caption', children: `${visible.length}/${data.length} · ${caption}${ma7 || ma30 ? (lang === 'bn' ? ' · MA আঁকতে ৭/৩০টি সময়কাল প্রয়োজন' : ' · MA needs 7/30 periods') : ''}` })
+  ] });
+}
+
+function MhsPreferences({ lang, setLanguage }) {
+  const [theme, setTheme] = U.useState('dark'), [status, setStatus] = U.useState('loading');
+  const [revision, retry] = U.useState(0);
+  const latest = U.useRef({ lang, theme }); latest.current = { lang, theme };
+  const text = lang === 'bn' ? { title: 'অ্যাপের পছন্দ', language: 'ভাষা', theme: 'থিম', dark: 'ডার্ক', light: 'লাইট', system: 'ডিভাইস অনুযায়ী', loading: 'সেটিংস লোড হচ্ছে…', saving: 'সংরক্ষণ হচ্ছে…', saved: 'সংরক্ষিত', error: 'সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।', retry: 'আবার চেষ্টা করুন' } : lang === 'ar' ? { title: 'تفضيلات التطبيق', language: 'اللغة', theme: 'المظهر', dark: 'داكن', light: 'فاتح', system: 'حسب الجهاز', loading: 'جارٍ التحميل…', saving: 'جارٍ الحفظ…', saved: 'تم الحفظ', error: 'تعذر الحفظ. أعد المحاولة.', retry: 'إعادة المحاولة' } : { title: 'App preferences', language: 'Language', theme: 'Theme', dark: 'Dark', light: 'Light', system: 'Use device setting', loading: 'Loading settings…', saving: 'Saving…', saved: 'Saved', error: 'Could not save. Please retry.', retry: 'Retry' };
+  U.useEffect(() => {
+    let active = true;
+    fetch('/.netlify/functions/preferences').then(res => { if (!res.ok) throw Error(); return res.json(); }).then(value => {
+      if (!active) return;
+      if (value) { setLanguage(value.language); setTheme(value.theme); }
+      setStatus('ready');
+    }).catch(() => { if (active) setStatus('loadError'); });
+    return () => { active = false; };
+  }, [revision]);
+  U.useEffect(() => {
+    const media = matchMedia('(prefers-color-scheme: light)');
+    const apply = () => { const light = theme === 'light' || theme === 'system' && media.matches; document.documentElement.dataset.theme = light ? 'light' : 'dark'; document.querySelector('meta[name="theme-color"]').content = light ? '#f3f7f4' : '#0a0d14'; };
+    apply(); media.addEventListener('change', apply);
+    return () => media.removeEventListener('change', apply);
+  }, [theme]);
+  // Keep the selected theme active after navigating away from Settings.
+  const save = (language, value) => {
+    setLanguage(language); setTheme(value); setStatus('saving');
+    fetch('/.netlify/functions/preferences', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ language, theme: value }) })
+      .then(res => { if (!res.ok) throw Error(); setStatus('saved'); }).catch(() => setStatus('error'));
+  };
+  const disabled = status === 'loading' || status === 'saving';
+  return f('section', { className: 'panel mhs-preferences', children: [
+    i('h2', { children: text.title }),
+    f('div', { className: 'mhs-preference-grid', children: [
+      f('label', { children: [text.language, i('select', { value: lang, disabled, onChange: ev => save(ev.target.value, theme), children: [['en','English'],['bn','বাংলা'],['ar','العربية']].map(([value,label]) => i('option', { value, children: label }, value)) })] }),
+      f('label', { children: [text.theme, i('select', { value: theme, disabled, onChange: ev => save(lang, ev.target.value), children: ['dark','light','system'].map(value => i('option', { value, children: text[value] }, value)) })] })
+    ] }),
+    i('p', { role: 'status', children: status === 'loadError' ? (lang === 'bn' ? 'সেটিংস লোড করা যায়নি। আবার চেষ্টা করুন।' : 'Could not load settings. Please retry.') : text[status] || '' }),
+    ['error','loadError'].includes(status) && i('button', { type: 'button', onClick: () => status === 'loadError' ? (setStatus('loading'), retry(v => v + 1)) : save(latest.current.lang, latest.current.theme), children: text.retry })
+  ] });
+}
+
 function na() {
   let [e, n] = U.useState(() => {
       try {
@@ -7246,47 +7322,7 @@ function na() {
       return a;
     }, [s]),
     Ae = U.useMemo(() => {
-      let a = [...s].sort((ue, te) => ue.ts - te.ts);
-      if (A === "lod") a = a.filter(ue => Math.abs(ue.delta) >= 20);
-      let h = {};
-      a.forEach(ue => {
-        let te = new Date(ue.ts),
-          he = "";
-        if (A === "daily" || A === "lod") he = te.toISOString().slice(0, 10);else if (A === "weekly") {
-          let yn = new Date(te.getFullYear(), 0, 1),
-            Kt = Math.ceil(((te.getTime() - yn.getTime()) / 86400000 + yn.getDay() + 1) / 7);
-          he = `${te.getFullYear()}-W${Kt}`;
-        } else he = `${te.getFullYear()}-${String(te.getMonth() + 1).padStart(2, "0")}`;
-        if (!h[he]) h[he] = [];
-        h[he].push(ue);
-      });
-      let w = Object.keys(h).sort(),
-        L = A === "daily" ? 24 : A === "weekly" ? 48 : A === "monthly" ? 12 : 240,
-        B = w.slice(-L),
-        K = 0;
-      return K = w.filter(ue => !B.includes(ue)).flatMap(ue => h[ue]).reduce((ue, te) => ue + te.delta, 0), B.map(ue => {
-        let te = h[ue].sort((Xt, Ru) => Xt.ts - Ru.ts),
-          he = K,
-          yn = he,
-          Kt = he,
-          qr = he;
-        te.forEach(Xt => {
-          qr += Xt.delta, yn = Math.max(yn, qr, he), Kt = Math.min(Kt, qr, he);
-        });
-        let fa = qr;
-        K = fa;
-        let AA = te.reduce((Xt, Ru) => Xt + Math.abs(Ru.delta), 0);
-        return {
-          key: ue,
-          date: ue,
-          trades: te,
-          open: he,
-          high: yn,
-          low: Kt,
-          close: fa,
-          volume: AA
-        };
-      });
+      return window.MHSFlow.periods(s, A);
     }, [s, A]),
     ne = U.useMemo(() => {
       if (Ae.length === 0) return {
@@ -7582,7 +7618,7 @@ function na() {
           icon: "≡"
         }, {
           k: "settings",
-          label: u.backup,
+          label: l === "bn" ? "সেটিংস" : l === "ar" ? "الإعدادات" : "Settings",
           icon: "⚙"
         }].map(a => f("button", {
           onClick: () => n(a.k),
@@ -7797,114 +7833,20 @@ function na() {
                 }), f("div", {
                   className: "flex gap-1 rounded-xl border border-border bg-[hsl(var(--card)/0.6)] p-1",
                   children: [i("button", {
-                    onClick: () => Ve(a => Math.max(0.3, a - 0.2)),
+                    onClick: () => Ve(a => Math.max(1, a - 0.5)),
+                    "aria-label": "Zoom out",
                     className: "h-8 w-8 rounded-lg border border-transparent hover:border-border flex items-center justify-center text-sm bg-[hsl(var(--muted)/0.5)] active:scale-[0.95]",
                     children: "-"
                   }), i("button", {
-                    onClick: () => Ve(a => Math.min(8, a + 0.2)),
+                    onClick: () => Ve(a => Math.min(8, a + 0.5)),
+                    "aria-label": "Zoom in",
                     className: "h-8 w-8 rounded-lg border border-transparent hover:border-border flex items-center justify-center text-sm bg-[hsl(var(--muted)/0.5)] active:scale-[0.95]",
                     children: "+"
                   })]
                 })]
               })]
             })]
-          }), i("div", {
-            className: "relative w-full h-[280px] lg:h-[300px] overflow-hidden rounded-xl border border-[hsl(var(--border)/0.6)] bg-[hsl(var(--card)/0.5)]",
-            children: Ae.length === 0 ? i("div", {
-              className: "pointer-events-none absolute inset-0 flex items-center justify-center text-center",
-              children: i("div", {
-                className: "max-w-[16rem] text-xs text-[hsl(var(--muted-foreground))]",
-                children: u.noTrades
-              })
-            }) : f("svg", {
-              viewBox: `0 0 ${294 * Q} 272`,
-              className: "h-full w-full",
-              style: {
-                minWidth: "100%"
-              },
-              children: [[0, 1, 2, 3, 4].map(a => {
-                let h = 20 + a * 50;
-                return f("g", {
-                  children: [i("line", {
-                    x1: 40,
-                    x2: 294 * Q - 10,
-                    y1: h,
-                    y2: h,
-                    stroke: a === 2 ? "#2C3546" : "#1B2230",
-                    strokeDasharray: a === 2 ? "0" : "4 4",
-                    strokeWidth: 0.8
-                  }), i("text", {
-                    x: 4,
-                    y: h + 3,
-                    fontFamily: "JetBrains Mono",
-                    fontSize: "10",
-                    fill: "#5B6474",
-                    className: "num",
-                    children: Math.round(ne.max - (h - 20) / 200 * (ne.max - ne.min))
-                  })]
-                }, a);
-              }), Ae.map((a, h) => {
-                let w = 50 + h * ((294 * Q - 60) / Math.max(1, Ae.length)),
-                  L = Math.max(3, Math.min(8, (294 * Q - 60) / Ae.length * 0.6)),
-                  B = 20 + (1 - (a.open - ne.min) / (ne.max - ne.min || 1)) * 200,
-                  K = 20 + (1 - (a.close - ne.min) / (ne.max - ne.min || 1)) * 200,
-                  Jr = 20 + (1 - (a.high - ne.min) / (ne.max - ne.min || 1)) * 200,
-                  ca = 20 + (1 - (a.low - ne.min) / (ne.max - ne.min || 1)) * 200,
-                  te = a.close >= a.open ? "#00C853" : "#FF3B30",
-                  he = Math.min(B, K),
-                  yn = Math.max(2, Math.abs(B - K));
-                if (k === "line") return null;
-                return f("g", {
-                  className: "cursor-pointer hover:opacity-80",
-                  onClick: () => ta(a),
-                  children: [i("line", {
-                    x1: w + L / 2,
-                    x2: w + L / 2,
-                    y1: Jr,
-                    y2: ca,
-                    stroke: te,
-                    strokeWidth: 1.2
-                  }), i("rect", {
-                    x: w,
-                    y: he,
-                    width: L,
-                    height: yn,
-                    rx: 1.5,
-                    fill: te
-                  }), i("rect", {
-                    x: w,
-                    y: 240,
-                    width: L,
-                    height: a.volume / 100 * 30,
-                    fill: te,
-                    opacity: 0.2
-                  }), i("title", {
-                    children: `${a.date}
-O:${a.open.toFixed(0)} H:${a.high.toFixed(0)} L:${a.low.toFixed(0)} C:${a.close.toFixed(0)}
-Trades:${a.trades.length}`
-                  })]
-                }, a.key);
-              }), k === "line" && i("path", {
-                d: Ae.map((a, h) => {
-                  let w = 50 + h * ((294 * Q - 60) / Math.max(1, Ae.length)),
-                    L = 20 + (1 - (a.close - ne.min) / (ne.max - ne.min || 1)) * 200;
-                  return `${h === 0 ? "M" : "L"} ${w} ${L}`;
-                }).join(" "),
-                fill: "none",
-                stroke: "#00C853",
-                strokeWidth: 1.6
-              }), Ae.filter((a, h) => h % Math.ceil(Ae.length / 6) === 0).map((a, h, w) => {
-                let B = 50 + Ae.indexOf(a) * ((294 * Q - 60) / Math.max(1, Ae.length));
-                return i("text", {
-                  x: B,
-                  y: 268,
-                  fontFamily: "JetBrains Mono",
-                  fontSize: "8",
-                  fill: "#5B6474",
-                  children: a.date.slice(5)
-                }, a.key);
-              })]
-            })
+          }), i(MhsFlowChart, { data: Ae, mode: k, zoom: Q, ma7: T, ma30: O, inspect: ta, empty: u.noTrades, lang: l
           }), f("div", {
             className: "mt-2 flex items-center gap-4 border-t border-border pt-3 text-[10px] uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]",
             children: [f("span", {
@@ -8831,24 +8773,25 @@ Trades:${a.trades.length}`
             }, w));
           })()
         })]
-      }), e === "settings" && f("div", {
-        className: "space-y-6",
-        children: [f("div", {
+      }), f("div", { className: "space-y-6", style: { display: e === "settings" ? "block" : "none" }, children: [f("div", {
           className: "space-y-2",
           children: [i("div", {
             className: "text-[10px] uppercase tracking-[0.26em] text-[hsl(var(--primary))]",
-            children: u.backupData
+            children: l === "bn" ? "আপনার অ্যাপ, আপনার পছন্দ" : l === "ar" ? "تفضيلاتك" : "Your app, your preferences"
           }), i("h1", {
             className: "mt-1 text-2xl sm:text-3xl font-semibold tracking-tight",
             style: {
               fontFamily: "var(--font-display)"
             },
-            children: u.backupTitle
+            children: l === "bn" ? "সেটিংস" : l === "ar" ? "الإعدادات" : "Settings"
           }), f("div", {
             className: "text-xs text-[hsl(var(--muted-foreground))] mt-1",
-            children: [u.backupSubtitle, " • Exact HH:MM:SS everywhere • Serverless"]
+            children: l === "bn" ? "ভাষা, থিম, লোকেশন, নোটিফিকেশন ও ব্যাকআপ নিয়ন্ত্রণ করুন।" : l === "ar" ? "إدارة اللغة والمظهر والموقع والإشعارات والنسخ الاحتياطي." : "Manage language, appearance, location, notifications and backups."
           })]
-        }), f("div", {
+        }), i(MhsPreferences, { lang: l, setLanguage: r })] }), e === "settings" && f("div", {
+        className: "space-y-6",
+        children: [
+        i("mhs-prayer", { lang: l }), i("mhs-remind", { lang: l }), f("div", {
           className: "panel p-6 sm:p-8 lg:p-8 space-y-6",
           children: [f("div", {
             className: "flex items-start gap-5",
@@ -8972,10 +8915,6 @@ Trades:${a.trades.length}`
               children: ["muhasabah_export_", new Date().toISOString().slice(0, 10), ".json"]
             }), " • Import replaces current data after confirmation • No cloud login required"]
           })]
-        }), i("mhs-prayer", {
-          lang: l
-        }), i("mhs-remind", {
-          lang: l
         }), i("mhs-backup", {
           lang: l
         }), f("div", {
@@ -9007,7 +8946,7 @@ Trades:${a.trades.length}`
         icon: "≡"
       }, {
         k: "settings",
-        label: u.backup,
+        label: l === "bn" ? "সেটিংস" : l === "ar" ? "الإعدادات" : "Settings",
         icon: "⚙"
       }].map(a => f("button", {
         onClick: () => n(a.k),
