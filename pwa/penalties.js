@@ -26,5 +26,35 @@
     }
     return result;
   }
-  root.MHSPenalties = {reconcile};
+  /* One-shot tasks: penalised once per todo when its deadline passes undone.
+   * todoCheckIn / todoPenalty / excuse entries (by todoId) mark the todo as settled. */
+  function reconcileTodos(todos, ledger, now, since, deadline) {
+    const settled = new Set();
+    for (const entry of ledger || []) {
+      if (!entry || !entry.todoId) continue;
+      if (['todoCheckIn', 'todoPenalty', 'excuse'].includes(entry.type)) settled.add(entry.todoId);
+    }
+    const result = [];
+    for (const todo of todos || []) {
+      if (!todo || todo.status === 'done' || todo.status === 'archived' || !Number(todo.penalty) || !todo.deadline) continue;
+      if (settled.has(todo.id)) continue;
+      const start = Math.max(Number(since) || 0, Number(todo.createdAt) || 0);
+      const end = deadline(todo, now);
+      if (!Number.isFinite(end) || end > now.getTime() || start > end) continue;
+      result.push({
+        id: 'pt' + todo.id,
+        ts: end + 1,
+        scheduledDay: end,
+        delta: -Math.abs(Number(todo.penalty) || 0),
+        reason: todo.title,
+        note: 'Todo • deadline missed',
+        type: 'todoPenalty',
+        todoId: todo.id,
+        audit: 'auto'
+      });
+      settled.add(todo.id);
+    }
+    return result;
+  }
+  root.MHSPenalties = {reconcile, reconcileTodos};
 })(typeof window === 'undefined' ? globalThis : window);

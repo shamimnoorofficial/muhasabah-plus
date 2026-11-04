@@ -7043,6 +7043,7 @@ function na() {
     u = xs[l] || xs.en,
     [o, c] = U.useState(ea),
     [s, d] = U.useState(Fv),
+    [tw, twS] = U.useState(Array.isArray(S0.todos) ? S0.todos.filter(x => x && x.id) : []),
     [m, g] = U.useState("active"),
     [y, E] = U.useState("all"),
     [P, C] = U.useState(""),
@@ -7092,6 +7093,15 @@ function na() {
       note: "",
       type: "manualReward"
     }),
+    [twM, twMf] = U.useState(!1),
+    [twF, twFs] = U.useState({
+      title: "",
+      points: 10,
+      penalty: 5,
+      deadline: "23:59:00",
+      icon: "📌"
+    }),
+    [twE, twEw] = U.useState(null),
     [Pu, ut] = U.useState(!1),
     [Zt, Cu] = U.useState(null),
     [pn, zu] = U.useState(null),
@@ -7110,9 +7120,9 @@ function na() {
         behavior: "auto"
       });
     };
-  const modalOpen = !!(hu || ku || wu || Oe || Dn || Zt || pn || Eu);
+  const modalOpen = !!(hu || ku || wu || Oe || Dn || Zt || pn || Eu || twM);
   const navRef = U.useRef({});
-  navRef.current = { modalOpen, close: () => { gu(false); Su(false); Kr(false); ta(null); Fr(null); Cu(null); zu(null); nA(false); } };
+  navRef.current = { modalOpen, close: () => { gu(false); Su(false); Kr(false); ta(null); Fr(null); Cu(null); zu(null); twM(false); nA(false); } };
   U.useEffect(() => {
     history.replaceState({mhs:true, tab:e}, "");
     const back = ev => {
@@ -7146,13 +7156,14 @@ function na() {
     try {
       let d = {
         habits: o,
+        todos: tw,
         ledger: s,
         lang: t,
         onboarded: !Eu
       };
       window.MHS ? window.MHS.save(d) : localStorage.setItem(KEY, JSON.stringify(d));
     } catch (e) {}
-  }, [o, s, t, Eu]), U.useEffect(() => {
+  }, [o, tw, s, t, Eu]), U.useEffect(() => {
     tA(new Set(s.filter(x => x.type === "checkIn" && new Date(x.ts).toDateString() === dn.toDateString()).map(x => x.habitId)));
   }, [s, dn.toDateString()]), U.useEffect(() => {
     let run = () => {
@@ -7182,6 +7193,16 @@ function na() {
         let tot = add.reduce((q, a) => q + a.delta, 0);
         vn((l === "ar" ? "خصم تلقائي: " : l === "bn" ? "স্বয়ংক্রিয় কর্তন: " : "Auto-penalty: ") + tot + (add.length === 1 ? " • " + add[0].reason : " • " + add.length + (l === "ar" ? " مهام فائتة" : " missed")));
       }
+      let tad = window.MHSPenalties.reconcileTodos(tw, s, now, since, mhsDl);
+      if (tad.length) {
+        d(x => {
+          let cur = x || [];
+          let n = window.MHSPenalties.reconcileTodos(tw, cur, now, since, mhsDl);
+          return n.length ? [...n, ...cur].sort((a, b) => b.ts - a.ts) : cur;
+        });
+        let ttot = tad.reduce((q, a) => q + a.delta, 0);
+        vn((l === "ar" ? "خصم تلقائي: " : l === "bn" ? "স্বয়ংক্রিয় কর্তন: " : "Auto-penalty: ") + ttot + (tad.length === 1 ? " • " + tad[0].reason : " • " + tad.length + (l === "ar" ? " مهام فائتة" : l === "bn" ? " টুডু বাকি ছিল" : " todos missed")));
+      }
     };
     run();
     let iv = setInterval(() => { if (!document.hidden) run(); }, 15000);
@@ -7193,7 +7214,7 @@ function na() {
       clearInterval(iv);
       document.removeEventListener("visibilitychange", onVis);
     };
-  }, [o, s]), U.useEffect(() => {
+  }, [o, tw, s]), U.useEffect(() => {
     let a = () => oA(!0);
     return window.addEventListener("click", a, {
       once: !0
@@ -7353,7 +7374,7 @@ function na() {
       }), Tu(`${a.delta}`, "#FF3B30");
     },
     Ms = U.useMemo(() => new Set(s.filter(x => x.type === "autoPenalty" && new Date(x.ts).toDateString() === dn.toDateString()).map(x => x.habitId)), [s, dn.toDateString()]),
-    xD = U.useMemo(() => s.some(x => x.type === "excuse" && !x.habitId && new Date(x.ts).toDateString() === dn.toDateString()), [s, dn.toDateString()]),
+    xD = U.useMemo(() => s.some(x => x.type === "excuse" && !x.habitId && !x.todoId && new Date(x.ts).toDateString() === dn.toDateString()), [s, dn.toDateString()]),
     xS = U.useMemo(() => new Set(s.filter(x => x.type === "excuse" && x.habitId && new Date(x.ts).toDateString() === dn.toDateString()).map(x => x.habitId)), [s, dn.toDateString()]),
     isX = id => xD || xS.has(id),
     xU = e => {
@@ -7368,13 +7389,50 @@ function na() {
       } : h));
       vn((l === "ar" ? "تم استرداد النقاط: +" : "Penalty undone • +") + Math.abs(Number(e.delta) || 0));
     },
+    twCheck = a => {
+      if (!a || a.status === "done") return;
+      let pts = Math.abs(Number(a.points) || 0);
+      twS(w => w.map(x => x.id === a.id ? {
+        ...x,
+        status: "done",
+        doneAt: Date.now()
+      } : x));
+      let h = {
+        id: "l" + Date.now(),
+        ts: Date.now(),
+        delta: pts,
+        reason: a.title,
+        note: `Todo • ${Mn(new Date())} • On-time`,
+        type: "todoCheckIn",
+        todoId: a.id
+      };
+      d(w => [h, ...w]), Tu(`+${pts}`, "#00C853");
+    },
+    twDel = a => {
+      if (!a) return;
+      twS(w => w.filter(x => x.id !== a.id));
+      vn(l === "ar" ? "تم حذف المهمة" : l === "bn" ? "টুডু মুছে ফেলা হয়েছে" : "Todo deleted");
+    },
+    twU = e => {
+      if (!e || e.type !== "todoPenalty") return;
+      d(w => w.map(h => h.id === e.id ? {
+        ...h,
+        type: "excuse",
+        origDelta: h.delta,
+        delta: 0,
+        note: "Penalty refunded • excused",
+        audit: "excused",
+        todoId: h.todoId
+      } : h));
+      vn((l === "ar" ? "تم استرداد نقاط المهمة: +" : l === "bn" ? "টুডু কর্তন বাতিল: +" : "Todo penalty undone • +") + Math.abs(Number(e.delta) || 0));
+    },
     xT = () => {
       let td = dn.toDateString(),
         sd = x => new Date(x.ts).toDateString() === td;
       if (xD) {
         d(w => w.filter(x => !(x.type === "excuse" && !x.habitId && sd(x))).map(x => x.exDay && x.type === "excuse" && sd(x) ? {
           ...x,
-          type: "autoPenalty",
+          type: x.todoId ? "todoPenalty" : "autoPenalty",
           delta: Number(x.origDelta) || 0,
           note: "Auto-penalty • deadline missed",
           audit: "auto",
@@ -7392,7 +7450,7 @@ function na() {
           type: "excuse",
           habitId: null,
           audit: "excused"
-        }, ...w.map(x => x.type === "autoPenalty" && sd(x) ? {
+        }, ...w.map(x => (x.type === "autoPenalty" || x.type === "todoPenalty") && sd(x) ? {
           ...x,
           type: "excuse",
           origDelta: x.delta,
@@ -7414,6 +7472,7 @@ function na() {
       let a = `muhasabah_export_${new Date().toISOString().slice(0, 10)}.json`,
         h = JSON.stringify({
           habits: o,
+          todos: tw,
           ledger: s,
           exportedAt: new Date().toISOString()
         }, null, 2),
@@ -8207,6 +8266,122 @@ Trades:${a.trades.length}`
           })
         }), f("div", {
           className: "panel p-5 sm:p-6 mt-6",
+          children: [f("div", {
+            className: "flex items-center justify-between gap-3 mb-3",
+            children: [f("h3", {
+              className: "text-sm font-semibold",
+              style: {
+                fontFamily: "var(--font-display)"
+              },
+              children: l === "ar" ? "📋 قائمة المهام" : "📋 Todo List"
+            }), i("button", {
+              type: "button",
+              onClick: () => {
+                twEw(null), twFs({
+                  title: "",
+                  points: 10,
+                  penalty: 5,
+                  deadline: "23:59:00",
+                  icon: "📌"
+                }), twMf(!0);
+              },
+              className: "h-9 rounded-xl bg-[hsl(var(--primary))] px-4 text-xs font-medium text-[hsl(var(--primary-foreground))] active:scale-[0.97] flex items-center gap-1.5",
+              children: l === "ar" ? "＋ مهمة جديدة" : "＋ New Todo"
+            })]
+          }), !tw.length ? i("div", {
+            className: "text-xs text-[hsl(var(--muted-foreground))] py-3",
+            children: l === "ar" ? "لا مهام بعد — أضف أول مهمة اليوم" : "No todos yet — add your first task"
+          }) : i("div", {
+            className: "space-y-2",
+            children: [...tw].sort((x, y) => (x.status === "done" ? 1 : 0) - (y.status === "done" ? 1 : 0)).map(a => {
+              let done = a.status === "done",
+                dl = a.deadline ? mhsDl(a, dn) : 1 / 0,
+                past = !done && Date.now() >= dl,
+                na = !done && !past && Number(a.createdAt) > dl,
+                pen = !done && s.find(x => x.type === "todoPenalty" && x.todoId === a.id && new Date(x.ts).toDateString() === dn.toDateString()),
+                exd = !done && s.some(x => x.type === "excuse" && x.todoId === a.id && new Date(x.ts).toDateString() === dn.toDateString()),
+                ms = !!pen && !exd;
+              return f("div", {
+                className: `mhs-todo flex items-center justify-between gap-3 rounded-xl border p-3.5 transition-all ${done ? "border-[hsl(var(--primary)/0.35)] bg-[hsl(var(--primary)/0.06)]" : ms ? "is-missed" : exd ? "is-excused" : "border-border hover:border-[hsl(var(--primary)/0.2)]"}`,
+                children: [f("div", {
+                  className: "flex items-center gap-3.5 flex-1 min-w-0",
+                  children: [i("button", {
+                    type: "button",
+                    onClick: () => twCheck(a),
+                    disabled: done || ms || exd,
+                    "aria-label": done ? "Completed" : ms ? "Missed" : exd ? "Excused" : "Mark done",
+                    className: `h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 rounded-xl border-2 flex items-center justify-center transition-all active:scale-[0.97] ${done ? "bg-[hsl(var(--primary))] border-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]" : "border-border hover:border-[hsl(var(--primary)/0.4)]"}`,
+                    children: done ? "✓" : ms ? "✕" : na ? "🆕" : exd ? "🕊" : ""
+                  }), f("div", {
+                    className: "min-w-0",
+                    children: [f("div", {
+                      className: "font-medium text-sm mhs-ttl" + (done ? " line-through opacity-60" : ""),
+                      children: [a.icon, " ", a.title]
+                    }), f("div", {
+                      className: "flex flex-wrap items-center gap-2 mt-2",
+                      children: [i("span", {
+                        className: "num text-[11px] text-[hsl(var(--muted-foreground))]",
+                        children: ["+", a.points]
+                      }), a.deadline && i("span", {
+                        className: "num text-[11px] font-mono text-[hsl(var(--muted-foreground))]",
+                        children: ["⏱ ", String(a.deadline).slice(0, 5)]
+                      }), done ? i("span", {
+                        className: "mhs-state ok",
+                        children: (l === "ar" ? "✓ مكتمل • +" : "✓ Done • +") + a.points
+                      }) : ms ? f("span", {
+                        className: "mhs-xrow",
+                        children: [i("span", {
+                          className: "mhs-state bad",
+                          children: (l === "ar" ? "✕ فائت • −" : "✕ Missed • −") + Math.abs(Number(pen.delta) || 0) + (l === "ar" ? " خُصمت" : " deducted")
+                        }), i("button", {
+                          type: "button",
+                          className: "mhs-undo",
+                          onClick: () => twU(pen),
+                          children: l === "ar" ? "↺ تراجع" : "↺ Undo"
+                        })]
+                      }) : exd ? i("span", {
+                        className: "mhs-state ex",
+                        children: l === "ar" ? "🕊 معذور • بلا خصم" : "🕊 Excused • no penalty"
+                      }) : na ? i("span", {
+                        className: "mhs-state ex",
+                        children: l === "ar" ? "🆕 أُضيفت بعد الموعد • تبدأ غداً" : "🆕 Added after today's deadline • starts tomorrow"
+                      }) : past ? i("span", {
+                        className: "mhs-state bad",
+                        children: l === "ar" ? "✕ انتهى الوقت" : "✕ Deadline passed"
+                      }) : a.deadline && i(js, {
+                        deadline: String(a.deadline).slice(0, 8)
+                      })]
+                    })]
+                  })]
+                }), f("div", {
+                  className: "flex items-center gap-1.5 shrink-0",
+                  children: [i("button", {
+                    type: "button",
+                    onClick: () => {
+                      twEw(a), twFs({
+                        title: a.title,
+                        points: a.points,
+                        penalty: a.penalty,
+                        deadline: a.deadline || "23:59:00",
+                        icon: a.icon || "📌"
+                      }), twMf(!0);
+                    },
+                    "aria-label": "Edit todo",
+                    className: "h-9 w-9 rounded-lg border border-border flex items-center justify-center text-xs",
+                    children: "✎"
+                  }), i("button", {
+                    type: "button",
+                    onClick: () => twDel(a),
+                    "aria-label": "Delete todo",
+                    className: "h-9 w-9 rounded-lg border border-[#FF3B30]/30 text-[#FF3B30] flex items-center justify-center text-xs",
+                    children: "🗑"
+                  })]
+                })]
+              }, a.id);
+            })
+          })]
+        }), f("div", {
+          className: "panel p-5 sm:p-6 mt-6",
           children: [f("h3", {
             className: "text-sm font-semibold mb-3",
             style: {
@@ -8576,7 +8751,7 @@ Trades:${a.trades.length}`
                       children: [B.delta > 0 ? "+" : "", B.delta]
                     }), i("span", {
                       className: "rounded-full border border-border px-2.5 py-1 text-[10px]",
-                      children: B.type
+                      children: B.type === "todoCheckIn" ? l === "ar" ? "إنجاز مهمة" : "Todo Done" : B.type === "todoPenalty" ? l === "ar" ? "خصم مهمة" : "Todo Missed" : B.type
                     }), B.audit && i("span", {
                       className: "rounded-full bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] text-amber-300",
                       children: B.audit
@@ -9226,6 +9401,122 @@ Trades:${a.trades.length}`
           })]
         })]
       })
+    }), twM && i("div", {
+      className: "fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur p-4 kb-modal-root",
+      children: f("div", {
+        className: "panel w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 space-y-4 kb-modal-panel",
+        children: [f("div", {
+          className: "flex items-center justify-between",
+          children: [f("h3", {
+            className: "font-semibold",
+            children: [twE ? l === "ar" ? "تعديل مهمة • قائمة المهام" : "Edit Todo • Todo List" : l === "ar" ? "مهمة جديدة • قائمة المهام" : "New Todo • Todo List"]
+          }), i("button", {
+            onClick: () => twMf(!1),
+            className: "h-8 w-8 rounded-lg border border-border flex items-center justify-center",
+            children: "✕"
+          })]
+        }), f("div", {
+          className: "space-y-3",
+          children: [f("div", {
+            children: [i("label", {
+              className: "text-[11px] uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]",
+              children: l === "ar" ? "العنوان *" : "Title *"
+            }), i("input", {
+              value: twF.title || "",
+              onChange: a => twFs({
+                ...twF,
+                title: a.target.value
+              }),
+              className: "mt-1 w-full rounded-xl border border-border bg-[hsl(var(--card)/0.8)] px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-[hsl(var(--primary)/0.4)]",
+              placeholder: l === "ar" ? "مثال: تسديد الفواتير • مكالمة…" : "e.g. Pay bills • Call Ali • Juz memorised"
+            })]
+          }), f("div", {
+            className: "grid grid-cols-2 gap-3",
+            children: [f("div", {
+              children: [i("label", {
+                className: "text-[11px] uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]",
+                children: l === "ar" ? "نقاط المكافأة" : "Reward Points"
+              }), i("input", {
+                type: "number",
+                min: "0",
+                value: twF.points,
+                onChange: a => twFs({
+                  ...twF,
+                  points: Math.max(0, Number(a.target.value) || 0)
+                }),
+                className: "mt-1 w-full rounded-xl border border-border bg-[hsl(var(--card)/0.8)] px-4 py-2.5 text-sm num"
+              })]
+            }), f("div", {
+              children: [i("label", {
+                className: "text-[11px] uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]",
+                children: l === "ar" ? "نقاط الخصم" : "Penalty Points"
+              }), i("input", {
+                type: "number",
+                min: "0",
+                value: twF.penalty,
+                onChange: a => twFs({
+                  ...twF,
+                  penalty: Math.max(0, Number(a.target.value) || 0)
+                }),
+                className: "mt-1 w-full rounded-xl border border-border bg-[hsl(var(--card)/0.8)] px-4 py-2.5 text-sm num"
+              })]
+            })]
+          }), f("div", {
+            className: "grid grid-cols-2 gap-3",
+            children: [f("div", {
+              children: [i("label", {
+                className: "text-[11px] uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]",
+                children: l === "ar" ? "الموعد النهائي" : "Deadline"
+              }), i("input", {
+                type: "time",
+                step: "60",
+                value: String(twF.deadline || "").slice(0, 5),
+                onChange: a => twFs({
+                  ...twF,
+                  deadline: a.target.value ? a.target.value + ":00" : ""
+                }),
+                className: "mt-1 w-full rounded-xl border border-border bg-[hsl(var(--card)/0.8)] px-4 py-2.5 text-sm num"
+              })]
+            }), f("div", {
+              children: [i("label", {
+                className: "text-[11px] uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]",
+                children: l === "ar" ? "الأيقونة" : "Icon"
+              }), i("input", {
+                value: twF.icon || "",
+                maxLength: "4",
+                onChange: a => twFs({
+                  ...twF,
+                  icon: [...a.target.value].slice(-2).join("") || "📌"
+                }),
+                className: "mt-1 w-full rounded-xl border border-border bg-[hsl(var(--card)/0.8)] px-4 py-2.5 text-sm text-center"
+              })]
+            })]
+          }), i("div", {
+            className: "text-[11px] text-[hsl(var(--muted-foreground))] leading-relaxed border-t border-border pt-3",
+            children: l === "ar" ? "أكمل قبل الموعد النهائي لتكسب المكافأة. إذا فات الموعد دون إتمام، يُخصم الخصم تلقائياً مرة واحدة." : "Complete before the deadline to earn the reward. If the deadline passes without Done, the penalty is deducted automatically once."
+          }), i("button", {
+            onClick: () => {
+              if (twF.title.trim().length < 2) return;
+              let a = {
+                id: twE ? twE.id : "t" + Date.now() + Math.random(),
+                title: twF.title.trim(),
+                points: Math.max(0, Number(twF.points) || 0),
+                penalty: Math.max(0, Number(twF.penalty) || 0),
+                deadline: twF.deadline || "",
+                icon: twF.icon || "📌",
+                status: twE && twE.status === "done" ? "done" : "active",
+                doneAt: twE && twE.doneAt ? twE.doneAt : null,
+                createdAt: twE && twE.createdAt ? twE.createdAt : Date.now()
+              };
+              if (twE) twS(w => w.map(x => x.id === twE.id ? a : x));else twS(w => [a, ...w]);
+              twMf(!1), vn(l === "ar" ? "تم حفظ المهمة" : l === "bn" ? "টুডু সংরক্ষিত হয়েছে" : "Todo saved");
+            },
+            disabled: twF.title.trim().length < 2,
+            className: "h-11 w-full rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-sm font-medium disabled:opacity-40 active:scale-[0.97]",
+            children: [twE ? l === "ar" ? "حفظ التغييرات" : "Save Changes" : l === "ar" ? "إنشاء المهمة" : "Create Todo"]
+          })]
+        })]
+      })
     }), Oe && i("div", {
       className: "fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur p-4",
       children: f("div", {
@@ -9583,7 +9874,7 @@ Trades:${a.trades.length}`
             children: ["File: ", i("span", {
               className: "num",
               children: pn.fileName
-            }), " • ", pn.data.habits?.length || 0, " habits • ", pn.data.ledger?.length || 0, " entries"]
+            }), " • ", pn.data.todos?.length || 0, " todos • ", pn.data.habits?.length || 0, " habits • ", pn.data.ledger?.length || 0, " entries"]
           })]
         }), f("div", {
           className: "flex gap-2 pt-2",
@@ -9595,6 +9886,7 @@ Trades:${a.trades.length}`
             onClick: () => {
               let a = pn.data;
               if (a.habits) c(a.habits);
+              if (a.todos) twS(Array.isArray(a.todos) ? a.todos.filter(x => x && x.id) : []);
               if (a.ledger) d(a.ledger);
               zu(null), vn(`Imported ${pn.fileName}`), He(!0), setTimeout(() => He(!1), 1000);
             },
