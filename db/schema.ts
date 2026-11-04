@@ -6,3 +6,9 @@ export const journalEntries = pgTable('journal_entries', {
   content: text('content').notNull().default(''),
   updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
 }, table => [primaryKey({ columns: [table.owner, table.day] })]);
+
+export const appPreferences = pgTable('app_preferences', {
+  owner: text('owner').primaryKey(),
+  language: text('language').notNull().default('en'),
+  theme: text('theme').notNull().default('dark'),
+});
