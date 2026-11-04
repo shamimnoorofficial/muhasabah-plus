@@ -1,4 +1,4 @@
-import { pgTable, text, bigint, primaryKey } from 'drizzle-orm/pg-core';
+import { pgTable, text, bigint, primaryKey, jsonb } from 'drizzle-orm/pg-core';
 
 export const journalEntries = pgTable('journal_entries', {
   owner: text('owner').notNull(),
@@ -11,4 +11,5 @@ export const appPreferences = pgTable('app_preferences', {
   owner: text('owner').primaryKey(),
   language: text('language').notNull().default('en'),
   theme: text('theme').notNull().default('dark'),
+  journalSettings: jsonb('journal_settings'),
 });
