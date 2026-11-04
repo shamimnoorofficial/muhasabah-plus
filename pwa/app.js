@@ -89,6 +89,8 @@
       habits: obj.habits || [],
       todos: obj.todos || [],
       ledger: obj.ledger || [],
+      journal: obj.journal || {},
+      journalReminder: !!obj.journalReminder,
       lang: obj.lang,
       exportedAt: new Date().toISOString()
     }, null, 2);

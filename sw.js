@@ -1,7 +1,7 @@
 /* Muhasabah service worker — full offline support.
  * Bump VERSION whenever app files change so installed apps update automatically.
  */
-const VERSION = "2026-11-04.14";
+const VERSION = "2026-11-04.15";
 const CORE = "mhs-core-" + VERSION;
 const RUNTIME = "mhs-runtime";
 const PRECACHE = [
@@ -20,6 +20,7 @@ const PRECACHE = [
   "/pwa/onboard.js",
   "/pwa/store.js",
   "/pwa/app.js",
+  "/pwa/journal.js",
   "/pwa/install.js",
   "/pwa/remind.js",
   "/pwa/prayer.js",
