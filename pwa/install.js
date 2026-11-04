@@ -71,8 +71,8 @@
       || window.navigator.standalone === true;
   }
   function dismissed() { try { return sessionStorage.getItem(KEY) === "1"; } catch (e) { return false; } }
-  function show() { if (!bar || isStandalone() || dismissed() || installed) return; bar.classList.add("show"); }
-  function hide() { if (bar) bar.classList.remove("show"); }
+  function show() { if (!bar || isStandalone() || dismissed() || installed) return; bar.hidden = false; bar.classList.add("show"); }
+  function hide() { if (bar) { bar.classList.remove("show"); bar.hidden = true; } }
 
   function gotPrompt(e) {
     deferred = e;
@@ -230,5 +230,9 @@
   window.MHSInstall = { show: show, isStandalone: isStandalone, guide: showGuide };
 
   if (deferred) show();
-  setTimeout(function () { if (!isStandalone() && !dismissed()) show(); }, 2500);
+  // Only pop the bar in automatically when the browser actually offers an
+  // install prompt — otherwise it just jolts the layout a few seconds after open.
+  setTimeout(function () {
+    if (!isStandalone() && !dismissed() && (deferred || window.__mhsBIP)) show();
+  }, 2500);
 })();
