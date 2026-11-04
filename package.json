@@ -17,6 +17,7 @@
   "scripts": {
     "test": "node tests/penalties.cjs",
     "test:ui": "playwright test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:startup": "node tests/startup.cjs"
   }
 }

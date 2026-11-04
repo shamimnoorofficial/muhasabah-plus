@@ -77,11 +77,5 @@
       ]
     }
   ],
-  "related_applications": [
-    {
-      "platform": "webapp",
-      "url": "https://muhasabah-pro.netlify.app/manifest.webmanifest"
-    }
-  ],
   "prefer_related_applications": false
 }
