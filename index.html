@@ -11,7 +11,7 @@
  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
  <meta name="apple-mobile-web-app-title" content="Muhasabah">
  <meta name="application-name" content="Muhasabah">
- <style>html,body{background:#0a0d14}body{color:#e5eee8;margin:0}#root{min-height:100dvh}#mhs-install-bar{display:none}#mhs-install-bar.show{display:flex}.mhs-loading{max-width:40rem;margin:12vh auto;padding:2rem;color:#e5eee8;font-family:Sora,Inter,system-ui,sans-serif;text-align:center}.mhs-loading img{border-radius:16px}</style>
+ <style>html,body{background:#0a0d14}body{color:#e5eee8;margin:0}#root{min-height:100dvh}#mhs-install-bar{display:none}#mhs-install-bar.show{display:flex}.mhs-loading{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;color:#e5eee8;font-family:Sora,Inter,system-ui,sans-serif;text-align:center}.mhs-loading img{border-radius:16px;animation:mhs-pulse 1.6s ease-in-out infinite}.mhs-loading p{font-size:1rem;color:#a7b9af;letter-spacing:.04em}@keyframes mhs-pulse{50%{opacity:.55;transform:scale(.97)}}</style>
  <link rel="manifest" href="/manifest.webmanifest">
  <link rel="preconnect" href="https://fonts.googleapis.com">
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="/pwa/refinements.css">
 </head>
 <body>
- <div id="root"><div class="mhs-loading" role="status"><img src="/icons/logo.webp" width="56" height="56" alt=""><p>Muhasabah · মুহাসাবা</p><div class="mhs-skeleton"></div><div class="mhs-skeleton"></div><span>Loading · লোড হচ্ছে…</span></div></div>
+ <div id="root"><div class="mhs-loading" role="status"><img src="/icons/logo.webp" width="64" height="64" alt=""><p>Muhasabah · মুহাসাবা</p></div></div>
  
  <script src="/pwa/penalties.js"></script>
  <script type="module" src="/assets/app.js"></script>
