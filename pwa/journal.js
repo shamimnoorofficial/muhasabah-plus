@@ -60,6 +60,24 @@
     return svg;
   }
   const CAL_ICON = 'M7 3v4m10-4v4M4 10h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Zm3 9h2m4 0h2m-8 3h2';
+  const PLUS_ICON = 'M12 5v14M5 12h14';
+  const todoLabel = () => ({ en: 'New Todo', bn: 'নতুন টুডু', ar: 'مهمة جديدة' }[lang()] || 'New Todo');
+  /* Floating "+" button: opens the Todo List composer (Today tab → New Todo). */
+  function openTodoComposer() {
+    try { document.dispatchEvent(new CustomEvent('mhs:new-todo')); } catch {}
+    const clickNewTodo = () => {
+      const hit = [...document.querySelectorAll('button')].find(b => /New Todo|নতুন টুডু|مهمة جديدة/.test(b.textContent || ''));
+      if (hit) { hit.click(); return true; }
+      return false;
+    };
+    if (clickNewTodo()) return;
+    try {
+      history.pushState({ mhs: true, tab: 'today' }, '', '?tab=today');
+      window.dispatchEvent(new PopStateEvent('popstate', { state: { mhs: true, tab: 'today' } }));
+    } catch {}
+    let tries = 0;
+    const timer = setInterval(() => { if (clickNewTodo() || ++tries > 25) clearInterval(timer); }, 200);
+  }
   function valid(data) {
     const out = {};
     if (!data || typeof data !== 'object' || Array.isArray(data)) return out;
@@ -292,8 +310,8 @@
   /* ---------- floating sticky button (Meta-AI style, every section) ---------- */
   function ensureFab() {
     if (document.querySelector('.mhs-journal-fab')) return;
-    const fab = button('', () => open(), { class: 'mhs-journal-fab', 'aria-label': t('openJournal') });
-    fab.append(icon(CAL_ICON));
+    const fab = button('', openTodoComposer, { class: 'mhs-journal-fab', 'aria-label': todoLabel(), title: todoLabel() });
+    fab.append(icon(PLUS_ICON));
     fab.append(el('span', '', { class: 'mhs-journal-fab-ring', 'aria-hidden': 'true' }));
     document.body.append(fab);
   }
@@ -339,7 +357,7 @@
     const promo = document.querySelector('.mhs-journal-promo');
     if (promo && promo.isConnected) drawPromo(promo);
     const fab = document.querySelector('.mhs-journal-fab');
-    if (fab) fab.setAttribute('aria-label', t('openJournal'));
+    if (fab) { fab.setAttribute('aria-label', todoLabel()); fab.setAttribute('title', todoLabel()); }
   }
 
   /* ---------- boot ---------- */
