@@ -7068,7 +7068,7 @@ function MhsFlowChart({ data, mode, zoom, ma7, ma30, inspect, empty, lang }) {
 }
 
 function MhsPreferences({ lang, setLanguage }) {
-  const [theme, setTheme] = U.useState('dark'), [status, setStatus] = U.useState('loading');
+  const [theme, setTheme] = U.useState(() => window.MHSTheme?.get() || 'dark'), [status, setStatus] = U.useState('loading');
   const [revision, retry] = U.useState(0);
   const latest = U.useRef({ lang, theme }); latest.current = { lang, theme };
   const text = lang === 'bn' ? { title: 'অ্যাপের পছন্দ', language: 'ভাষা', theme: 'থিম', dark: 'ডার্ক', light: 'লাইট', system: 'ডিভাইস অনুযায়ী', loading: 'সেটিংস লোড হচ্ছে…', saving: 'সংরক্ষণ হচ্ছে…', saved: 'সংরক্ষিত', error: 'সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।', retry: 'আবার চেষ্টা করুন' } : lang === 'ar' ? { title: 'تفضيلات التطبيق', language: 'اللغة', theme: 'المظهر', dark: 'داكن', light: 'فاتح', system: 'حسب الجهاز', loading: 'جارٍ التحميل…', saving: 'جارٍ الحفظ…', saved: 'تم الحفظ', error: 'تعذر الحفظ. أعد المحاولة.', retry: 'إعادة المحاولة' } : { title: 'App preferences', language: 'Language', theme: 'Theme', dark: 'Dark', light: 'Light', system: 'Use device setting', loading: 'Loading settings…', saving: 'Saving…', saved: 'Saved', error: 'Could not save. Please retry.', retry: 'Retry' };
@@ -7081,14 +7081,10 @@ function MhsPreferences({ lang, setLanguage }) {
     }).catch(() => { if (active) setStatus('loadError'); });
     return () => { active = false; };
   }, [revision]);
-  U.useEffect(() => {
-    const media = matchMedia('(prefers-color-scheme: light)');
-    const apply = () => { const light = theme === 'light' || theme === 'system' && media.matches; document.documentElement.dataset.theme = light ? 'light' : 'dark'; document.querySelector('meta[name="theme-color"]').content = light ? '#f3f7f4' : '#0a0d14'; };
-    apply(); media.addEventListener('change', apply);
-    return () => media.removeEventListener('change', apply);
-  }, [theme]);
+  U.useEffect(() => { window.MHSTheme?.set(theme); }, [theme]);
   // Keep the selected theme active after navigating away from Settings.
   const save = (language, value) => {
+    window.dispatchEvent(new Event('mhs:theme-edit'));
     setLanguage(language); setTheme(value); setStatus('saving');
     fetch('/.netlify/functions/preferences', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ language, theme: value }) })
       .then(res => { if (!res.ok) throw Error(); setStatus('saved'); }).catch(() => setStatus('error'));
@@ -7097,8 +7093,8 @@ function MhsPreferences({ lang, setLanguage }) {
   return f('section', { className: 'panel mhs-preferences', children: [
     i('h2', { children: text.title }),
     f('div', { className: 'mhs-preference-grid', children: [
-      f('label', { children: [text.language, i('select', { value: lang, disabled, onChange: ev => save(ev.target.value, theme), children: [['en','English'],['bn','বাংলা'],['ar','العربية']].map(([value,label]) => i('option', { value, children: label }, value)) })] }),
-      f('label', { children: [text.theme, i('select', { value: theme, disabled, onChange: ev => save(lang, ev.target.value), children: ['dark','light','system'].map(value => i('option', { value, children: text[value] }, value)) })] })
+      f('label', { children: [text.language, i('select', { 'aria-label': text.language, value: lang, disabled, onChange: ev => save(ev.target.value, theme), children: [['en','English'],['bn','বাংলা'],['ar','العربية']].map(([value,label]) => i('option', { value, children: label }, value)) })] }),
+      f('label', { children: [text.theme, i('select', { 'aria-label': text.theme, value: theme, disabled, onChange: ev => save(lang, ev.target.value), children: ['dark','light','system'].map(value => i('option', { value, children: text[value] }, value)) })] })
     ] }),
     i('p', { role: 'status', children: status === 'loadError' ? (lang === 'bn' ? 'সেটিংস লোড করা যায়নি। আবার চেষ্টা করুন।' : 'Could not load settings. Please retry.') : text[status] || '' }),
     ['error','loadError'].includes(status) && i('button', { type: 'button', onClick: () => status === 'loadError' ? (setStatus('loading'), retry(v => v + 1)) : save(latest.current.lang, latest.current.theme), children: text.retry })
@@ -7198,7 +7194,7 @@ function na() {
     };
   const modalOpen = !!(hu || ku || wu || Oe || Dn || Zt || pn || Eu || twM);
   const navRef = U.useRef({});
-  navRef.current = { modalOpen, close: () => { gu(false); Su(false); Kr(false); ta(null); Fr(null); Cu(null); zu(null); twM(false); nA(false); } };
+  navRef.current = { modalOpen, close: () => { gu(false); Su(false); Kr(false); ta(null); Fr(null); Cu(null); zu(null); twMf(false); nA(false); } };
   U.useEffect(() => {
     history.replaceState({mhs:true, tab:e}, "");
     const back = ev => {
@@ -7647,7 +7643,7 @@ function na() {
           })]
         }), i("div", {
           className: "text-[10px] text-[hsl(var(--muted-foreground)/0.7)]",
-          children: "v1.1.0 • Data on device"
+          children: "v1.2.0 • Data on device"
         })]
       })]
     }), f("header", {
@@ -8827,7 +8823,7 @@ function na() {
                 children: "Your data stays on your device. Export to backup, import to restore."
               }), i("div", {
                 className: "mt-1 text-[11px] text-[hsl(var(--muted-foreground)/0.7)]",
-                children: "Muhasabah v1.1.0 · Make Habit, Get Reward · Saved automatically on this device"
+                children: "Muhasabah v1.2.0 · Make Habit, Get Reward · Saved automatically on this device"
               })]
             })]
           }), f("div", {
@@ -8879,11 +8875,12 @@ function na() {
                 onChange: a => {
                   let h = a.target.files?.[0];
                   if (!h) return;
+                  if (h.size > 10000000) { vn(l === "bn" ? "ফাইলটি খুব বড় (সর্বোচ্চ ১০ MB)" : "File exceeds 10 MB"); a.target.value = ""; return; }
                   let w = new FileReader();
                   w.onload = () => {
                     try {
                       let L = JSON.parse(w.result);
-                      if (!L.habits && !L.ledger) {
+                      if (!L || typeof L !== 'object' || Array.isArray(L) || (!L.habits && !L.ledger && !L.journal) || ['habits','todos','ledger'].some(key => L[key] !== undefined && (!Array.isArray(L[key]) || L[key].some(item => !item || typeof item !== 'object' || typeof item.id !== 'string'))) || L.habits?.some(item => typeof item.title !== 'string' || !Array.isArray(item.repeat)) || L.todos?.some(item => typeof item.title !== 'string') || L.ledger?.some(item => !Number.isFinite(item.ts) || !Number.isFinite(item.delta)) || (L.journal !== undefined && (!L.journal || typeof L.journal !== 'object' || Array.isArray(L.journal)))) {
                         vn("Invalid file");
                         return;
                       }
@@ -8915,11 +8912,11 @@ function na() {
               children: ["muhasabah_export_", new Date().toISOString().slice(0, 10), ".json"]
             }), " • Import replaces current data after confirmation • No cloud login required"]
           })]
-        }), i("mhs-backup", {
+        }), i('section', {className:'panel mhs-preferences', children:f('div', {children:[i('h2',{children:l === 'bn' ? 'দিনলিপির পছন্দ' : l === 'ar' ? 'تفضيلات اليوميات' : 'Journal preferences'}), i('p',{children:l === 'bn' ? 'লেখার আকার, রিমাইন্ডার, দৈনিক লক্ষ্য ও আত্মপর্যালোচনার ধরন।' : l === 'ar' ? 'حجم النص والتذكيرات وأهداف الكتابة.' : 'Text size, reminders, writing goals and reflection prompts.'}), i('button',{type:'button',onClick:()=>window.MHSJournal?.openSettings(),children:l === 'bn' ? 'দিনলিপি কনফিগার করুন' : l === 'ar' ? 'إعداد اليوميات' : 'Configure journal'})]})}), i("mhs-backup", {
           lang: l
         }), f("div", {
           className: "text-[10px] text-[hsl(var(--muted-foreground)/0.7)]",
-          children: ["v1.1.0 • Saved on this device • ", i(LiveClock, {})]
+          children: ["v1.2.0 • Saved on this device • ", i(LiveClock, {})]
         })]
       })]
     }), i("nav", {
@@ -9835,7 +9832,7 @@ function na() {
               if (a.habits) c(a.habits);
               if (a.todos) twS(Array.isArray(a.todos) ? a.todos.filter(x => x && x.id) : []);
               if (a.ledger) d(a.ledger);
-              if (window.MHSJournal) window.MHSJournal.restore(a.journal || {}, !!a.journalReminder);
+              if (window.MHSJournal && a.journal !== undefined) window.MHSJournal.restore(a.journal, !!a.journalReminder);
               zu(null), vn(`Imported ${pn.fileName}`), He(!0), setTimeout(() => He(!1), 1000);
             },
             className: "h-11 flex-1 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-sm font-medium active:scale-[0.97]",

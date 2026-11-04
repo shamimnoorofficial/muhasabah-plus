@@ -35,10 +35,16 @@
   };
 
   /* ---------- storage / sync (data contract unchanged) ---------- */
-  let dialog, selected, month, entries = {}, reminder = false, dirty = new Set(), syncing = false, rerun = false, timer, status = 6, opener, loaded = false, view = 'calendar', quoteIdx = 0, focusWrite = false;
+  let settings = { fontSize: 'medium', weekStart: '0', reminderTime: '20:00', template: 'free', showLedger: true, goal: 200 }, settingsReady = false, settingsDirty = false, settingsSyncing = false, settingsRerun = false;
+  let dialog, selected, month, entries = {}, reminder = false, dirty = new Set(), syncing = false, rerun = false, timer, status = 'savedDevice', opener, loaded = false, view = 'calendar', quoteIdx = 0, focusWrite = false;
   const day = d => M.dayKey(d || new Date());
   const lang = () => (M.current() || {}).lang || 'en';
-  const t = k => (words[lang()] || words.en)[k] || words.en[k] || k;
+  const configWords = {
+    en: {settings:'Writing preferences',fontSize:'Text size',small:'Small',medium:'Medium',large:'Large',weekStart:'Week starts on',sunday:'Sunday',monday:'Monday',reminderTime:'Reminder time',template:'Writing prompts',free:'Free writing',guided:'Guided reflection',showLedger:'Show daily ledger',goal:'Daily word goal',export:'Export journal',settingsHelp:'Reminders appear while the app is open. Preferences are saved to your private server storage.',prompt:'Gratitude\n\nWhat went well?\n\nWhat can I improve?\n\nMy intention for tomorrow\n',usePrompt:'Insert reflection prompts',more:'Show more',retry:'Retry'},
+    bn: {settings:'লেখার পছন্দ',fontSize:'লেখার আকার',small:'ছোট',medium:'মাঝারি',large:'বড়',weekStart:'সপ্তাহের শুরু',sunday:'রবিবার',monday:'সোমবার',reminderTime:'মনে করানোর সময়',template:'লেখার ধরন',free:'মুক্ত লেখা',guided:'প্রশ্নভিত্তিক আত্মপর্যালোচনা',showLedger:'দিনের লেজার দেখান',goal:'দৈনিক শব্দের লক্ষ্য',export:'দিনলিপি এক্সপোর্ট',settingsHelp:'অ্যাপ খোলা থাকলে রিমাইন্ডার দেখা যায়। পছন্দগুলো ব্যক্তিগত সার্ভার স্টোরেজে সংরক্ষিত হয়।',prompt:'আজকের কৃতজ্ঞতা\n\nআজ কী ভালো হয়েছে?\n\nকী উন্নতি করতে পারি?\n\nআগামীকালের নিয়ত\n',usePrompt:'আত্মপর্যালোচনার প্রশ্ন যোগ করুন',more:'আরও দেখুন',retry:'আবার চেষ্টা করুন'},
+    ar: {settings:'تفضيلات الكتابة',fontSize:'حجم النص',small:'صغير',medium:'متوسط',large:'كبير',weekStart:'بداية الأسبوع',sunday:'الأحد',monday:'الاثنين',reminderTime:'وقت التذكير',template:'أسلوب الكتابة',free:'كتابة حرة',guided:'تأمل موجّه',showLedger:'عرض السجل اليومي',goal:'هدف الكلمات اليومي',export:'تصدير اليوميات',settingsHelp:'تظهر التذكيرات أثناء فتح التطبيق. تُحفظ التفضيلات في تخزين خاص بالخادم.',prompt:'الامتنان\n\nماذا أحسنت اليوم؟\n\nماذا يمكنني تحسينه؟\n\nنيتي للغد\n',usePrompt:'إضافة أسئلة التأمل',more:'عرض المزيد',retry:'أعد المحاولة'}
+  };
+  const t = k => (configWords[lang()] || configWords.en)[k] || (words[lang()] || words.en)[k] || words.en[k] || k;
   const locale = () => ({ bn: 'bn-BD', ar: 'ar', en: 'en-GB' }[lang()] || 'en-GB');
   const n = x => Number(x).toLocaleString(locale());
   const quote = () => { const q = quotes[lang()] || quotes.en; return q[quoteIdx % q.length]; };
@@ -82,11 +88,26 @@
     const out = {};
     if (!data || typeof data !== 'object' || Array.isArray(data)) return out;
     Object.entries(data).forEach(([date, entry]) => {
-      if (/^\d{4}-\d{2}-\d{2}$/.test(date) && !isNaN(new Date(date + 'T12:00:00').valueOf()) && entry && typeof entry.text === 'string' && entry.text.length <= 100000) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(date) && !isNaN(new Date(date + 'T12:00:00Z').valueOf()) && new Date(date + 'T12:00:00Z').toISOString().slice(0,10) === date && entry && typeof entry.text === 'string' && entry.text.length <= 100000) {
         out[date] = { text: entry.text, updatedAt: Number.isSafeInteger(entry.updatedAt) ? Math.min(Date.now(), entry.updatedAt) : Date.now() };
       }
     });
     return out;
+  }
+  async function syncSettings(save) {
+    if (save) settingsDirty = true;
+    if (settingsSyncing) { settingsRerun = true; return; }
+    settingsSyncing = true;
+    const sent = JSON.stringify(settings);
+    try {
+      const response = await fetch('/.netlify/functions/journal-settings', { method: settingsDirty ? 'PUT' : 'GET', headers: {'Content-Type':'application/json'}, body: settingsDirty ? JSON.stringify(settings) : undefined, signal: AbortSignal.timeout(15000) });
+      if (!response.ok) throw Error();
+      const value = await response.json();
+      if (JSON.stringify(settings) === sent) { if (value) settings = {...settings, ...value}; settingsDirty = false; }
+      settingsReady = true;
+      if (dialog?.open && view === 'settings') render();
+    } catch { const message = dialog?.querySelector('[data-config-status]'); if (message) message.textContent = t('syncFail'); }
+    finally { settingsSyncing = false; if (settingsRerun) { settingsRerun = false; syncSettings(); } }
   }
   function init() {
     if (loaded) return;
@@ -97,15 +118,16 @@
   function setCounts(scope, text) {
     const w = countWords(text), m = readMins(text);
     scope.querySelectorAll('[data-words]').forEach(x => x.textContent = n(w) + ' ' + t('words'));
+    scope.querySelectorAll('[data-goal]').forEach(x => { x.max = settings.goal; x.value = Math.min(w, settings.goal); x.setAttribute('aria-label', t('goal') + ': ' + w + '/' + settings.goal); });
     scope.querySelectorAll('[data-read]').forEach(x => x.textContent = m ? n(m) + ' ' + t('minRead') : '');
   }
   async function cache() {
-    try { await M.saveJournal(entries, reminder); setStatus(navigator.onLine ? 6 : 8); return true; }
-    catch { setStatus(22); return false; }
+    try { await M.saveJournal(entries, reminder); setStatus(navigator.onLine ? 'savedDevice' : 'offline'); return true; }
+    catch { setStatus('cacheFail'); return false; }
   }
   async function sync() {
     init();
-    if (!navigator.onLine) { setStatus(8); return; }
+    if (!navigator.onLine) { setStatus('offline'); return; }
     if (syncing) { rerun = true; return; }
     syncing = true;
     const batch = [...dirty].map(d => ({ day: d, ...entries[d] }));
@@ -121,14 +143,14 @@
       if (!Array.isArray(rows)) throw Error('sync');
       batch.forEach(e => { if (entries[e.day]?.updatedAt === e.updatedAt) dirty.delete(e.day); });
       rows.forEach(e => { if (!dirty.has(e.day) && (!entries[e.day] || e.updatedAt >= entries[e.day].updatedAt)) entries[e.day] = { text: e.text, updatedAt: e.updatedAt }; });
-      if (await cache()) setStatus(dirty.size ? 6 : 7);
+      if (await cache()) setStatus(dirty.size ? 'savedDevice' : 'savedCloud');
       if (dialog?.open && view !== 'write' && document.activeElement?.type !== 'search') render();
-    } catch { setStatus(23); }
+    } catch { setStatus('syncFail'); }
     finally { syncing = false; if (rerun) { rerun = false; sync(); } }
   }
   function change(date, text) {
     entries = { ...entries, [date]: { text, updatedAt: Date.now() } }; dirty.add(date);
-    setStatus(9); cache(); clearTimeout(timer); timer = setTimeout(sync, 700);
+    setStatus('saving'); cache(); clearTimeout(timer); timer = setTimeout(sync, 700);
   }
   function streak() {
     const d = new Date(); let count = 0;
@@ -185,7 +207,7 @@
   }
   function tabs() {
     const bar = el('nav', null, { class: 'mhs-j-tabs' });
-    [['calendar', t('calendar')], ['entries', t('diary')], ['write', selected ? t('edit') : t('write')]].forEach(([v, label]) => {
+    [['calendar', t('calendar')], ['entries', t('diary')], ['write', selected ? t('edit') : t('write')], ['settings', t('settings')]].forEach(([v, label]) => {
       const b = button(label, () => {
         if (v === 'write' && !selected) selected = day();
         view = v; render();
@@ -198,6 +220,7 @@
     const wrap = el('div', null, { class: 'mhs-journal-body' });
     if (view === 'calendar') calendar(wrap);
     else if (view === 'entries') diary(wrap);
+    else if (view === 'settings') configuration(wrap);
     else editor(wrap);
     return wrap;
   }
@@ -218,8 +241,8 @@
     );
     root.append(tools);
     const grid = el('div', null, { class: 'mhs-journal-grid' });
-    for (let i = 0; i < 7; i++) grid.append(el('span', new Date(2026, 10, 1 + i).toLocaleDateString(locale(), { weekday: 'short' }), { class: 'mhs-journal-weekday' }));
-    for (let i = 0; i < month.getDay(); i++) grid.append(el('span'));
+    for (let i = 0; i < 7; i++) grid.append(el('span', new Date(2026, 10, 1 + i + Number(settings.weekStart)).toLocaleDateString(locale(), { weekday: 'short' }), { class: 'mhs-journal-weekday' }));
+    for (let i = 0; i < (month.getDay() - Number(settings.weekStart) + 7) % 7; i++) grid.append(el('span'));
     const total = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
     for (let i = 1; i <= total; i++) {
       const d = day(new Date(month.getFullYear(), month.getMonth(), i)), has = !!entries[d]?.text.trim();
@@ -244,20 +267,52 @@
     const label = el('label', null, { class: 'mhs-journal-reminder' });
     const check = el('input', null, { type: 'checkbox' });
     check.checked = reminder; check.onchange = () => { reminder = check.checked; cache(); };
-    label.append(check, document.createTextNode(t('reminder')));
-    root.append(label, el('p', t('reminderHelp'), { class: 'mhs-journal-note' }), el('p', t('backupNote'), { class: 'mhs-journal-note' }));
+    label.append(check, document.createTextNode(t('reminder').replace('20:00', settings.reminderTime).replace('রাত ৮টা', settings.reminderTime)));
+    root.append(label, el('p', t('settingsHelp'), { class: 'mhs-journal-note' }), el('p', t('backupNote'), { class: 'mhs-journal-note' }));
+  }
+
+  function configuration(root) {
+    root.classList.add('mhs-j-config');
+    root.append(el('h3', t('settings')), el('p', t('settingsHelp'), {class:'mhs-journal-note'}));
+    function field(key, options, type) {
+      const label = el('label', t(key));
+      const control = el(options ? 'select' : 'input', null, options ? {} : {type: type || 'number'});
+      if (options) options.forEach(([value, text]) => control.append(el('option', t(text), {value})));
+      if (type === 'checkbox') control.checked = settings[key]; else control.value = settings[key];
+      if (key === 'goal') { control.min = 10; control.max = 10000; control.step = 10; }
+      control.disabled = !settingsReady;
+      control.setAttribute('aria-label', t(key));
+      control.onchange = () => {
+        if (!control.checkValidity()) { control.reportValidity(); return; }
+        settings[key] = type === 'checkbox' ? control.checked : key === 'goal' ? Number(control.value) : control.value;
+        syncSettings(true);
+      };
+      label.append(control); root.append(label);
+    }
+    field('fontSize', [['small','small'],['medium','medium'],['large','large']]);
+    field('weekStart', [['0','sunday'],['1','monday']]);
+    field('template', [['free','free'],['guided','guided']]);
+    field('goal'); field('reminderTime', null, 'time'); field('showLedger', null, 'checkbox');
+    root.append(el('p', settingsReady ? '' : t('saving'), {'data-config-status':'',role:'status'}));
+    root.append(button(t('retry'), () => syncSettings()));
+    root.append(button(t('export'), () => {
+      const blob = new Blob([JSON.stringify({app:'Muhasabah',journal:entries,journalReminder:reminder,exportedAt:new Date().toISOString()}, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob), a = el('a', null, {href:url,download:'muhasabah_journal_'+day()+'.json'});
+      a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }));
   }
 
   /* ---------- diary (entries list) view ---------- */
   function diary(root) {
     const search = el('input', null, { type: 'search', placeholder: t('searchPh'), 'aria-label': t('searchPh') });
     const list = el('div', null, { class: 'mhs-j-list' });
+    let limit = 30;
     function draw() {
       list.replaceChildren();
       const q = search.value.trim().toLocaleLowerCase();
       let days = Object.keys(entries).filter(d => entries[d].text.trim()).sort().reverse();
       if (q) days = days.filter(d => d.includes(q) || entries[d].text.toLocaleLowerCase().includes(q));
-      const shown = days.slice(0, 30);
+      const shown = days.slice(0, limit);
       if (!shown.length) { list.append(el('p', q ? t('emptySearch') : t('emptyMonth'), { class: 'mhs-j-empty' })); return; }
       shown.forEach(d => {
         const text = entries[d].text;
@@ -269,8 +324,9 @@
         );
         list.append(card);
       });
+      if (days.length > limit) list.append(button(t('more'), () => { limit += 30; draw(); }));
     }
-    search.oninput = draw;
+    search.oninput = () => { limit = 30; draw(); };
     root.append(search, list);
     draw();
     root.append(button('＋ ' + t('newEntry'), () => { selected = day(); view = 'write'; focusWrite = true; render(); }, { class: 'mhs-j-new' }));
@@ -286,20 +342,22 @@
     const summary = el('section', null, { class: 'mhs-journal-summary' });
     summary.append(el('h3', '📊 ' + t('ledgerTitle')), el('p', n(rows.length) + ' ' + t('entries') + ' · ' + t('netPoints') + ' ' + (net > 0 ? '+' : '') + n(net)));
     rows.slice(0, 5).forEach(e => summary.append(el('div', (e.reason || e.type || '') + ' · ' + n(e.delta || 0))));
-    root.append(summary);
+    if (settings.showLedger) root.append(summary);
     const meta = el('div', null, { class: 'mhs-j-meta' });
     meta.append(el('span', '', { 'data-words': '' }), el('span', '', { 'data-read': '' }));
     const textarea = el('textarea', null, { placeholder: t('writePh'), 'aria-label': t('journal'), maxlength: '100000', rows: '12', class: 'mhs-j-paper' });
+    textarea.style.fontSize = {small:'16px',medium:'19px',large:'23px'}[settings.fontSize];
     textarea.value = entries[date]?.text || '';
+    if (settings.template === 'guided' && !textarea.value) root.append(button(t('usePrompt'), () => { textarea.value = t('prompt'); change(date, textarea.value); setCounts(root, textarea.value); textarea.focus(); }));
     textarea.oninput = () => { change(date, textarea.value); setCounts(root, textarea.value); };
-    root.append(meta, textarea);
+    root.append(meta, el('progress', null, {'data-goal':'',max:settings.goal,value:0}), textarea);
     const del = button(t('delete'), () => {
       if (!del.dataset.armed) {
         del.dataset.armed = '1'; del.textContent = t('confirmDelete'); del.classList.add('is-danger');
         setTimeout(() => { if (del.isConnected) { delete del.dataset.armed; del.textContent = t('delete'); del.classList.remove('is-danger'); } }, 4000);
         return;
       }
-      change(date, ''); textarea.value = ''; setCounts(root, ''); setStatus(7);
+      change(date, ''); textarea.value = ''; setCounts(root, ''); setStatus('saving');
       selected = null; view = 'entries'; render();
     }, { class: 'mhs-j-delete' });
     if (!entries[date]?.text.trim()) del.hidden = true;
@@ -363,6 +421,7 @@
   /* ---------- boot ---------- */
   window.MHSJournal = {
     open,
+    openSettings() { open(); view = 'settings'; render(); syncSettings(); },
     restore(data, enabled) {
       init(); const next = valid(data), now = Date.now();
       Object.keys(entries).forEach(d => { if (!next[d]) next[d] = { text: '', updatedAt: now }; });
@@ -397,13 +456,13 @@
       requestAnimationFrame(() => { pending = false; ensurePromo(); ensureFab(); });
     }).observe(root, { childList: true, subtree: true });
   }
-  window.addEventListener('online', sync);
+  window.addEventListener('online', () => { sync(); syncSettings(); });
   window.addEventListener('pagehide', () => { clearTimeout(timer); cache(); });
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') sync(); });
   let reminded = '';
   setInterval(() => {
     if (!M.current()) return; init(); const now = new Date();
-    if (!reminder || document.visibilityState !== 'visible' || now.getHours() < 20 || reminded === day() || entries[day()]?.text.trim() || dialog?.open) return;
+    if (!reminder || document.visibilityState !== 'visible' || now.getHours() * 60 + now.getMinutes() < Number(settings.reminderTime.slice(0,2)) * 60 + Number(settings.reminderTime.slice(3)) || reminded === day() || entries[day()]?.text.trim() || dialog?.open) return;
     reminded = day(); const bar = el('div', null, { class: 'mhs-journal-nudge', role: 'status' });
     bar.append(button('✍ ' + t('nudge'), () => { bar.remove(); open(day(), { focus: true }); }), button('×', () => bar.remove(), { 'aria-label': t('close') }));
     document.body.append(bar);
@@ -411,5 +470,5 @@
   promoTimer = setInterval(rotateQuote, 8000);
   window.addEventListener('load', () => { ensureFab(); ensurePromo(); });
   // Wait for the app's initial storage load before hydrating the journal cache.
-  const ready = setInterval(() => { if (M.current()) { clearInterval(ready); init(); sync(); ensureFab(); ensurePromo(); } }, 300);
+  const ready = setInterval(() => { if (M.current()) { clearInterval(ready); init(); sync(); syncSettings(); ensureFab(); ensurePromo(); } }, 300);
 })();
