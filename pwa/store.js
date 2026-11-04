@@ -83,6 +83,7 @@
 
     /* Called by the app on every change. */
     save: function (obj) {
+      obj = Object.assign({}, obj, { journal: (last && last.journal) || {}, journalReminder: !!(last && last.journalReminder) });
       last = obj;
       var now = Date.now();
       writeLocal(obj, now);
@@ -95,11 +96,17 @@
     },
 
     current: function () { return last; },
+    saveJournal: function (journal, reminder) {
+      last = Object.assign({}, last || {}, { journal: journal, journalReminder: !!reminder });
+      MHS.save(last);
+      return set("data", { data: last, savedAt: Date.now() });
+    },
     onSave: function (f) { listeners.push(f); },
 
     /* Overwrite everything (used by restore), then the caller reloads. */
     replace: function (obj) {
       var now = Date.now();
+      last = obj;
       writeLocal(obj, now);
       return set("data", { data: obj, savedAt: now });
     },
