@@ -6,6 +6,14 @@ import { readFile, writeFile, readdir } from "node:fs/promises";
 let esbuild;
 try { esbuild = await import("esbuild"); } catch { console.log("optimize: esbuild missing, skipping"); process.exit(0); }
 
+/* Bundle the Netlify Identity browser client used by the Pro membership sheet. */
+try {
+  await esbuild.build({ entryPoints: ["src/identity-client.js"], bundle: true, format: "iife", platform: "browser", target: "es2020", minify: true, legalComments: "none", outfile: "pwa/identity.js" });
+  console.log("optimize: bundled pwa/identity.js");
+} catch (e) {
+  console.log(`optimize: identity bundle failed (${e.message.split("\n")[0]})`);
+}
+
 const files = ["assets/app.js", "assets/app.css", "sw.js"];
 for (const f of await readdir("pwa")) if (/\.(js|css)$/.test(f)) files.push("pwa/" + f);
 

@@ -7686,7 +7686,7 @@ function na() {
         children: [i("img", {
           src: lt,
           alt: "Muhasabah Logo",
-          className: "h-9 w-9 rounded-xl object-cover shadow-sm ring-1 ring-white/10"
+          className: "mhs-logo h-9 w-9 rounded-xl object-cover shadow-sm ring-1 ring-white/10"
         }), f("div", {
           children: [i("div", {
             className: "text-[15px] font-semibold tracking-tight",
@@ -7699,6 +7699,12 @@ function na() {
             children: "Habit tracker"
           })]
         })]
+      }), f("button", {
+        type: "button",
+        "aria-haspopup": "dialog",
+        "aria-label": l === "bn" ? "মুহাসাবা প্রো" : l === "ar" ? "محاسبة Pro" : "Muhasabah Pro",
+        className: "mhs-pro-btn mhs-pro-btn-wide mt-5",
+        children: [i("svg", { className: "mhs-pro-btn-ic", viewBox: "0 0 24 24", "aria-hidden": "true", children: [i("defs", { children: i("linearGradient", { id: "mhsGoldG", x1: "0", y1: "0", x2: "1", y2: "1", children: [i("stop", { offset: "0", stopColor: "#fff6d5" }), i("stop", { offset: ".45", stopColor: "#f6d365" }), i("stop", { offset: "1", stopColor: "#c8900e" })] }) }), i("path", { fill: "url(#mhsGoldG)", d: "M3 7.5 7.6 11 12 4l4.4 7L21 7.5 19.2 18H4.8L3 7.5Zm2 12h14v1.8H5V19.5Z" })] }), i("span", { className: "mhs-pro-spark s1", "aria-hidden": "true" }), i("span", { className: "mhs-pro-spark s2", "aria-hidden": "true" }), i("span", { className: "mhs-pro-btn-get", children: l === "bn" ? "প্রো নিন" : l === "ar" ? "احصل على Pro" : "Get Pro" }), i("span", { className: "mhs-pro-btn-on", children: l === "bn" ? "প্রো মেম্বার" : l === "ar" ? "عضو Pro" : "Pro member" })]
       }), i("nav", {
         className: "mt-8 hidden flex-col gap-1.5",
         children: [{
@@ -7762,7 +7768,7 @@ function na() {
         children: [i("img", {
           src: lt,
           alt: "Muhasabah Logo",
-          className: "h-9 w-9 rounded-xl object-cover shadow-sm ring-1 ring-white/10"
+          className: "mhs-logo h-9 w-9 rounded-xl object-cover shadow-sm ring-1 ring-white/10"
         }), f("div", {
           children: [i("div", {
             className: "text-[15px] font-semibold tracking-tight",
@@ -7783,11 +7789,11 @@ function na() {
           className: "num text-xs",
           children: [Nu, " pts"]
         }), f("button", {
-          onClick: () => r(a => ({en:"bn", bn:"ar", ar:"en"})[a]),
-          "aria-label": "Language: English / বাংলা / العربية",
-          title: "Switch language",
-          className: "mhs-lang-toggle rounded-xl border border-border px-2.5 py-1 text-[11px]",
-          children: [" ", l.toUpperCase(), " "]
+          type: "button",
+          "aria-haspopup": "dialog",
+          "aria-label": l === "bn" ? "মুহাসাবা প্রো" : l === "ar" ? "محاسبة Pro" : "Muhasabah Pro",
+          className: "mhs-pro-btn",
+          children: [i("svg", { className: "mhs-pro-btn-ic", viewBox: "0 0 24 24", "aria-hidden": "true", children: [i("defs", { children: i("linearGradient", { id: "mhsGoldG", x1: "0", y1: "0", x2: "1", y2: "1", children: [i("stop", { offset: "0", stopColor: "#fff6d5" }), i("stop", { offset: ".45", stopColor: "#f6d365" }), i("stop", { offset: "1", stopColor: "#c8900e" })] }) }), i("path", { fill: "url(#mhsGoldG)", d: "M3 7.5 7.6 11 12 4l4.4 7L21 7.5 19.2 18H4.8L3 7.5Zm2 12h14v1.8H5V19.5Z" })] }), i("span", { className: "mhs-pro-spark s1", "aria-hidden": "true" }), i("span", { className: "mhs-pro-spark s2", "aria-hidden": "true" }), i("span", { className: "mhs-pro-btn-get", children: l === "bn" ? "প্রো নিন" : l === "ar" ? "احصل على Pro" : "Get Pro" }), i("span", { className: "mhs-pro-btn-on", children: "PRO" })]
         })]
       })]
     }), f("main", {
@@ -9130,6 +9136,8 @@ function na() {
               children: ["muhasabah_export_", new Date().toISOString().slice(0, 10), ".json"]
             }), " • Import replaces current data after confirmation • No cloud login required"]
           })]
+        }), i("mhs-pro-tools", {
+          lang: l
         }), i("mhs-backup", {
           lang: l
         }), f("div", {
@@ -9770,7 +9778,7 @@ function na() {
           children: [i("img", {
             src: lt,
             alt: "Muhasabah",
-            className: "h-16 w-16 rounded-2xl object-cover mx-auto shadow-xl ring-1 ring-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)]",
+            className: "mhs-logo h-16 w-16 rounded-2xl object-cover mx-auto shadow-xl ring-1 ring-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)]",
             style: {
               boxShadow: "0 8px 32px rgba(0,0,0,0.4), 0 0 24px rgba(139,92,246,0.4)"
             }
