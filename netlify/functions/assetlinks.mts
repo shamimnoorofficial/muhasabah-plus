@@ -12,12 +12,15 @@
  *                            key (Play Console → Test and release → App integrity) and the
  *                            upload/local key used by `bubblewrap build` if you sideload.
  *
- * Until a fingerprint is set the endpoint returns an empty list, which is valid JSON and
- * simply means "no app is linked yet".
+ * The upload key fingerprint (UPLOAD_KEY_FINGERPRINT) is always included.
  */
 import type { Config } from '@netlify/functions';
 
 const DEFAULT_PACKAGE = 'com.shamimnoor.muhasabahplus';
+// SHA-256 of the upload key that signed the first .aab (download at /android-release).
+// Always included; TWA_SHA256_FINGERPRINTS adds more (e.g. the Play App Signing key).
+export const UPLOAD_KEY_FINGERPRINT =
+  '86:B1:F6:49:8D:D2:FC:FB:39:51:4A:E3:3E:B4:71:63:24:1D:7C:A6:08:56:69:90:51:13:A0:97:35:DB:86:D0';
 const PACKAGE_RE = /^[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)+$/;
 
 export function normaliseFingerprint(raw: string): string | null {
@@ -30,8 +33,7 @@ export function buildAssetLinks(packageName: string | undefined, fingerprints: s
   const pkg = (packageName || '').trim() || DEFAULT_PACKAGE;
   if (!PACKAGE_RE.test(pkg)) return [];
   const prints = [...new Set(
-    (fingerprints || '')
-      .split(/[\s,;]+/)
+    [UPLOAD_KEY_FINGERPRINT, ...(fingerprints || '').split(/[\s,;]+/)]
       .map((f) => normaliseFingerprint(f))
       .filter((f): f is string => !!f),
   )];
