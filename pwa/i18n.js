@@ -98,7 +98,7 @@
    * other tabs and dialogs open already translated. */
   var filling = false;
   function backgroundFill() {
-    if (filling || lang === "en" || NATIVE.indexOf(lang) >= 0 || !catalog || !navigator.onLine) return;
+    if (filling || !active() || !catalog || !navigator.onLine) return;
     var todo = []; catalog.forEach(function (s) { if (!dict[s] && !failed[s]) todo.push(s); });
     if (!todo.length) return;
     filling = true;
@@ -107,7 +107,10 @@
 
   /* ---------- DOM translation ---------- */
   var textOrig = new WeakMap(), attrOrig = new WeakMap();
-  function active() { return lang !== "en" && NATIVE.indexOf(lang) < 0; }
+  /* Every language except English swaps English text in place. For Bengali and Arabic the
+   * hand-written translations render first; this only fills in what they don't cover. */
+  function active() { return lang !== "en"; }
+  function isAutoLang() { return lang !== "en" && NATIVE.indexOf(lang) < 0; }
   function lookup(raw) {
     var s = raw.replace(/\s+/g, " ").trim();
     if (!s || !/[A-Za-z]/.test(s)) return null;
@@ -149,7 +152,7 @@
       var target = next || rec.orig;
       if (value !== target) el.setAttribute(a, target);
     }
-    if (active() && isRtl(lang) && el.getAttribute("dir") === "ltr" && !el.closest(".num,[data-keep-dir]")) el.setAttribute("dir", "rtl");
+    if (isAutoLang() && isRtl(lang) && el.getAttribute("dir") === "ltr" && !el.closest(".num,[data-keep-dir]")) el.setAttribute("dir", "rtl");
   }
   function walk(root) {
     if (!root) return;
@@ -194,9 +197,10 @@
     if (next === lang && touched) return;
     lang = next; failed = {}; pending = {};
     dict = active() ? readLocal(lang) : {};
+    if (lang === "bn" && window.MHSBengali) for (var b in window.MHSBengali) if (!dict[b]) dict[b] = window.MHSBengali[b];
     var html = document.documentElement;
     html.lang = lang; html.dir = isRtl(lang) ? "rtl" : "ltr";
-    html.classList.toggle("mhs-auto-lang", active());
+    html.classList.toggle("mhs-auto-lang", isAutoLang());
     if (active() || touched) {
       touched = true;
       observe();

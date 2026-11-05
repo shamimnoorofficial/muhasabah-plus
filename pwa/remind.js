@@ -178,5 +178,19 @@
       }).catch(function () { self.render(); });
     }
   }
+  /* Used by the welcome screen: ask for notification permission and turn reminders on. */
+  window.MHSRemind = {
+    state: function () { return supported ? Notification.permission : "unsupported"; },
+    enable: function () {
+      if (!supported) return Promise.resolve("unsupported");
+      var ask = Notification.permission === "default" ? Promise.resolve(Notification.requestPermission()) : Promise.resolve(Notification.permission);
+      return ask.then(function (p) {
+        var c = cfg(); c.on = p === "granted"; saveCfg(c);
+        document.querySelectorAll("mhs-remind").forEach(function (n) { if (n.render) n.render(); });
+        if (c.on) check();
+        return p === "default" ? "prompt" : p;
+      }, function () { return "error"; });
+    }
+  };
   if (window.customElements && !customElements.get("mhs-remind")) customElements.define("mhs-remind", MhsRemind);
 })();

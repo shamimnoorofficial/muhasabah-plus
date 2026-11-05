@@ -209,11 +209,27 @@
     c.src = "gps"; c.at = Date.now(); c.asked = true;
     saveCfg(c);
   }
-  function gps(onFail) {
+  function gps(onFail, onOk) {
     if (!navigator.geolocation) { if (onFail) onFail(); return; }
-    navigator.geolocation.getCurrentPosition(setGps, function () {
-      var c = cfg(); c.asked = true; saveCfg(c); if (onFail) onFail();
+    navigator.geolocation.getCurrentPosition(function (pos) { setGps(pos); if (onOk) onOk(); }, function (err) {
+      var c = cfg(); c.asked = true; saveCfg(c); if (onFail) onFail(err);
     }, { enableHighAccuracy: false, timeout: 15000, maximumAge: 3600000 });
+  }
+  /* Location permission state for the welcome screen: "granted" | "prompt" | "denied" | "unsupported". */
+  function locationState() {
+    if (!navigator.geolocation) return Promise.resolve("unsupported");
+    var c = cfg();
+    if (!navigator.permissions || !navigator.permissions.query) return Promise.resolve(c.src === "gps" ? "granted" : "prompt");
+    return navigator.permissions.query({ name: "geolocation" }).then(function (r) { return r.state; }, function () { return c.src === "gps" ? "granted" : "prompt"; });
+  }
+  /* Ask for the location (welcome screen), turn prayer times on and link prayer habits. */
+  function enableLocation() {
+    return new Promise(function (resolve) {
+      if (!navigator.geolocation) return resolve("unsupported");
+      gps(function (err) { resolve(err && err.code === 1 ? "denied" : "error"); }, function () {
+        var c = cfg(); c.on = true; autoLink(c); saveCfg(c); resolve("granted");
+      });
+    });
   }
   /* Runs on app start: guess the city from the time zone so times work immediately, then
    * refine with the phone's location (asked once). If permission was already granted, the
@@ -234,7 +250,6 @@
       : Promise.resolve("prompt");
     perm.then(function (state) {
       if (state === "granted" && (c.src !== "gps" || stale)) gps();
-      else if (state === "prompt" && !c.asked) gps();
     });
   }
 
@@ -249,7 +264,9 @@
     /* Waqt start (ms) for a linked habit, or null. */
     start: function (h, ref) { var p = linkOf(h); if (!p) return null; var w = windowOf(p, ref); return w ? w.start : null; },
     guess: guess,
-    locate: gps
+    locate: gps,
+    locationState: locationState,
+    enableLocation: enableLocation
   };
   window.MHSPrayer = API;
 

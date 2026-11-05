@@ -26,7 +26,7 @@ const { chromium } = require('playwright');
    await page.getByRole('heading',{name:'Settings',exact:true}).waitFor();
    await page.getByLabel('Theme',{exact:true}).selectOption('light'); await page.getByText('Saved',{exact:true}).waitFor();
    assert.equal(await page.locator('html').getAttribute('data-theme'),'light');
-   await page.getByLabel('Language',{exact:true}).selectOption('bn'); await page.getByText('সংরক্ষিত',{exact:true}).waitFor();
+   await page.locator('.mhs-preferences .mhs-lp-btn').click(); await page.locator('.mhs-lp-search input').fill('bangla'); await page.keyboard.press('Enter'); await page.getByText('সংরক্ষিত',{exact:true}).waitFor();
    await page.getByRole('heading',{name:'সেটিংস',exact:true}).waitFor();
    assert.equal(prefs.language,'bn'); assert.equal(prefs.theme,'light');
    assert.equal(await page.locator('mhs-prayer').count(),1); assert.equal(await page.locator('mhs-remind').count(),1); assert.equal(await page.locator('mhs-backup').count(),1);
