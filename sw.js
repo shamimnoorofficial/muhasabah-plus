@@ -1,12 +1,16 @@
 /* Muhasabah service worker — full offline support.
  * Bump VERSION whenever app files change so installed apps update automatically.
  */
-const VERSION = "2026-11-05.18";
+const VERSION = "2026-11-05.19";
 const CORE = "mhs-core-" + VERSION;
 const RUNTIME = "mhs-runtime";
+const SHARE = "mhs-share";
+const OFFLINE = "/offline.html";
 const PRECACHE = [
   "/",
+  OFFLINE,
   "/manifest.webmanifest",
+  "/pwa/launch.js",
   "/assets/app.js",
   "/assets/app.css",
   "/pwa/startup.js",
@@ -103,7 +107,7 @@ async function shellFast(request, cacheKey) {
 }
 
 /* Online: always fresh. Offline / slow network (> 4s): cached copy. */
-async function networkFirst(request, cacheKey, pending) {
+async function networkFirst(request, cacheKey, pending, pageOnly) {
   const cache = await caches.open(CORE);
   try {
     const res = await Promise.race([pending || fetch(request), timeout(4000)]);
@@ -113,8 +117,10 @@ async function networkFirst(request, cacheKey, pending) {
     const cached = (await cache.match(cacheKey || request, { ignoreSearch: true })) || (await caches.match(request, { ignoreSearch: true }));
     if (cached) return cached;
     if (request.mode === "navigate") {
-      const shell = await cache.match("/");
+      const shell = pageOnly ? null : await cache.match("/");
       if (shell) return shell;
+      const offline = await cache.match(OFFLINE);
+      if (offline) return offline;
     }
     return Response.error();
   }
@@ -141,15 +147,37 @@ async function staleWhileRevalidate(request, cacheName) {
   return cached || network;
 }
 
+/* Web Share Target: another app shared a backup file or some text with Muhasabah.
+ * Keep the payload in a short-lived cache and open the app, which picks it up (pwa/launch.js). */
+async function receiveShare(request) {
+  try {
+    const form = await request.formData();
+    const cache = await caches.open(SHARE);
+    await Promise.all([cache.delete("/__share/file"), cache.delete("/__share/text")]);
+    const file = form.getAll("backup").find((f) => f && typeof f === "object" && "size" in f && f.size > 0);
+    if (file && file.size <= 20 * 1024 * 1024) {
+      await cache.put("/__share/file", new Response(file, { headers: { "Content-Type": file.type || "application/octet-stream", "X-File-Name": encodeURIComponent(file.name || "shared.json") } }));
+    } else {
+      const text = { title: String(form.get("title") || ""), text: String(form.get("text") || ""), url: String(form.get("url") || "") };
+      if (text.title || text.text || text.url) await cache.put("/__share/text", new Response(JSON.stringify(text), { headers: { "Content-Type": "application/json" } }));
+    }
+  } catch (e) {}
+  return Response.redirect("/?source=share", 303);
+}
+
 self.addEventListener("fetch", (event) => {
   const request = event.request;
-  if (request.method !== "GET") return;
   const url = new URL(request.url);
+  if (request.method === "POST" && url.origin === self.location.origin && url.pathname === "/share-target") {
+    event.respondWith(receiveShare(request));
+    return;
+  }
+  if (request.method !== "GET") return;
 
   /* Android Digital Asset Links must always come straight from the server. */
   if (url.origin === self.location.origin && url.pathname.startsWith("/.well-known/")) return;
   /* Legal pages are standalone documents, not app routes. */
-  if (url.origin === self.location.origin && url.pathname.startsWith("/legal/")) { event.respondWith(networkFirst(request)); return; }
+  if (url.origin === self.location.origin && url.pathname.startsWith("/legal/")) { event.respondWith(networkFirst(request, undefined, undefined, true)); return; }
   if (request.mode === "navigate" && url.origin === self.location.origin) {
     event.respondWith(shellFast(request, "/"));
     return;

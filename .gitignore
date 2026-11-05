@@ -14,3 +14,4 @@ android/gradle/
 android/.gradle/
 android/build/
 test-results/
+_headers
