@@ -26,6 +26,8 @@
   function failed() {
     if (!shell.isConnected) return;
     message.textContent = text[1];
+    message.classList.remove("is-quiet"); // the loading label is for screen readers only
+    shell.classList.add("is-failed");
     retry.hidden = false;
   }
   // A stalled request also needs recovery, even if no error event fires.

@@ -7208,48 +7208,6 @@ function MhsLanguagePicker({ value, onChange, disabled, label, className }) {
 }
 /* Welcome screen: ask for location (prayer times) and notifications (deadline reminders)
  * the same way the language is chosen. Both are optional and can be changed later in Settings. */
-function mhsPermText(L) {
-  return L === 'bn' ? { title: 'অনুমতি (ঐচ্ছিক)', loc: 'অবস্থান', locSub: 'আপনার এলাকার সঠিক নামাজের ওয়াক্ত', notif: 'নোটিফিকেশন', notifSub: 'সময়সীমার আগে রিমাইন্ডার', allow: 'অনুমতি দিন', asking: 'অপেক্ষা করুন…', granted: 'চালু ✓', denied: 'বন্ধ — ব্রাউজার বা ফোনের সেটিংস থেকে চালু করুন', unsupported: 'এই ডিভাইসে নেই', error: 'পাওয়া যায়নি — আবার চেষ্টা করুন', note: 'সবকিছু শুধু এই ডিভাইসে থাকে। পরে সেটিংস থেকেও পরিবর্তন করা যাবে।' }
-    : L === 'ar' ? { title: 'الأذونات (اختيارية)', loc: 'الموقع', locSub: 'مواقيت صلاة دقيقة لمكانك', notif: 'الإشعارات', notifSub: 'تذكير قبل انتهاء المواعيد', allow: 'سماح', asking: 'لحظة…', granted: 'مفعّل ✓', denied: 'محظور — فعّله من إعدادات المتصفح أو الهاتف', unsupported: 'غير متاح على هذا الجهاز', error: 'تعذر — حاول مرة أخرى', note: 'كل شيء يبقى على هذا الجهاز، ويمكنك تغييره لاحقًا من الإعدادات.' }
-    : { title: 'Permissions (optional)', loc: 'Location', locSub: 'Exact prayer times for where you are', notif: 'Notifications', notifSub: 'Reminders before each deadline', allow: 'Allow', asking: 'Waiting…', granted: 'Allowed ✓', denied: 'Blocked — allow it in your browser or phone settings', unsupported: 'Not available on this device', error: "Couldn't get it — try again", note: 'Everything stays on this device. You can change this later in Settings.' };
-}
-function MhsWelcomePermissions({ lang }) {
-  const tx = mhsPermText(lang);
-  const [loc, setLoc] = U.useState('prompt'), [notif, setNotif] = U.useState(() => window.MHSRemind ? window.MHSRemind.state() : ('Notification' in window ? (Notification.permission === 'default' ? 'prompt' : Notification.permission) : 'unsupported'));
-  U.useEffect(() => {
-    let live = true;
-    const P = window.MHSPrayer;
-    if (P && P.locationState) P.locationState().then(s => live && setLoc(s));
-    else if (!navigator.geolocation) setLoc('unsupported');
-    if (window.MHSRemind) { const s = window.MHSRemind.state(); setNotif(s === 'default' ? 'prompt' : s); }
-    return () => { live = false; };
-  }, []);
-  const askLoc = () => {
-    setLoc('asking');
-    const P = window.MHSPrayer;
-    if (P && P.enableLocation) P.enableLocation().then(setLoc);
-    else if (navigator.geolocation) navigator.geolocation.getCurrentPosition(() => setLoc('granted'), e => setLoc(e && e.code === 1 ? 'denied' : 'error'));
-    else setLoc('unsupported');
-  };
-  const askNotif = () => {
-    setNotif('asking');
-    const R = window.MHSRemind;
-    (R ? R.enable() : Promise.resolve(Notification.requestPermission()).then(p => p === 'default' ? 'prompt' : p)).then(setNotif, () => setNotif('error'));
-  };
-  const row = (icon, title, sub, state, ask, key) => f('div', { className: `mhs-perm-row is-${state}`, children: [
-    i('span', { className: 'mhs-perm-icon', 'aria-hidden': 'true', children: icon }),
-    f('span', { className: 'mhs-perm-text', children: [i('b', { children: title }), i('small', { children: state === 'denied' || state === 'unsupported' || state === 'error' ? tx[state] : sub })] }),
-    state === 'granted' ? i('span', { className: 'mhs-perm-ok', role: 'status', children: tx.granted })
-      : state === 'denied' || state === 'unsupported' ? null
-      : i('button', { type: 'button', className: 'mhs-perm-btn', disabled: state === 'asking', onClick: ask, children: state === 'asking' ? tx.asking : tx.allow })
-  ] }, key);
-  return f('div', { className: 'mhs-perm', role: 'group', 'aria-label': tx.title, children: [
-    i('div', { className: 'mhs-perm-title', children: tx.title }),
-    row('📍', tx.loc, tx.locSub, loc, askLoc, 'loc'),
-    row('🔔', tx.notif, tx.notifSub, notif, askNotif, 'notif'),
-    i('p', { className: 'mhs-perm-note', children: tx.note })
-  ] });
-}
 function MhsPreferences({ lang, setLanguage }) {
   const [theme, setTheme] = U.useState(() => window.MHSTheme?.get() || 'dark'), [status, setStatus] = U.useState('loading');
   const [revision, retry] = U.useState(0);
@@ -7282,7 +7240,7 @@ function MhsPreferences({ lang, setLanguage }) {
     f('div', { className: 'mhs-pref-head', children: [i('h2', { children: text.title }), i('span', { className: 'mhs-pref-chip', children: `🌐 ${count}${text.languages}` })] }),
     f('div', { className: 'mhs-preference-grid', children: [
       f('div', { className: 'mhs-pref-field', children: [i('span', { children: text.language }), i(MhsLanguagePicker, { value: lang, disabled, label: text.language, onChange: code => save(code, theme) })] }),
-      f('label', { children: [text.theme, i('select', { 'aria-label': text.theme, value: theme, disabled, onChange: ev => save(lang, ev.target.value), children: ['dark','light','system'].map(value => i('option', { value, children: text[value] }, value)) })] })
+      f('label', { 'data-tour': 'theme', children: [text.theme, i('select', { 'aria-label': text.theme, value: theme, disabled, onChange: ev => save(lang, ev.target.value), children: ['dark','light','system'].map(value => i('option', { value, children: text[value] }, value)) })] })
     ] }),
     device && device !== lang && f('div', { className: 'mhs-pref-suggest', children: [
       f('span', { children: [text.device, ': ', i('b', { translate: 'no', className: 'notranslate', children: I18n.nativeName(device) })] }),
@@ -7308,6 +7266,7 @@ function na() {
     }),
     [t, r] = U.useState(window.MHSI18n ? (window.MHSI18n.supported(S0.lang) ? S0.lang : "en") : ["en", "ar", "bn"].includes(S0.lang) ? S0.lang : "en"),
     l = (window.MHSLocale = t),
+    mhsSetLang = (window.MHSSetLanguage = code => { r(code); mhsSavePreferences(code).catch(() => {}); }),
     u = xs[l] || xs.en,
     [o, c] = U.useState(ea),
     [s, d] = U.useState(Fv),
@@ -7350,7 +7309,19 @@ function na() {
       color: "#00C853",
       focus: "Quran daily"
     }),
-    [Eu, nA] = U.useState(!0),
+    // A new install gets the onboarding (pwa/onboarding.js): language, intro, location,
+    // notifications and the feature tour. There is no separate welcome box any more.
+    [Eu, nA] = U.useState(() => {
+      if (S0.onboarded === true) return !1;
+      let seen = !1;
+      try { seen = localStorage.getItem("muhasabah:welcome:v2") === "1"; } catch (e) {}
+      // Earlier builds showed a welcome box on every launch and saved onboarded:false, so any
+      // existing saved data without the new marker means setup was already done once.
+      if (!seen && (S0.lang || (Array.isArray(S0.habits) && S0.habits.length) || (Array.isArray(S0.ledger) && S0.ledger.length))) return !1;
+      try { localStorage.setItem("muhasabah:welcome:v2", "1"); } catch (e) {}
+      window.MHSFirstRun = !0;
+      return !1;
+    }),
     [Xr, tA] = U.useState(() => new Set(Fv.filter(x => x.type === "checkIn" && new Date(x.ts).toDateString() === new Date().toDateString()).map(x => x.habitId))),
     [rA, la] = U.useState([]),
     [lA, He] = U.useState(!1),
@@ -7463,7 +7434,7 @@ function na() {
         todos: tw,
         ledger: s,
         lang: t,
-        onboarded: !Eu
+        onboarded: S0.onboarded === true || !Eu
       };
       window.MHS ? window.MHS.save(d) : localStorage.setItem(KEY, JSON.stringify(d));
     } catch (e) {}
@@ -7912,6 +7883,7 @@ function na() {
           icon: "⚙"
         }].map(a => f("button", {
           onClick: () => n(a.k),
+          "data-tour": "nav-" + a.k,
           "aria-current": e === a.k ? "page" : undefined,
           className: `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all active:scale-[0.97] ${e === a.k ? "bg-[hsl(var(--primary)/0.10)] text-foreground ring-1 ring-[hsl(var(--primary)/0.25)]" : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))] hover:text-foreground"}`,
           children: [i("span", {
@@ -8059,6 +8031,7 @@ function na() {
           })]
         }), f("div", {
           className: "panel p-4 sm:p-5 min-w-0 space-y-5",
+          "data-tour": "point-flow",
           children: [f("div", {
             className: "flex flex-col lg:flex-row lg:items-start justify-between gap-4 lg:gap-6",
             children: [f("div", {
@@ -8161,6 +8134,7 @@ function na() {
           className: "grid gap-4 lg:gap-6 grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] min-w-0",
           children: [f("button", {
             onClick: () => gu(!0),
+            "data-tour": "add-reward",
             className: "panel flex items-center gap-4 p-5 sm:p-6 text-left hover:border-[hsl(var(--primary)/0.4)] transition-colors active:scale-[0.97]",
             children: [i("div", {
               className: "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--primary)/0.12)] text-[hsl(var(--primary))] ring-1 ring-[hsl(var(--primary)/0.25)]",
@@ -8366,6 +8340,7 @@ function na() {
               onChange: a => twQS(a.target.value),
               maxLength: 200,
               enterKeyHint: "done",
+              "data-tour": "quick-todo",
               "aria-label": "Quick add a todo",
               placeholder: l === "ar" ? "أضف مهمة سريعة… ثم Enter" : "Quick add a task… press Enter"
             }), i("button", {
@@ -8384,6 +8359,7 @@ function na() {
             })]
           }), tw.length ? f("div", {
             className: "mhs-todo-filters",
+            "data-tour": "todo-filter",
             role: "group",
             "aria-label": "Filter todos",
             children: [["all", l === "ar" ? "الكل" : "All", tw.length], ["active", l === "ar" ? "النشطة" : "Active", twAc], ["done", l === "ar" ? "المكتملة" : "Done", twDn.length]].map(([k, lb, c]) => f("button", {
@@ -8813,6 +8789,7 @@ function na() {
                 focus: "Quran daily"
               }), Kr(!0);
             },
+            "data-tour": "new-habit",
             className: "h-11 rounded-xl bg-[hsl(var(--primary))] px-5 text-sm font-medium text-[hsl(var(--primary-foreground))] active:scale-[0.97] flex items-center gap-2",
             children: ["+ ", u.createNew]
           })]
@@ -8916,6 +8893,7 @@ function na() {
           })]
         }), o.length < 7 && f("div", {
           className: "panel p-5 sm:p-6 lg:p-8",
+          "data-tour": "essentials",
           children: [f("div", {
             className: "flex items-center justify-between gap-4",
             children: [i("h3", {
@@ -9053,6 +9031,7 @@ function na() {
             onChange: a => C(a.target.value),
             onKeyDown: a => { if (a.key === "Escape" && P) { a.stopPropagation(); C(""); p(""); } },
             type: "search",
+            "data-tour": "ledger-search",
             "aria-label": "Search the ledger",
             placeholder: u.searchLedger,
             className: "flex-1 min-w-0 rounded-xl border border-border bg-[hsl(var(--card)/0.8)] px-5 py-3 text-sm placeholder:text-[hsl(var(--muted-foreground))] focus:outline-none focus:ring-1 focus:ring-[hsl(var(--primary)/0.4)]"
@@ -9200,7 +9179,7 @@ function na() {
         }), i(MhsPreferences, { lang: l, setLanguage: r })] }), e === "settings" && f("div", {
         className: "space-y-6",
         children: [
-        i("mhs-prayer", { lang: l }), i("mhs-remind", { lang: l }), i('section', {className:'panel mhs-preferences', children:f('div', {children:[i('h2',{children:l === 'bn' ? 'দিনলিপির পছন্দ' : l === 'ar' ? 'تفضيلات اليوميات' : 'Journal preferences'}), i('p',{children:l === 'bn' ? 'লেখার আকার, রিমাইন্ডার, দৈনিক লক্ষ্য ও আত্মপর্যালোচনার ধরন।' : l === 'ar' ? 'حجم النص والتذكيرات وأهداف الكتابة.' : 'Text size, reminders, writing goals and reflection prompts.'}), i('button',{type:'button',onClick:()=>window.MHSJournal?.openSettings(),children:l === 'bn' ? 'দিনলিপি কনফিগার করুন' : l === 'ar' ? 'إعداد اليوميات' : 'Configure journal'})]})}), f("div", {
+        i("mhs-tour", { lang: l }), i("mhs-prayer", { lang: l }), i("mhs-remind", { lang: l }), i('section', {className:'panel mhs-preferences', children:f('div', {children:[i('h2',{children:l === 'bn' ? 'দিনলিপির পছন্দ' : l === 'ar' ? 'تفضيلات اليوميات' : 'Journal preferences'}), i('p',{children:l === 'bn' ? 'লেখার আকার, রিমাইন্ডার, দৈনিক লক্ষ্য ও আত্মপর্যালোচনার ধরন।' : l === 'ar' ? 'حجم النص والتذكيرات وأهداف الكتابة.' : 'Text size, reminders, writing goals and reflection prompts.'}), i('button',{type:'button',onClick:()=>window.MHSJournal?.openSettings(),children:l === 'bn' ? 'দিনলিপি কনফিগার করুন' : l === 'ar' ? 'إعداد اليوميات' : 'Configure journal'})]})}), f("div", {
           className: "panel p-6 sm:p-8 lg:p-8 space-y-6",
           children: [f("div", {
             className: "flex items-start gap-5",
@@ -9362,6 +9341,7 @@ function na() {
         icon: "⚙"
       }].map(a => f("button", {
         onClick: () => n(a.k),
+        "data-tour": "nav-" + a.k,
         title: a.label,
         "aria-label": a.label,
         "aria-current": e === a.k ? "page" : void 0,
@@ -10008,57 +9988,6 @@ function na() {
               children: [a.delta > 0 ? "+" : "", a.delta]
             })]
           }, a.id))
-        })]
-      })
-    }), Eu && i("div", {
-      className: "mhs-welcome fixed inset-0 z-[100] flex items-center justify-center bg-[hsl(var(--background))] p-4",
-      children: f("div", {
-        className: "relative max-w-md w-full p-8 sm:p-10 rounded-[1.5rem] border border-white/10 border-t-white/20 bg-gradient-to-br from-white/[0.08] to-white/[0.03] backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.36),inset_0_1px_0_0_rgba(255,255,255,0.10)] text-center space-y-6 overflow-hidden",
-        style: {
-          backdropFilter: "blur(24px) saturate(180%)",
-          WebkitBackdropFilter: "blur(24px) saturate(180%)"
-        },
-        children: [i("div", {
-          className: "pointer-events-none absolute inset-0 rounded-[inherit] bg-[radial-gradient(120%_80%_at_0%_0%,rgba(255,255,255,0.10),transparent_60%)]"
-        }), i("div", {
-          className: "pointer-events-none absolute -top-20 -left-20 h-40 w-40 rounded-full bg-white/[0.06] blur-2xl"
-        }), i("div", {
-          className: "pointer-events-none absolute top-8 left-1/2 -translate-x-1/2 h-24 w-24 rounded-full bg-gradient-to-br from-violet-500/20 to-blue-500/20 blur-2xl"
-        }), f("div", {
-          className: "relative flex flex-col items-center gap-5",
-          children: [i("img", {
-            src: lt,
-            alt: "Muhasabah",
-            className: "mhs-logo h-16 w-16 rounded-2xl object-cover mx-auto shadow-xl ring-1 ring-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)]",
-            style: {
-              boxShadow: "0 8px 32px rgba(0,0,0,0.4), 0 0 24px rgba(139,92,246,0.4)"
-            }
-          }), f("div", {
-            className: "space-y-2",
-            children: [i("div", {
-              className: "text-[10px] uppercase tracking-[0.26em] text-[hsl(var(--primary))] font-medium",
-              children: "Welcome • Make Habit, Get Reward"
-            })]
-          }), i("p", {
-            className: "italic text-xl sm:text-2xl font-medium leading-relaxed tracking-tight text-foreground text-center",
-            style: {
-              fontFamily: "var(--font-display)"
-            },
-            children: "Life is the sum of time — if you don’t use it properly, it’ll destroy you."
-          }), f("div", {
-            className: "mhs-welcome-lang",
-            children: [i("span", { "aria-hidden": "true", children: "🌐" }), i(MhsLanguagePicker, {
-              label: l === "bn" ? "ভাষা" : l === "ar" ? "اللغة" : "Language",
-              value: t,
-              onChange: code => { r(code); mhsSavePreferences(code).catch(() => {}); }
-            })]
-          }), i(MhsWelcomePermissions, { lang: l }), i("button", {
-            onClick: () => {
-              nA(!1), He(!0), setTimeout(() => He(!1), 900);
-            },
-            className: "rounded-xl px-8 py-3 text-sm font-semibold bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 active:scale-[0.97] shadow-[0_4px_16px_rgba(0,200,83,0.3)] hover:shadow-[0_8px_24px_rgba(0,200,83,0.4)] hover:scale-[1.02] transition-all duration-150",
-            children: "Continue"
-          })]
         })]
       })
     }), Dn && i("div", {

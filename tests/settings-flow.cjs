@@ -15,7 +15,9 @@ const { chromium } = require('playwright');
     return route.fulfill({json:prefs});
    });
    await page.addInitScript(() => localStorage.setItem('muhasabah:data:v1',JSON.stringify({lang:'en', habits:[],ledger:[{id:'one',ts:Date.now(),delta:25,reason:'Reading',type:'manualReward'}]})));
-   await page.goto('http://localhost:8889'); await page.getByRole('button',{name:'Continue',exact:true}).click();
+   // Existing data: the first-run welcome screen and guide stay closed.
+   await page.goto('http://localhost:8889'); await page.locator('#mhs-startup').waitFor({state:'detached'});
+   assert.equal(await page.locator('.mhs-welcome, .mhs-ftue-intro, .mhs-coach').count(),0);
    await page.getByRole('button',{name:'∿ LINE',exact:true}).click();
    assert.equal(await page.locator('.mhs-flow circle').count(),1);
    await page.locator('.mhs-flow [role=button]').focus(); await page.keyboard.press('Enter');
