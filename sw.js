@@ -1,7 +1,8 @@
-/* Muhasabah service worker — full offline support.
+/* Muhasabah service worker — full offline support, push notifications,
+ * background sync (journal uploads), periodic sync (reminders while closed) and Windows widgets.
  * Bump VERSION whenever app files change so installed apps update automatically.
  */
-const VERSION = "2026-11-05.19";
+const VERSION = "2026-11-05.20";
 const CORE = "mhs-core-" + VERSION;
 const RUNTIME = "mhs-runtime";
 const SHARE = "mhs-share";
@@ -46,7 +47,9 @@ const PRECACHE = [
   "/icons/maskable-192.png",
   "/icons/maskable-512.png",
   "/icons/apple-touch-icon.png",
-  "/icons/shortcut.png"
+  "/icons/shortcut.png",
+  "/widgets/today-template.json",
+  "/widgets/today-data.json"
 ];
 const FONT_CSS = "fonts.googleapis.com";
 const FONT_FILES = "fonts.gstatic.com";
@@ -71,11 +74,13 @@ self.addEventListener("activate", (event) => {
 /* Tapping a reminder opens (or focuses) the app on the Today tab. */
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const url = (event.notification.data && event.notification.data.url) || "/?tab=today";
+  const url = event.action === "journal" ? "/?source=note" : event.action === "today" ? "/?tab=today" :
+    (event.notification.data && event.notification.data.url) || "/?tab=today";
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
       for (const c of list) {
         if (new URL(c.url).origin === self.location.origin && "focus" in c) {
+          if (event.action === "journal" && "navigate" in c) return c.navigate(url).then((w) => (w || c).focus());
           return c.focus();
         }
       }
@@ -86,6 +91,145 @@ self.addEventListener("notificationclick", (event) => {
 
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
+  if (event.data && event.data.type === "STATE_UPDATED") event.waitUntil(updateWidgets());
+});
+
+/* ---------- State shared by the app (pwa/remind.js) ---------- */
+const STATE = "mhs-state";
+async function readState(key) {
+  try {
+    const res = await (await caches.open(STATE)).match(key);
+    return res ? await res.json() : null;
+  } catch (e) { return null; }
+}
+async function writeState(key, value) {
+  try { await (await caches.open(STATE)).put(key, new Response(JSON.stringify(value), { headers: { "Content-Type": "application/json" } })); } catch (e) {}
+}
+function localDay(d) {
+  const p = (n) => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+}
+
+/* ---------- Push notifications (daily reminder from netlify/functions/push-daily.mts) ---------- */
+self.addEventListener("push", (event) => {
+  let msg = {};
+  try { msg = event.data ? event.data.json() : {}; } catch (e) { msg = { body: event.data ? event.data.text() : "" }; }
+  const title = msg.title || "Muhasabah Plus";
+  event.waitUntil(self.registration.showNotification(title, {
+    body: msg.body || "Time to review today's habits.",
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-96.png",
+    tag: msg.tag || "mhs-push",
+    data: { url: msg.url || "/?tab=today&source=push" },
+    actions: [{ action: "today", title: "✅ Today" }, { action: "journal", title: "📝 Journal" }]
+  }));
+});
+
+/* The browser rotated the push subscription: subscribe again and tell the server. */
+self.addEventListener("pushsubscriptionchange", (event) => {
+  event.waitUntil((async () => {
+    const prefs = (await readState("/__state/push")) || {};
+    if (prefs.on === false) return;
+    let sub = event.newSubscription;
+    if (!sub) {
+      const key = (event.oldSubscription && event.oldSubscription.options && event.oldSubscription.options.applicationServerKey) ||
+        (await fetch("/api/push").then((r) => r.json()).then((k) => k.publicKey).catch(() => null));
+      if (!key) return;
+      sub = await self.registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+    }
+    if (event.oldSubscription) {
+      await fetch("/api/push", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ endpoint: event.oldSubscription.endpoint }) }).catch(() => {});
+    }
+    let timezone = "UTC";
+    try { timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch (e) {}
+    await fetch("/api/push", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ subscription: sub.toJSON(), timezone, hour: prefs.hour, lang: prefs.lang }) });
+  })());
+});
+
+/* ---------- Background Sync: upload journal entries written offline ---------- */
+async function flushJournal() {
+  const box = await caches.open("mhs-outbox");
+  const res = await box.match("/__outbox/journal");
+  if (!res) return;
+  const body = await res.text();
+  const up = await fetch("/.netlify/functions/journal", { method: "PUT", credentials: "same-origin", cache: "no-store", headers: { "Content-Type": "application/json" }, body });
+  if (!up.ok) throw new Error("journal sync failed"); /* the browser retries later */
+  const still = await box.match("/__outbox/journal");
+  if (still && (await still.text()) === body) await box.delete("/__outbox/journal");
+  const list = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+  list.forEach((c) => c.postMessage({ type: "JOURNAL_SYNCED" }));
+}
+self.addEventListener("sync", (event) => {
+  if (event.tag === "mhs-journal-sync") event.waitUntil(flushJournal());
+});
+
+/* ---------- Periodic Background Sync: deadline reminders + fresh app while closed ---------- */
+async function deliverReminders() {
+  const state = await readState("/__state/today");
+  const now = new Date(), day = localDay(now);
+  if (!state || !state.on || state.day !== day || !Array.isArray(state.items)) return;
+  let sent = (await readState("/__state/sent")) || {};
+  if (sent.day !== day) sent = { day, ids: {} };
+  const mins = Number(state.mins) || 15, t = now.getTime();
+  const due = state.items.filter((h) => h && !sent.ids[h.id] && t < h.dl && t >= h.dl - mins * 60000);
+  for (const h of due) {
+    sent.ids[h.id] = 1;
+    const left = Math.max(1, Math.round((h.dl - t) / 60000));
+    await self.registration.showNotification(h.title + " • " + left + " " + (state.left || "min left"), {
+      body: h.body || "", tag: "mhs-" + day + "-" + h.id, icon: "/icons/icon-192.png", badge: "/icons/icon-96.png", data: { url: "/?tab=today" }
+    });
+  }
+  if (due.length) await writeState("/__state/sent", sent);
+}
+async function refreshShell() {
+  const cache = await caches.open(CORE);
+  await Promise.all(["/", "/assets/app.js", "/assets/app.css", "/manifest.webmanifest"].map((u) =>
+    fetch(u, { cache: "no-cache" }).then((r) => (r.ok && !r.redirected ? cache.put(u, r) : null)).catch(() => {})));
+}
+self.addEventListener("periodicsync", (event) => {
+  if (event.tag === "mhs-reminders") event.waitUntil(Promise.all([deliverReminders(), refreshShell(), updateWidgets()]));
+});
+
+/* ---------- Windows widgets (manifest "widgets") ---------- */
+async function widgetPayload(widget) {
+  const def = widget.definition;
+  const [template, base] = await Promise.all([
+    (await caches.match(def.msAcTemplate) || await fetch(def.msAcTemplate)).text(),
+    (await caches.match(def.data) || await fetch(def.data)).json()
+  ]);
+  const state = await readState("/__state/today");
+  const data = Object.assign({}, base);
+  if (state && state.day === localDay(new Date())) {
+    const pending = (state.items || []).filter((h) => h.dl > Date.now()).sort((a, b) => a.dl - b.dl);
+    data.done = state.done; data.total = state.total;
+    data.progress = state.total ? state.done + " / " + state.total : base.progress;
+    data.balance = (state.balance > 0 ? "+" : "") + state.balance;
+    data.next = pending.length ? pending[0].title : base.allDone;
+  }
+  return { template, data: JSON.stringify(data) };
+}
+async function updateWidgets() {
+  if (!self.widgets || !self.widgets.getByTag) return;
+  const widget = await self.widgets.getByTag("mhs-today").catch(() => null);
+  if (!widget || !widget.instances || !widget.instances.length) return;
+  await self.widgets.updateByTag("mhs-today", await widgetPayload(widget));
+}
+self.addEventListener("widgetinstall", (event) => {
+  event.waitUntil((async () => {
+    await self.widgets.updateByInstanceId(event.instanceId, await widgetPayload(event.widget));
+    if (self.registration.periodicSync && event.widget.definition.update) {
+      await self.registration.periodicSync.register("mhs-reminders", { minInterval: event.widget.definition.update * 1000 }).catch(() => {});
+    }
+  })());
+});
+self.addEventListener("widgetresume", (event) => {
+  event.waitUntil(widgetPayload(event.widget).then((p) => self.widgets.updateByInstanceId(event.instanceId, p)));
+});
+self.addEventListener("widgetclick", (event) => {
+  const url = event.action === "journal" ? "/?source=note" : event.action === "refresh" ? null : "/?tab=today&source=widget";
+  if (!url) { event.waitUntil(updateWidgets()); return; }
+  event.waitUntil(self.clients.openWindow(url));
 });
 
 function timeout(ms) {

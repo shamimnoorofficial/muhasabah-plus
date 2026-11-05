@@ -43,3 +43,17 @@ export const proCashback = pgTable('pro_cashback', {
   streak: integer('streak').notNull(),
   createdAt: bigint('created_at', { mode: 'number' }).notNull(),
 }, table => [primaryKey({ columns: [table.userId, table.step] })]);
+
+/* Web Push: one row per browser/device that turned on the daily reminder.
+ * Anonymous — only the push endpoint, its keys and the device's timezone + chosen hour. */
+export const pushSubscriptions = pgTable('push_subscriptions', {
+  endpoint: text('endpoint').primaryKey(),
+  p256dh: text('p256dh').notNull(),
+  auth: text('auth').notNull(),
+  timezone: text('timezone').notNull().default('UTC'),
+  hour: integer('hour').notNull().default(21),
+  lang: text('lang').notNull().default('en'),
+  lastSentDay: text('last_sent_day'),
+  createdAt: bigint('created_at', { mode: 'number' }).notNull(),
+  updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
+});

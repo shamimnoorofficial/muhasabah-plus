@@ -48,6 +48,14 @@
     Access-Control-Allow-Origin = "*"
     Cross-Origin-Resource-Policy = "cross-origin"
 
+# Windows widget template + default data (read by the widgets board).
+[[headers]]
+  for = "/widgets/*"
+  [headers.values]
+    Cache-Control = "no-cache"
+    Access-Control-Allow-Origin = "*"
+    Cross-Origin-Resource-Policy = "cross-origin"
+
 [[headers]]
   for = "/offline.html"
   [headers.values]
