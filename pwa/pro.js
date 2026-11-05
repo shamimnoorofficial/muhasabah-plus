@@ -310,13 +310,12 @@
   function planCard(kind) {
     var p = plans(), c = cash(), on = st[kind];
     var name = kind === "lifetime" ? t("lifeName") : t("monName");
-    var price = money(p[kind]), unit = kind === "lifetime" ? t("lifeUnit") : t("monUnit");
-    var desc = kind === "lifetime" ? t("lifeDesc") : t("monDesc");
-    var extra = kind === "lifetime" ? '<span class="mhs-pro-cash">' + esc(t("lifeCash", { a: money(c.amount), d: num(c.everyDays), n: num(c.steps), p: money(p.lifetime) })) + "</span>" : "";
+    var price = money(p[kind]), unit = kind === "lifetime" ? "" : t("monUnit");
+    var desc = kind === "lifetime" ? "" : t("monDesc");
     return '<button type="button" role="checkbox" aria-checked="' + on + '" class="mhs-pro-plan' + (on ? " on" : "") + '" data-plan="' + kind + '">' +
       '<span class="box">' + CHECK + "</span>" +
-      '<span class="body"><span class="row"><b>' + esc(name) + '</b><span class="price"><span class="num">' + esc(price) + "</span> <small>" + esc(unit) + "</small></span></span>" +
-      '<span class="desc">' + esc(desc) + "</span>" + extra + "</span></button>";
+      '<span class="body"><span class="row"><b>' + esc(name) + '</b><span class="price"><span class="num">' + esc(price) + "</span>" + (unit ? " <small>" + esc(unit) + "</small>" : "") + "</span></span>" +
+      (desc ? '<span class="desc">' + esc(desc) + "</span>" : "") + "</span></button>";
   }
   function viewPlans() {
     var p = plans(), any = st.lifetime || st.monthly;
