@@ -2,17 +2,42 @@
   "id": "/",
   "name": "Muhasabah Plus",
   "short_name": "Muhasabah",
-  "description": "Muhasabah Plus is an Islamic habit tracker: build daily habits, earn points, write a private journal and track your progress. Works offline and keeps your data on your device.",
+  "description": "Muhasabah Plus is an Islamic habit tracker for all ages: build daily habits, earn points, write a private journal and track your progress. Free, works offline and keeps your data on your device. No ads, no chat, no objectionable content.",
   "lang": "en",
   "dir": "ltr",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "display_override": [
+    "window-controls-overlay",
+    "tabbed",
     "standalone",
-    "minimal-ui",
-    "browser"
+    "minimal-ui"
   ],
+  "tab_strip": {
+    "home_tab": {
+      "scope_patterns": [
+        {
+          "pathname": "/"
+        }
+      ],
+      "icons": [
+        {
+          "src": "/icons/icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        },
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    "new_tab_button": {
+      "url": "/?source=tabbed-new-tab"
+    }
+  },
   "orientation": "portrait",
   "background_color": "#0a0d14",
   "theme_color": "#0a0d14",
@@ -91,46 +116,60 @@
   ],
   "screenshots": [
     {
+      "src": "/screenshots/promo-narrow.svg",
+      "sizes": "1080x2400",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "label": "Muhasabah Plus — Make habit, get reward. Free, offline and private, rated for everyone"
+    },
+    {
       "src": "/screenshots/today-narrow.webp",
       "sizes": "1082x2402",
       "type": "image/webp",
       "form_factor": "narrow",
-      "label": "Today's checklist with habits to complete"
+      "label": "Today's checklist — tick off habits and todos to earn points"
     },
     {
       "src": "/screenshots/habits-narrow.webp",
       "sizes": "1082x2402",
       "type": "image/webp",
       "form_factor": "narrow",
-      "label": "Habit control panel with points and repeat days"
+      "label": "Habits — build daily Islamic habits with points and repeat days"
     },
     {
       "src": "/screenshots/dashboard-narrow.webp",
       "sizes": "1082x2402",
       "type": "image/webp",
       "form_factor": "narrow",
-      "label": "Dashboard with point balance and streak"
+      "label": "Dashboard — point balance, streaks and progress at a glance"
+    },
+    {
+      "src": "/screenshots/promo-wide.svg",
+      "sizes": "1280x800",
+      "type": "image/svg+xml",
+      "form_factor": "wide",
+      "label": "Muhasabah Plus on desktop — custom title bar, tabs, offline journal. Free for all ages"
     },
     {
       "src": "/screenshots/dashboard-wide.webp",
       "sizes": "1280x800",
       "type": "image/webp",
       "form_factor": "wide",
-      "label": "Dashboard with point flow chart on desktop"
+      "label": "Dashboard on desktop — point flow chart, works offline"
     },
     {
       "src": "/screenshots/today-wide.webp",
       "sizes": "1280x800",
       "type": "image/webp",
       "form_factor": "wide",
-      "label": "Today's checklist on desktop"
+      "label": "Today's checklist on desktop with tabbed app tabs"
     },
     {
       "src": "/screenshots/habits-wide.webp",
       "sizes": "1280x800",
       "type": "image/webp",
       "form_factor": "wide",
-      "label": "Habits on desktop"
+      "label": "Habits on desktop — manage routines side by side"
     }
   ],
   "shortcuts": [

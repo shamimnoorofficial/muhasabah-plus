@@ -2,7 +2,7 @@
  * background sync (journal uploads), periodic sync (reminders while closed) and Windows widgets.
  * Bump VERSION whenever app files change so installed apps update automatically.
  */
-const VERSION = "2026-11-05.20";
+const VERSION = "2026-11-05.21";
 const CORE = "mhs-core-" + VERSION;
 const RUNTIME = "mhs-runtime";
 const SHARE = "mhs-share";
@@ -39,8 +39,12 @@ const PRECACHE = [
   "/pwa/app.js",
   "/pwa/journal.js",
   "/pwa/install.js",
+  "/pwa/titlebar.js",
+  "/pwa/chrome.css",
   "/pwa/remind.js",
   "/pwa/prayer.js",
+  "/screenshots/promo-wide.svg",
+  "/screenshots/promo-narrow.svg",
   "/icons/logo.webp",
   "/icons/icon-192.png",
   "/icons/icon-512.png",

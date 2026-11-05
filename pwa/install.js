@@ -66,9 +66,20 @@
   Object.assign(T.bn, {"title": "মুহাসাবা ইনস্টল করুন", "close": "বন্ধ করুন", "installNow": "এখন ইনস্টল করুন", "wait": "প্রস্তুত হচ্ছে…", "already": "মুহাসাবা ইতিমধ্যে এই ডিভাইসে ইনস্টল আছে। হোম স্ক্রিন বা অ্যাপের তালিকা থেকে খুলুন।", "openChrome": "Chrome-এ খুলুন", "inAppAndroid": "এই অ্যাপের ভেতরের ব্রাউজারে ইনস্টল করা যায় না। Chrome-এ খুলে ইনস্টল করুন।", "inAppIOS": ["এই ব্রাউজারে অ্যাপ ইনস্টল করা যায় না।", "মেনু থেকে Safari-এ খুলুন।", "শেয়ার থেকে Add to Home Screen বেছে নিন।"], "ios": ["শেয়ার বোতামে চাপুন।", "Add to Home Screen বেছে নিন।", "Add চাপুন। অ্যাপ হোম স্ক্রিনে দেখা যাবে।"], "samsung": ["নিচের মেনুতে চাপুন।", "Add page to → Home screen বেছে নিন।", "Add চাপুন।"], "firefoxAndroid": ["মেনুতে চাপুন।", "Install অথবা Add to Home screen বেছে নিন।", "Add চাপুন।"], "android": ["Chrome-এর ওপরের মেনু খুলুন।", "Install app অথবা Add to Home screen বেছে নিন।", "Install চাপুন।"], "macSafari": ["File → Add to Dock বেছে নিন।", "Add চাপুন।"], "firefoxDesktop": "কম্পিউটারের Firefox-এ ওয়েব অ্যাপ ইনস্টল করা যায় না। Chrome বা Edge-এ খুলুন।", "desktop": ["অ্যাড্রেস বারের ইনস্টল আইকনে চাপুন।", "অথবা মেনু থেকে Install Muhasabah বেছে নিন।", "Install চাপুন।"]});
   function t(k) { return (T[lang()] || T.en)[k] || T.en[k]; }
 
+  function modes() {
+    try {
+      var m = window.matchMedia;
+      if (!m) return {};
+      return {
+        standalone: m("(display-mode: standalone)").matches,
+        wco: m("(display-mode: window-controls-overlay)").matches,
+        tabbed: m("(display-mode: tabbed)").matches
+      };
+    } catch (e) { return {}; }
+  }
   function isStandalone() {
-    return (window.matchMedia && (window.matchMedia("(display-mode: standalone)").matches || window.matchMedia("(display-mode: window-controls-overlay)").matches))
-      || window.navigator.standalone === true;
+    var d = modes();
+    return !!(d.standalone || d.wco || d.tabbed) || window.navigator.standalone === true;
   }
   function dismissed() { try { return sessionStorage.getItem(KEY) === "1"; } catch (e) { return false; } }
   function show() { if (!bar || isStandalone() || dismissed() || installed) return; bar.hidden = false; bar.classList.add("show"); }
@@ -149,6 +160,9 @@
     var h = node("h3"); var img = new Image(); img.src = "/icons/icon-192.png"; img.alt = "";
     h.appendChild(img); h.appendChild(document.createTextNode(t("title")));
     card.appendChild(h);
+    var trust = node("p", "", "Free · works offline · data stays on this device · rated Everyone (all ages).");
+    trust.style.cssText = "font-size:12px;color:#7cf3b0;background:rgba(0,200,83,.1);border:1px solid rgba(0,200,83,.25);border-radius:10px;padding:8px 10px";
+    card.appendChild(trust);
     if (content.text) card.appendChild(node("p", "", content.text));
     if (content.steps) {
       var ol = node("ol");

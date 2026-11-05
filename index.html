@@ -9,6 +9,9 @@
  <meta name="publisher" content="Muhasabah Plus">
  <meta name="keywords" content="Muhasabah, Islamic habit tracker, habit tracker, daily journal, prayer tracker, Quran habit, self accountability">
  <meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="rating" content="general">
+<meta name="age-rating" content="everyone">
+<link rel="help" href="/legal/content-rating" title="Content rating: Everyone — suitable for all ages">
  <link rel="canonical" href="https://muhasabah-plus.app/">
  <link rel="author" href="https://github.com/shamimnoorofficial">
  <meta property="og:type" content="website">
@@ -31,7 +34,8 @@
  <meta name="twitter:image:alt" content="Muhasabah Plus shield logo with the tagline Islamic habit tracker">
  <meta name="color-scheme" content="dark">
  <meta name="format-detection" content="telephone=no">
- <meta name="theme-color" content="#0a0d14">
+ <meta name="theme-color" content="#0a0d14" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#0a0d14" media="(prefers-color-scheme: light)">
  <meta name="msapplication-TileColor" content="#0a0d14">
  <meta name="msapplication-TileImage" content="/icons/icon-144.png">
  <meta name="mobile-web-app-capable" content="yes">
@@ -57,13 +61,14 @@
  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon.png">
  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
- <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Muhasabah Plus","alternateName":"Muhasabah","url":"https://muhasabah-plus.app/","description":"Islamic habit tracker with points, streaks and a private journal. Works offline.","applicationCategory":"LifestyleApplication","operatingSystem":"Any","inLanguage":["en","bn","ar"],"image":"https://muhasabah-plus.app/icons/og-image.png","author":{"@type":"Person","name":"Shamim Noor","url":"https://github.com/shamimnoorofficial"},"publisher":{"@type":"Organization","name":"Muhasabah Plus","url":"https://muhasabah-plus.app/","logo":"https://muhasabah-plus.app/icons/icon-512.png"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+ <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Muhasabah Plus","alternateName":"Muhasabah","url":"https://muhasabah-plus.app/","description":"Islamic habit tracker for all ages with points, streaks and a private journal. Free, works offline, no ads.","applicationCategory":"LifestyleApplication","operatingSystem":"Any","inLanguage":["en","bn","ar"],"image":"https://muhasabah-plus.app/icons/og-image.png","author":{"@type":"Person","name":"Shamim Noor","url":"https://github.com/shamimnoorofficial"},"publisher":{"@type":"Organization","name":"Muhasabah Plus","url":"https://muhasabah-plus.app/","logo":"https://muhasabah-plus.app/icons/icon-512.png"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"contentRating":"Everyone","isFamilyFriendly":true,"audience":{"@type":"PeopleAudience","suggestedMinAge":0,"suggestedMaxAge":99},"featureList":"Offline habits, points and streaks, private journal, prayer times, Window Controls Overlay title bar, tabbed app tabs"}</script>
  <link rel="stylesheet" href="/assets/app.css">
  <link rel="stylesheet" href="/pwa/premium.css">
  <link rel="stylesheet" href="/pwa/motion.css">
  <link rel="stylesheet" href="/pwa/donate.css">
  <link rel="stylesheet" href="/pwa/pro.css">
  <link rel="stylesheet" href="/pwa/polish.css">
+ <link rel="stylesheet" href="/pwa/chrome.css">
  <link rel="stylesheet" href="/pwa/onboarding.css">
  <script>try{if(localStorage.getItem("mhs:pro")==="1")document.documentElement.classList.add("mhs-pro");if(localStorage.getItem("mhs:lock"))document.documentElement.classList.add("mhs-locked")}catch(e){}</script>
  <style>html.mhs-locked body>*:not(#mhs-lock):not(.mhs-pt-toast){visibility:hidden!important}</style>
@@ -90,7 +95,7 @@
 
 
 <div id="mhs-install-bar" role="dialog" aria-label="Install Muhasabah" hidden>
-  <div class="txt"><b>Install Muhasabah</b><span>Home screen · offline · data on this device</span></div>
+  <div class="txt"><b>Install Muhasabah</b><span>Free · offline · data stays on this device</span><span class="mhs-safe">Rated Everyone · All ages</span></div>
   <button type="button" class="go" id="mhs-install-btn">Install</button>
   <button type="button" class="x" id="mhs-install-dismiss" aria-label="Dismiss">X</button>
 </div>
@@ -143,6 +148,7 @@
 })();
 </script>
 <script src="/pwa/install.js" defer></script>
+<script src="/pwa/titlebar.js" defer></script>
 <script src="/pwa/launch.js" defer></script>
 
 </body>

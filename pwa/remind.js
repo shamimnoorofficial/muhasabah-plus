@@ -257,7 +257,7 @@
     return n;
   }
   function isIOS() { return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); }
-  function standalone() { return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true; }
+  function standalone() { try { var m = window.matchMedia; if (m && (m("(display-mode: standalone)").matches || m("(display-mode: window-controls-overlay)").matches || m("(display-mode: tabbed)").matches)) return true; } catch (e) {} return navigator.standalone === true; }
 
   var Base = window.HTMLElement || function () {};
   class MhsRemind extends Base {
