@@ -48,6 +48,8 @@
       claim: "Claim {a}", claimed: "{a} is on its way back to your card. It usually arrives in 5–10 days.", cashDone: "All {p} returned. MashaAllah!",
       addMonthly: "Add Monthly Pro · {p}/mo", addLifetime: "Add Lifetime Premium · {p}", cards: "Saved cards", signOut: "Sign out",
       notPro: "No active Pro plan on this account yet.",
+      ls: { btn: "Continue to secure checkout · {p}", secure: "Secured by Lemon Squeezy · Cards, PayPal & more · Card details never touch our servers", both: "Lifetime is paid first, then Monthly opens in a second checkout.", wait: "Finish paying in the secure checkout window. Pro activates automatically.", check: "I've paid — check status", next: "Lifetime Premium is active. Now complete Monthly Pro.", pending: "Payment not confirmed yet. It can take a minute — try again shortly.", manage: "Manage billing & card", terms: "By paying you agree that Muhasabah charges {today} now{rec}. Lemon Squeezy is our reseller and merchant of record and handles billing, receipts and taxes." },
+      legal: { privacy: "Privacy Policy", terms: "Terms of Service", refund: "Refund Policy" },
       err: {
         invalid: "Incorrect email or password.", unconfirmed: "Please confirm your email first — check your inbox.",
         exists: "An account with this email already exists. Log in instead.", weak: "Choose a stronger password (at least 8 characters).",
@@ -95,6 +97,8 @@
       claim: "{a} দাবি করুন", claimed: "{a} আপনার কার্ডে ফেরত যাচ্ছে। সাধারণত ৫–১০ দিনে পৌঁছায়।", cashDone: "পুরো {p} ফেরত পেয়েছেন। মাশাআল্লাহ!",
       addMonthly: "মাসিক প্রো যোগ করুন · {p}/মাস", addLifetime: "লাইফটাইম প্রিমিয়াম যোগ করুন · {p}", cards: "সংরক্ষিত কার্ড", signOut: "সাইন আউট",
       notPro: "এই অ্যাকাউন্টে এখনো কোনো সক্রিয় প্রো প্ল্যান নেই।",
+      ls: { btn: "নিরাপদ চেকআউটে যান · {p}", secure: "Lemon Squeezy দ্বারা সুরক্ষিত · কার্ড, PayPal ও আরও · কার্ডের তথ্য আমাদের সার্ভারে আসে না", both: "আগে লাইফটাইমের পেমেন্ট হবে, তারপর দ্বিতীয় চেকআউটে মাসিক খুলবে।", wait: "নিরাপদ চেকআউট উইন্ডোতে পেমেন্ট শেষ করুন। প্রো নিজে থেকেই চালু হবে।", check: "পেমেন্ট করেছি — স্ট্যাটাস দেখুন", next: "লাইফটাইম প্রিমিয়াম চালু হয়েছে। এবার মাসিক প্রো সম্পন্ন করুন।", pending: "পেমেন্ট এখনো নিশ্চিত হয়নি। এক মিনিট লাগতে পারে — একটু পরে আবার চেষ্টা করুন।", manage: "বিলিং ও কার্ড ম্যানেজ করুন", terms: "পেমেন্ট করে আপনি সম্মত হচ্ছেন যে মুহাসাবা এখন {today} নেবে{rec}। Lemon Squeezy আমাদের রিসেলার ও মার্চেন্ট অব রেকর্ড — বিলিং, রসিদ ও ট্যাক্স তারাই দেখে।" },
+      legal: { privacy: "প্রাইভেসি পলিসি", terms: "সেবার শর্তাবলি", refund: "রিফান্ড পলিসি" },
       err: {
         invalid: "ইমেইল বা পাসওয়ার্ড ভুল।", unconfirmed: "আগে ইমেইল কনফার্ম করুন — ইনবক্স দেখুন।",
         exists: "এই ইমেইলে আগেই অ্যাকাউন্ট আছে। লগ ইন করুন।", weak: "আরও শক্তিশালী পাসওয়ার্ড দিন (কমপক্ষে ৮ অক্ষর)।",
@@ -142,6 +146,8 @@
       claim: "استرد {a}", claimed: "يعود {a} إلى بطاقتك، ويصل عادة خلال 5–10 أيام.", cashDone: "استُرد كامل {p}. ما شاء الله!",
       addMonthly: "أضف Pro الشهري · {p}/شهر", addLifetime: "أضف العضوية الدائمة · {p}", cards: "البطاقات المحفوظة", signOut: "تسجيل الخروج",
       notPro: "لا توجد خطة Pro نشطة على هذا الحساب بعد.",
+      ls: { btn: "تابع إلى الدفع الآمن · {p}", secure: "محمي بواسطة Lemon Squeezy · بطاقات وPayPal والمزيد · لا تمر بيانات البطاقة بخوادمنا", both: "تُدفع العضوية الدائمة أولًا، ثم يُفتح الاشتراك الشهري في دفع ثانٍ.", wait: "أكمل الدفع في نافذة الدفع الآمن. سيُفعَّل Pro تلقائيًا.", check: "دفعت — تحقّق من الحالة", next: "العضوية الدائمة مفعّلة. أكمل الآن Pro الشهري.", pending: "لم يتأكد الدفع بعد. قد يستغرق دقيقة — حاول بعد قليل.", manage: "إدارة الفوترة والبطاقة", terms: "بالدفع توافق على أن تخصم محاسبة {today} الآن{rec}. Lemon Squeezy هو البائع المعتمد لدينا ويتولى الفوترة والإيصالات والضرائب." },
+      legal: { privacy: "سياسة الخصوصية", terms: "شروط الخدمة", refund: "سياسة الاسترداد" },
       err: {
         invalid: "البريد أو كلمة المرور غير صحيحة.", unconfirmed: "يرجى تأكيد بريدك أولًا — تحقّق من صندوق الوارد.",
         exists: "يوجد حساب بهذا البريد. سجّل الدخول بدلًا من ذلك.", weak: "اختر كلمة مرور أقوى (8 أحرف على الأقل).",
@@ -164,6 +170,19 @@
     var s = T[lang()][k]; if (s == null) s = T.en[k]; if (s == null) s = k;
     if (vars && typeof s === "string") Object.keys(vars).forEach(function (v) { s = s.split("{" + v + "}").join(vars[v]); });
     return s;
+  }
+  /* Nested strings (ls.*, legal.*), falling back to English. */
+  function tl(group, k, vars) {
+    var g = T[lang()][group] || {}, s = g[k] != null ? g[k] : (T.en[group] || {})[k];
+    if (s == null) s = k;
+    if (vars) Object.keys(vars).forEach(function (v) { s = s.split("{" + v + "}").join(vars[v]); });
+    return s;
+  }
+  function isLS() { return !!(cfg && cfg.provider === "lemonsqueezy"); }
+  function legalLinks() {
+    return '<nav class="mhs-pro-legal" aria-label="Legal">' + ["privacy", "terms", "refund"].map(function (k) {
+      return '<a href="/legal/' + k + '" target="_blank" rel="noopener">' + esc(tl("legal", k)) + "</a>";
+    }).join("<span aria-hidden=\"true\">·</span>") + "</nav>";
   }
   function errText(code) { var e = T[lang()].err; return e[code] || T.en.err[code] || e.generic; }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -282,7 +301,7 @@
     else html = viewMember();
     sheet.innerHTML = html;
     sheet.setAttribute("data-view", v);
-    if (v === "pay" && cfg && cfg.enabled && st.card === "new") mountCard();
+    if (v === "pay" && cfg && cfg.enabled && !isLS() && st.card === "new") mountCard();
     var first = sheet.querySelector("[autofocus]") || sheet.querySelector(".mhs-pro-plan") || sheet.querySelector(".mhs-dn-x");
     if (first) try { first.focus({ preventScroll: true }); } catch (e) {}
   }
@@ -313,7 +332,7 @@
       (cfg && cfg.enabled ? "" : '<p class="mhs-dn-soon">' + esc(t("soonPlans")) + "</p>") +
       msg() +
       '<button type="button" class="mhs-pro-go" data-act="continue"' + (any ? "" : " disabled") + ">" + CROWN + "<span>" + esc(any ? t("cont") : t("none")) + "</span></button>" +
-      '<p class="mhs-dn-secure">' + LOCK + " " + esc(t("secure")) + "</p>";
+      '<p class="mhs-dn-secure">' + LOCK + " " + esc(isLS() ? tl("ls", "secure") : t("secure")) + "</p>" + legalLinks();
   }
   function viewAuth() {
     var mode = st.auth, forgot = mode === "forgot";
@@ -340,7 +359,27 @@
       '<form class="mhs-dn-form mhs-pro-form" data-form="reset" novalidate><label><span>' + esc(t("pass")) + '</span><input name="password" type="password" minlength="8" maxlength="128" dir="ltr" autocomplete="new-password" placeholder="' + esc(t("passPh")) + '" autofocus></label>' +
       msg() + '<button type="submit" class="mhs-pro-go"><span>' + esc(t("savePass")) + "</span></button></form>";
   }
+  function viewPayLS() {
+    var p = plans(), m = member() || {};
+    var lines = (st.lifetime ? '<li><span>' + esc(t("lifeName")) + '</span><b class="num">' + esc(money(p.lifetime)) + "</b></li>" : "") +
+      (st.monthly ? '<li><span>' + esc(t("monName")) + '</span><b class="num">' + esc(money(p.monthly)) + " <small>" + esc(t("monUnit")) + "</small></b></li>" : "");
+    var first = st.lifetime ? p.lifetime : p.monthly;
+    var rec = st.monthly && st.autoPay ? t("termsRec", { m: money(p.monthly) }) : "";
+    return head(t("pay"), t("signedAs", { email: m.email || st.email })) +
+      '<form class="mhs-dn-form mhs-pro-form" data-form="pay" novalidate>' +
+        '<ul class="mhs-pro-sum">' + lines + '<li class="tot"><span>' + esc(t("today")) + '</span><b class="num">' + esc(money(dueToday())) + "</b></li></ul>" +
+        (st.lifetime && st.monthly ? '<p class="mhs-dn-accept">' + esc(tl("ls", "both")) + "</p>" : "") +
+        '<div class="mhs-pro-opts">' + (st.monthly ? toggle("autoPay", t("autoPay"), t("autoPaySub"), st.autoPay) : "") + "</div>" +
+        msg() +
+        '<button type="submit" class="mhs-pro-go">' + LOCK + '<span class="lbl">' + esc(tl("ls", "btn", { p: money(first) })) + "</span></button>" +
+        (st.lsOpen ? '<button type="button" class="mhs-pro-go ghost" data-act="lscheck">' + esc(tl("ls", "check")) + "</button>" : "") +
+        '<p class="mhs-pro-terms">' + esc(tl("ls", "terms", { today: money(first), rec: rec })) + "</p>" +
+        '<p class="mhs-dn-secure">' + LOCK + " " + esc(tl("ls", "secure")) + "</p>" + legalLinks() +
+      "</form>" +
+      '<div class="mhs-pro-links"><button type="button" class="mhs-pro-link" data-act="plans">← ' + esc(t("back")) + '</button><button type="button" class="mhs-pro-link" data-act="signout">' + esc(t("switchAcc")) + "</button></div>";
+  }
   function viewPay() {
+    if (isLS()) return viewPayLS();
     var live = cfg && cfg.enabled, p = plans(), m = member() || {}, cards = m.cards || [];
     var lines = (st.lifetime ? '<li><span>' + esc(t("lifeName")) + '</span><b class="num">' + esc(money(p.lifetime)) + "</b></li>" : "") +
       (st.monthly ? '<li><span>' + esc(t("monName")) + '</span><b class="num">' + esc(money(p.monthly)) + " <small>" + esc(t("monUnit")) + "</small></b></li>" : "");
@@ -364,7 +403,7 @@
         (live ? "" : '<p class="mhs-dn-soon">' + esc(cfg && cfg.unreachable && !navigator.onLine ? errText("offline") : t("soon")) + "</p>") +
         '<button type="submit" class="mhs-pro-go"' + (live ? "" : " disabled") + ">" + LOCK + '<span class="lbl">' + esc(live ? t("payBtn", { p: money(dueToday()) }) : t("soonBtn")) + "</span></button>" +
         '<p class="mhs-pro-terms">' + esc(t("terms", { today: money(dueToday()), rec: rec })) + "</p>" +
-        '<p class="mhs-dn-secure">' + LOCK + " " + esc(t("secure")) + "</p>" +
+        '<p class="mhs-dn-secure">' + LOCK + " " + esc(t("secure")) + "</p>" + legalLinks() +
       "</form>" +
       '<div class="mhs-pro-links"><button type="button" class="mhs-pro-link" data-act="plans">← ' + esc(t("back")) + '</button><button type="button" class="mhs-pro-link" data-act="signout">' + esc(t("switchAcc")) + "</button></div>";
   }
@@ -399,14 +438,15 @@
       var mo = m.monthly, end = mo.periodEnd ? date(mo.periodEnd) : "";
       var line = !mo.active ? t("inactive") : mo.status === "past_due" ? t("pastDue") : end ? (mo.autoRenew ? t("renews", { d: end }) : t("ends", { d: end })) : "";
       out += '<section class="mhs-pro-card"><div class="row"><b>' + esc(t("monthly")) + '</b><small class="num">' + esc(money(p.monthly)) + " " + esc(t("monUnit")) + "</small></div><p>" + esc(line) + "</p>" +
-        (mo.active ? toggle("autoRenew", t("autoRenew"), t("autoPaySub"), mo.autoRenew) : "") + "</section>";
+        (mo.active ? toggle("autoRenew", t("autoRenew"), t("autoPaySub"), mo.autoRenew) : "") +
+        (mo.provider === "lemonsqueezy" && mo.active ? '<button type="button" class="mhs-pro-go sm ghost" data-act="portal">' + esc(tl("ls", "manage")) + "</button>" : "") + "</section>";
     }
     if (m.cards && m.cards.length) out += '<section class="mhs-pro-card"><div class="row"><b>' + esc(t("cards")) + "</b></div>" + m.cards.map(function (x) { return "<p class=\"num\">" + esc(cap(x.brand)) + " •••• " + esc(x.last4) + " · " + esc(x.exp) + "</p>"; }).join("") + "</section>";
     if (m.pro) out += '<mhs-pro-tools compact="1"></mhs-pro-tools>';
     out += msg();
     if (!(m.monthly && m.monthly.active)) out += '<button type="button" class="mhs-pro-go" data-act="add" data-plan="monthly">' + esc(t("addMonthly", { p: money(p.monthly) })) + "</button>";
     if (!m.lifetime) out += '<button type="button" class="mhs-pro-go' + (m.monthly && m.monthly.active ? "" : " ghost") + '" data-act="add" data-plan="lifetime">' + esc(t("addLifetime", { p: money(p.lifetime) })) + "</button>";
-    out += '<div class="mhs-pro-links"><button type="button" class="mhs-pro-link" data-act="signout">' + esc(t("signOut")) + "</button></div>";
+    out += '<div class="mhs-pro-links"><button type="button" class="mhs-pro-link" data-act="signout">' + esc(t("signOut")) + "</button></div>" + legalLinks();
     return out;
   }
 
@@ -492,6 +532,15 @@
       }).then(function () { setBusy(false); st.lifetime = true; st.monthly = true; st.card = "new"; st.auth = "login"; go("plans"); });
       return;
     }
+    if (act === "lscheck") { checkLS(st.lsOrder || null, 0, true); return; }
+    if (act === "portal") {
+      /* Open the window synchronously so popup blockers allow it, then point it at the signed URL. */
+      var w = window.open("about:blank", "_blank");
+      setBusy(true);
+      post({ action: "portal" }).then(function (d) { setBusy(false); if (w) w.location.href = d.url; else location.href = d.url; })
+        .catch(function (x) { if (w) w.close(); fail(x); });
+      return;
+    }
     if (act === "claim") {
       setBusy(true);
       post({ action: "cashback", streak: streak() }).then(function (d) {
@@ -544,6 +593,7 @@
   }
   function submitPay() {
     if (!(cfg && cfg.enabled)) return;
+    if (isLS()) return payLS();
     var useSaved = st.card !== "new";
     if (!useSaved && (!stripe || !cardEls || !(cardEls.complete.number && cardEls.complete.exp && cardEls.complete.cvc))) { showMsg(errText("cardInc")); return; }
     var saveCard = (st.monthly && st.autoPay) || st.saveCard;
@@ -568,6 +618,64 @@
       })
       .catch(fail);
   }
+  /* ---------- Lemon Squeezy overlay checkout ---------- */
+  var lemonPromise = null;
+  function loadLemon() {
+    if (window.LemonSqueezy) return Promise.resolve(window.LemonSqueezy);
+    if (lemonPromise) return lemonPromise;
+    lemonPromise = new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = "https://assets.lemonsqueezy.com/lemon.js"; s.defer = true;
+      s.onload = function () {
+        try { if (window.createLemonSqueezy) window.createLemonSqueezy(); } catch (e) {}
+        if (!window.LemonSqueezy) { lemonPromise = null; reject(codeErr("network")); return; }
+        window.LemonSqueezy.Setup({ eventHandler: onLemonEvent });
+        resolve(window.LemonSqueezy);
+      };
+      s.onerror = function () { lemonPromise = null; reject(codeErr("network")); };
+      document.head.appendChild(s);
+    });
+    return lemonPromise;
+  }
+  function onLemonEvent(ev) {
+    if (!ev || ev.event !== "Checkout.Success") return;
+    var d = ev.data || {}, o = d.order && (d.order.data || d.order) || d;
+    st.lsOrder = o && o.id ? String(o.id) : null;
+    try { window.LemonSqueezy.Url.Close(); } catch (e) {}
+    checkLS(st.lsOrder, 0, false);
+  }
+  function payLS() {
+    setBusy(true, t("paying")); showMsg("");
+    var dark = document.documentElement.dataset.theme !== "light";
+    Promise.all([post({ action: "checkout", lifetime: st.lifetime, monthly: st.monthly, autoRenew: st.autoPay, dark: dark }), loadLemon()])
+      .then(function (r) {
+        st.lsPlan = r[0].plan; st.lsNext = r[0].next; st.lsOrder = null; st.lsOpen = true;
+        setBusy(false); render(); showMsg(tl("ls", "wait"));
+        r[1].Url.Open(r[0].url);
+      })
+      .catch(fail);
+  }
+  /* After the overlay reports success (or the member taps "check"), ask the server to verify.
+   * The signed webhook may land a few seconds later, so retry briefly before giving up. */
+  function checkLS(orderId, n, manual) {
+    if (!st.lsPlan) return;
+    setBusy(true, t("verifying"));
+    post({ action: "confirm", kind: "ls", plan: st.lsPlan, orderId: orderId || "" }).then(function (d) {
+      cfg.member = d.member; applyPro(); st.busy = false; st.lsOpen = false;
+      if (st.lsPlan === "lifetime") st.lifetime = false;
+      if (st.lsPlan === "monthly") st.monthly = false;
+      var next = st.lsNext && st[st.lsNext];
+      st.lsPlan = null; st.lsNext = null; st.lsOrder = null;
+      if (next) { go("pay"); showMsg(tl("ls", "next")); return; }
+      go("done");
+      try { if (window.MHSMotion) window.MHSMotion.burst(innerWidth / 2, innerHeight * 0.4, 80, 2.6); } catch (x) {}
+    }).catch(function (e) {
+      if (e.code === "not_paid" && n < (manual ? 2 : 6)) { setTimeout(function () { checkLS(orderId, n + 1, manual); }, 2000 * (n + 1)); return; }
+      setBusy(false); render();
+      showMsg(e.code === "not_paid" ? tl("ls", "pending") : errText(e.code));
+    });
+  }
+
   /* Card payments can take a moment to settle (e.g. after 3-D Secure), so retry the check briefly. */
   function confirmWithRetry(order, n) {
     return post({ action: "confirm", kind: order.kind, id: order.id }).catch(function (e) {
@@ -626,6 +734,10 @@
     new MutationObserver(function () { if (sheet && sheet.classList.contains("show") && !st.busy && !cardEls) render(); })
       .observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
     handleCallback();
+    if (/[?&]pro=success\b/.test(location.search)) {
+      try { var u = new URL(location.href); u.searchParams.delete("pro"); history.replaceState(history.state, "", u.pathname + u.search + u.hash); } catch (x) {}
+      setTimeout(function () { open("member"); }, 600);
+    }
     /* Refresh membership quietly so the golden crest stays accurate. */
     (window.requestIdleCallback || function (f) { setTimeout(f, 2500); })(function () { if (navigator.onLine) loadConfig(); });
   }

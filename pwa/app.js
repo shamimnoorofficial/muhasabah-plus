@@ -39,7 +39,8 @@
       nudgeTitle: "Time to back up",
       nudgeNever: "Your data is only on this phone. Save a backup file so nothing is lost if the phone is lost or reset.",
       nudgeDays: "Last backup was {d} days ago. Save a fresh copy to stay safe.",
-      nudgeBtn: "Back up"
+      nudgeBtn: "Back up",
+      legal: "Legal", privacy: "Privacy Policy", terms: "Terms of Service", refund: "Refund Policy"
     },
     ar: {
       title: "النسخ الاحتياطي ووضع عدم الاتصال",
@@ -75,7 +76,8 @@
       nudgeTitle: "حان وقت النسخ الاحتياطي",
       nudgeNever: "بياناتك على هذا الهاتف فقط. احفظ ملف نسخة احتياطية حتى لا تضيع إذا فُقد الهاتف أو أُعيد ضبطه.",
       nudgeDays: "آخر نسخة احتياطية قبل {d} يوم. احفظ نسخة جديدة.",
-      nudgeBtn: "نسخ"
+      nudgeBtn: "نسخ",
+      legal: "قانوني", privacy: "سياسة الخصوصية", terms: "شروط الخدمة", refund: "سياسة الاسترداد"
     }
   };
   if (typeof T !== "undefined" && T.en) T.bn = Object.fromEntries(Object.entries(T.en).map(function (pair) { return [pair[0], window.MHSBengali[pair[1]] || pair[1]]; }));
@@ -327,6 +329,14 @@
       });
       rBox.appendChild(list);
       root.appendChild(rBox);
+
+      // Legal
+      root.appendChild(el("div", { class: "mhs-sec mhs-legal" }, [
+        el("div", { class: "mhs-label", text: t("legal") }),
+        el("div", { class: "mhs-actions" }, ["privacy", "terms", "refund"].map(function (k) {
+          return el("a", { class: "mhs-btn", href: "/legal/" + k, target: "_blank", rel: "noopener", text: t(k) });
+        }))
+      ]));
 
       this.replaceChildren(root);
     }

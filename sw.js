@@ -1,7 +1,7 @@
 /* Muhasabah service worker — full offline support.
  * Bump VERSION whenever app files change so installed apps update automatically.
  */
-const VERSION = "2026-11-05.12";
+const VERSION = "2026-11-05.13";
 const CORE = "mhs-core-" + VERSION;
 const RUNTIME = "mhs-runtime";
 const PRECACHE = [
@@ -144,6 +144,8 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
   const url = new URL(request.url);
 
+  /* Legal pages are standalone documents, not app routes. */
+  if (url.origin === self.location.origin && url.pathname.startsWith("/legal/")) { event.respondWith(networkFirst(request)); return; }
   if (request.mode === "navigate" && url.origin === self.location.origin) {
     event.respondWith(shellFast(request, "/"));
     return;

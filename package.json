@@ -26,6 +26,7 @@
     "test:celebrate": "node tests/celebrate.cjs",
     "test:donate": "node tests/donate.cjs",
     "test:languages": "node tests/languages.cjs",
-    "i18n:catalog": "node scripts/i18n-catalog.mjs"
+    "i18n:catalog": "node scripts/i18n-catalog.mjs",
+    "test:lemonsqueezy": "node tests/lemonsqueezy.mjs"
   }
 }
