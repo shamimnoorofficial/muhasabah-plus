@@ -11,7 +11,7 @@
  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
  <meta name="apple-mobile-web-app-title" content="Muhasabah">
  <meta name="application-name" content="Muhasabah">
- <style>html,body{background:#0a0d14}body{color:#e5eee8;margin:0}#root{min-height:100dvh}#mhs-install-bar{display:none}#mhs-install-bar.show{display:flex}.mhs-loading{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:1.5rem;background:#0a0d14;text-align:center;font-family:system-ui,sans-serif}.mhs-loading p{color:#9fb3a6;line-height:1.6}.mhs-loading button{border:0;border-radius:.75rem;padding:.8rem 1.5rem;background:#00c853;color:#0a0d14;font:inherit;font-weight:600;cursor:pointer}.mhs-loading button:focus-visible{outline:2px solid #e5eee8;outline-offset:4px}</style>
+ <style>html,body{background:#0a0d14}body{color:#e5eee8;margin:0}#root{min-height:100dvh}#mhs-install-bar{display:none}#mhs-install-bar.show{display:flex}.mhs-loading{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:1.5rem;background:#0a0d14;text-align:center;font-family:system-ui,sans-serif}.mhs-loading p{color:#9fb3a6;line-height:1.6;margin:0;max-width:20rem}.mhs-splash{display:grid;justify-items:center;gap:1.5rem}.mhs-splash-logo{position:relative;width:150px;height:150px;display:grid;place-items:center}#mhs-startup .mhs-splash-logo img{position:relative;z-index:2;width:78px;height:78px;border-radius:0;animation:mhsSplashGlow 2.4s ease-in-out infinite;filter:drop-shadow(0 0 14px rgba(0,230,118,.45))}.mhs-splash-halo{position:absolute;inset:6px;border-radius:50%;background:radial-gradient(circle,rgba(0,230,118,.42) 0,rgba(0,200,83,.16) 42%,transparent 70%);animation:mhsSplashHalo 2.4s ease-in-out infinite}.mhs-splash-ring{position:absolute;inset:14px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 50%,rgba(0,230,118,.05) 60%,rgba(0,230,118,.95) 88%,transparent 100%);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));animation:mhsSplashSpin 1.5s linear infinite;filter:drop-shadow(0 0 6px rgba(0,230,118,.9))}.mhs-splash-ring2{inset:24px;animation-duration:2.6s;animation-direction:reverse;opacity:.45}.mhs-splash-msg.is-quiet{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.mhs-loading.is-failed .mhs-splash-ring{display:none}.mhs-loading.is-failed .mhs-splash-logo img,.mhs-loading.is-failed .mhs-splash-halo{animation:none}@keyframes mhsSplashGlow{0%,100%{transform:scale(1);filter:drop-shadow(0 0 10px rgba(0,230,118,.35))}50%{transform:scale(1.05);filter:drop-shadow(0 0 28px rgba(0,230,118,.85))}}@keyframes mhsSplashHalo{0%,100%{opacity:.5;transform:scale(.86)}50%{opacity:1;transform:scale(1.06)}}@keyframes mhsSplashSpin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){#mhs-startup .mhs-splash-logo img,.mhs-splash-halo,.mhs-splash-ring{animation:none}.mhs-splash-ring2{display:none}}.mhs-loading button{border:0;border-radius:.75rem;padding:.8rem 1.5rem;background:#00c853;color:#0a0d14;font:inherit;font-weight:600;cursor:pointer}.mhs-loading button:focus-visible{outline:2px solid #e5eee8;outline-offset:4px}</style>
  <link rel="manifest" href="/manifest.webmanifest">
  <link rel="preconnect" href="https://fonts.googleapis.com">
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,11 +34,12 @@
  <link rel="stylesheet" href="/pwa/donate.css">
  <link rel="stylesheet" href="/pwa/pro.css">
  <link rel="stylesheet" href="/pwa/polish.css">
+ <link rel="stylesheet" href="/pwa/onboarding.css">
  <script>try{if(localStorage.getItem("mhs:pro")==="1")document.documentElement.classList.add("mhs-pro");if(localStorage.getItem("mhs:lock"))document.documentElement.classList.add("mhs-locked")}catch(e){}</script>
  <style>html.mhs-locked body>*:not(#mhs-lock):not(.mhs-pt-toast){visibility:hidden!important}</style>
 </head>
 <body>
- <div id="root"><div class="mhs-loading" id="mhs-startup" role="status" aria-live="polite"><div><img src="/icons/logo.webp" width="64" height="64" alt="Muhasabah"><p id="mhs-startup-message">Opening…</p><button id="mhs-startup-retry" type="button" hidden>Try again</button></div></div></div>
+ <div id="root"><div class="mhs-loading" id="mhs-startup" role="status" aria-live="polite"><div class="mhs-splash"><div class="mhs-splash-logo" aria-hidden="true"><span class="mhs-splash-halo"></span><span class="mhs-splash-ring"></span><span class="mhs-splash-ring mhs-splash-ring2"></span><img src="/icons/logo.webp" width="78" height="78" alt=""></div><p id="mhs-startup-message" class="mhs-splash-msg is-quiet">Opening…</p><button id="mhs-startup-retry" type="button" hidden>Try again</button></div></div></div>
  <script src="/pwa/startup.js"></script>
  <noscript><p style="padding:2rem;position:fixed;inset:0;background:#0a0d14;z-index:101">Enable JavaScript to open Muhasabah. মুহাসাবা খুলতে JavaScript চালু করুন।</p></noscript>
 
@@ -55,6 +56,7 @@
 <script src="/pwa/donate.js" defer></script>
 <script src="/pwa/pro.js" defer></script>
 <script src="/pwa/protools.js" defer></script>
+<script src="/pwa/onboarding.js" defer></script>
 
 
 <div id="mhs-install-bar" role="dialog" aria-label="Install Muhasabah" hidden>

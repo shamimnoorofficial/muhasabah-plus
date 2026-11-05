@@ -11,19 +11,18 @@ const baseURL = process.env.TEST_BASE_URL || 'http://localhost:8889';
       page.on('pageerror', error => errors.push(error.message));
       await page.addInitScript(lang => {
         localStorage.setItem('muhasabah:data:v1', JSON.stringify({ lang }));
+        // A new install that picked a language but has not finished the welcome screen yet.
+        localStorage.setItem('muhasabah:welcome:v2', '1');
       }, lang);
       await page.goto(baseURL);
       await page.locator('#mhs-startup').waitFor({ state: 'detached' });
       assert.equal(await page.locator('html').getAttribute('lang'), lang);
-      const button = page.getByRole('button', { name: lang === 'bn' ? 'এগিয়ে যান' : 'Continue', exact: true });
-      // The bundle currently translates welcome content for Bengali and English.
-      if (lang === 'bn') {
-        await page.getByText('স্বাগতম • অভ্যাস গড়ুন, পুরস্কার অর্জন করুন', { exact: true }).waitFor();
-      } else {
-        await page.getByText('Welcome • Make Habit, Get Reward', { exact: true }).waitFor();
-      }
+      // A new install opens straight into the onboarding, starting with the language step.
+      const heading = { en: 'Choose your language', bn: 'আপনার ভাষা বেছে নিন', ar: 'اختر لغتك' }[lang];
+      await page.getByRole('heading', { name: heading, exact: true }).waitFor();
       assert.equal(await page.locator('.mhs-loading').count(), 0);
-      await button.click();
+      assert.equal(await page.locator('.mhs-welcome').count(), 0, 'no separate welcome box');
+      await page.locator('.mhs-ftue-next').click();
       assert.equal(errors.length, 0, errors.join('\n'));
       await context.close();
     }
@@ -46,8 +45,12 @@ const baseURL = process.env.TEST_BASE_URL || 'http://localhost:8889';
     await slowPage.route('**/assets/app.js', () => {});
     await slowPage.goto(baseURL, { waitUntil: 'commit' });
     await slowPage.locator('#mhs-startup-message').waitFor();
+    // While loading only the glowing logo shows; the label is kept for screen readers.
+    assert.equal(await slowPage.locator('#mhs-startup-message.is-quiet').count(), 1);
+    assert.equal(await slowPage.locator('.mhs-splash-ring').count() > 0, true);
     await slowPage.clock.fastForward(16000);
     assert.equal(await slowPage.locator('#mhs-startup-retry').isVisible(), true);
+    assert.equal(await slowPage.locator('#mhs-startup-message.is-quiet').count(), 0, 'the error message is shown');
     await slow.close();
     console.log('Startup: English, Bengali, Arabic, failed download, retry and stalled download passed');
   } finally {
