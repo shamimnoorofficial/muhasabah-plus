@@ -6746,6 +6746,21 @@ function $s(e, n, t) {
     _owner: Zv.current
   };
 }
+const MHS_ENTRY_TYPES = {
+  checkIn: ["Check-in", "تسجيل إنجاز"],
+  manualReward: ["Reward", "مكافأة"],
+  manualPenalty: ["Penalty", "خصم"],
+  penalty: ["Auto penalty", "خصم تلقائي"],
+  autoPenalty: ["Auto penalty", "خصم تلقائي"],
+  excuse: ["Excused", "معذور"],
+  todoCheckIn: ["Todo Done", "إنجاز مهمة"],
+  todoPenalty: ["Todo Missed", "خصم مهمة"]
+};
+function mhsEntryTypeLabel(type, lang) {
+  const known = MHS_ENTRY_TYPES[type];
+  if (known) return lang === "ar" ? known[1] : known[0];
+  return String(type || "").replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^./, c => c.toUpperCase());
+}
 function localizedElement(type, props, key) {
   if (window.MHSLocale === "bn" && props) {
     props = {...props};
@@ -7706,7 +7721,7 @@ function na() {
           })]
         }), i("div", {
           className: "text-[10px] text-[hsl(var(--muted-foreground)/0.7)]",
-          children: "v1.2.0 • Data on device"
+          children: "v1.3.0 • Data on device"
         })]
       })]
     }), f("header", {
@@ -7743,7 +7758,8 @@ function na() {
         }), f("button", {
           onClick: () => r(a => ({en:"bn", bn:"ar", ar:"en"})[a]),
           "aria-label": "Language: English / বাংলা / العربية",
-          className: "rounded-xl border border-border px-2.5 py-1 text-[11px]",
+          title: "Switch language",
+          className: "mhs-lang-toggle rounded-xl border border-border px-2.5 py-1 text-[11px]",
           children: [" ", l.toUpperCase(), " "]
         })]
       })]
@@ -7793,7 +7809,7 @@ function na() {
             }), f("div", {
               className: "mt-4 flex items-center gap-2",
               children: [f("span", {
-                className: "inline-flex items-center gap-1 rounded-full border border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.10)] px-2.5 py-1 text-xs text-[hsl(var(--primary))]",
+                className: `inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs ${iA >= 0 ? "border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.10)] text-[hsl(var(--primary))]" : "border-[#FF3B30]/30 bg-[#FF3B30]/10 text-[#FF3B30]"}`,
                 children: [iA >= 0 ? "▲ +" : "▼ ", iA, " Pts"]
               }), f("span", {
                 className: "text-[11px] text-[hsl(var(--muted-foreground))]",
@@ -7803,7 +7819,7 @@ function na() {
               })]
             })]
           }), i("div", {
-            className: "grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-5 lg:gap-6 border-t border-[hsl(var(--border))] pt-5 sm:border-l sm:border-t-0 sm:pl-7 min-w-0",
+            className: "mhs-stat-row grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-5 lg:gap-6 border-t border-[hsl(var(--border))] pt-5 sm:border-l sm:border-t-0 sm:pl-7 min-w-0",
             children: [{
               label: u.streak,
               value: `${ia}d`
@@ -7990,8 +8006,9 @@ function na() {
                 },
                 children: u.recentTrades
               }), i("button", {
+                type: "button",
                 onClick: () => n("ledger"),
-                className: "text-[11px] text-[hsl(var(--muted-foreground))]",
+                className: "mhs-link-btn text-[11px] text-[hsl(var(--muted-foreground))]",
                 children: "View all →"
               })]
             }), i("div", {
@@ -8483,8 +8500,19 @@ function na() {
               fontFamily: "var(--font-display)"
             },
             children: ["24h Timeline • ", u.productiveBlocks]
-          }), i("div", {
+          }), !o.some(x => x.status === "active") ? i("p", {
+            className: "text-xs text-[hsl(var(--muted-foreground))]",
+            children: "Nothing scheduled yet. Active habits appear here at their start time."
+          }) : i("div", {
             className: "relative ml-2 border-l border-border pl-4 space-y-3 max-h-[320px] overflow-y-auto scrollbar-hide",
+            ref: el => {
+              if (!el || el.dataset.mhsScrolled) return;
+              el.dataset.mhsScrolled = "1";
+              requestAnimationFrame(() => {
+                const now = el.querySelector("[data-now]");
+                if (now) el.scrollTop = Math.max(0, now.offsetTop - el.clientHeight / 2 + now.offsetHeight / 2);
+              });
+            },
             children: Array.from({
               length: 24
             }).map((a, h) => {
@@ -8499,6 +8527,7 @@ function na() {
                 } : null,
                 B = dn.getHours() === h;
               return f("div", {
+                "data-now": B ? "" : undefined,
                 className: `flex items-center gap-3 text-xs py-1.5 ${B ? "bg-amber-500/10 -mx-2 px-2 rounded-lg border border-amber-500/20" : ""}`,
                 children: [i("span", {
                   className: "num w-10 text-[11px] text-[hsl(var(--muted-foreground))]",
@@ -8800,11 +8829,17 @@ function na() {
           children: [i("input", {
             value: P,
             onChange: a => C(a.target.value),
+            onKeyDown: a => { if (a.key === "Escape" && P) { a.stopPropagation(); C(""); p(""); } },
+            type: "search",
+            "aria-label": "Search the ledger",
             placeholder: u.searchLedger,
             className: "flex-1 min-w-0 rounded-xl border border-border bg-[hsl(var(--card)/0.8)] px-5 py-3 text-sm placeholder:text-[hsl(var(--muted-foreground))] focus:outline-none focus:ring-1 focus:ring-[hsl(var(--primary)/0.4)]"
           }), i("button", {
-            onClick: () => C(""),
-            className: "h-11 rounded-xl border border-border px-5 text-xs shrink-0",
+            type: "button",
+            onClick: () => { C(""); p(""); },
+            disabled: !P,
+            "aria-label": "Clear search",
+            className: "h-11 rounded-xl border border-border px-5 text-xs shrink-0 disabled:opacity-40 disabled:cursor-default",
             children: "Clear"
           })]
         }), i("div", {
@@ -8813,7 +8848,7 @@ function na() {
             let a = [...s].sort((w, L) => L.ts - w.ts || w.id.localeCompare(L.id));
             if (y === "gains") a = a.filter(w => w.delta > 0);
             if (y === "losses") a = a.filter(w => w.delta < 0);
-            if (M) a = a.filter(w => (w.reason + w.note + w.type).toLowerCase().includes(M.toLowerCase()));
+            if (M) a = a.filter(w => [w.reason, w.note, w.type, mhsEntryTypeLabel(w.type, l), window.MHSBengali && window.MHSBengali[mhsEntryTypeLabel(w.type, "en")]].filter(Boolean).join(" ").toLowerCase().includes(M.trim().toLowerCase()));
             if (a.length === 0) return f("div", {
               className: "panel p-8 text-center",
               children: [i("div", {
@@ -8848,7 +8883,7 @@ function na() {
                       children: [B.delta > 0 ? "+" : "", B.delta]
                     }), i("span", {
                       className: "rounded-full border border-border px-2.5 py-1 text-[10px]",
-                      children: B.type === "todoCheckIn" ? l === "ar" ? "إنجاز مهمة" : "Todo Done" : B.type === "todoPenalty" ? l === "ar" ? "خصم مهمة" : "Todo Missed" : B.type
+                      children: mhsEntryTypeLabel(B.type, l)
                     }), B.audit && i("span", {
                       className: "rounded-full bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] text-amber-300",
                       children: B.audit
@@ -8943,7 +8978,7 @@ function na() {
         }), i(MhsPreferences, { lang: l, setLanguage: r })] }), e === "settings" && f("div", {
         className: "space-y-6",
         children: [
-        i("mhs-prayer", { lang: l }), i("mhs-remind", { lang: l }), f("div", {
+        i("mhs-prayer", { lang: l }), i("mhs-remind", { lang: l }), i('section', {className:'panel mhs-preferences', children:f('div', {children:[i('h2',{children:l === 'bn' ? 'দিনলিপির পছন্দ' : l === 'ar' ? 'تفضيلات اليوميات' : 'Journal preferences'}), i('p',{children:l === 'bn' ? 'লেখার আকার, রিমাইন্ডার, দৈনিক লক্ষ্য ও আত্মপর্যালোচনার ধরন।' : l === 'ar' ? 'حجم النص والتذكيرات وأهداف الكتابة.' : 'Text size, reminders, writing goals and reflection prompts.'}), i('button',{type:'button',onClick:()=>window.MHSJournal?.openSettings(),children:l === 'bn' ? 'দিনলিপি কনফিগার করুন' : l === 'ar' ? 'إعداد اليوميات' : 'Configure journal'})]})}), f("div", {
           className: "panel p-6 sm:p-8 lg:p-8 space-y-6",
           children: [f("div", {
             className: "flex items-start gap-5",
@@ -8979,7 +9014,7 @@ function na() {
                 children: "Your data stays on your device. Export to backup, import to restore."
               }), i("div", {
                 className: "mt-1 text-[11px] text-[hsl(var(--muted-foreground)/0.7)]",
-                children: "Muhasabah v1.2.0 · Make Habit, Get Reward · Saved automatically on this device"
+                children: "Muhasabah v1.3.0 · Make Habit, Get Reward · Saved automatically on this device"
               })]
             })]
           }), f("div", {
@@ -9068,11 +9103,11 @@ function na() {
               children: ["muhasabah_export_", new Date().toISOString().slice(0, 10), ".json"]
             }), " • Import replaces current data after confirmation • No cloud login required"]
           })]
-        }), i('section', {className:'panel mhs-preferences', children:f('div', {children:[i('h2',{children:l === 'bn' ? 'দিনলিপির পছন্দ' : l === 'ar' ? 'تفضيلات اليوميات' : 'Journal preferences'}), i('p',{children:l === 'bn' ? 'লেখার আকার, রিমাইন্ডার, দৈনিক লক্ষ্য ও আত্মপর্যালোচনার ধরন।' : l === 'ar' ? 'حجم النص والتذكيرات وأهداف الكتابة.' : 'Text size, reminders, writing goals and reflection prompts.'}), i('button',{type:'button',onClick:()=>window.MHSJournal?.openSettings(),children:l === 'bn' ? 'দিনলিপি কনফিগার করুন' : l === 'ar' ? 'إعداد اليوميات' : 'Configure journal'})]})}), i("mhs-backup", {
+        }), i("mhs-backup", {
           lang: l
         }), f("div", {
           className: "text-[10px] text-[hsl(var(--muted-foreground)/0.7)]",
-          children: ["v1.2.0 • Saved on this device • ", i(LiveClock, {})]
+          children: ["v1.3.0 • Saved on this device • ", i(LiveClock, {})]
         })]
       })]
     }), i("nav", {

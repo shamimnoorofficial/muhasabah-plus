@@ -157,7 +157,7 @@ window.MHSBengali = {
   "Icon • 50 emoji": "আইকন • ৫০টি ইমোজি",
   "Color • 12": "রং • ১২টি",
   "Templates • 20 Ready one-tap": "টেমপ্লেট • এক চাপে ব্যবহার করুন",
-  "v1.1.0 • Data on device": "সংস্করণ ১.১.০ • ডিভাইসে ডেটা",
+  "v1.3.0 • Data on device": "সংস্করণ ১.৩.০ • ডিভাইসে ডেটা",
   "pts": "পয়েন্ট",
   "• LOD ≥20 pts": "• বড় পরিবর্তন ≥২০ পয়েন্ট",
   "View all →": "সব দেখুন →",
@@ -165,7 +165,7 @@ window.MHSBengali = {
   "Add All": "সব যোগ করুন",
   "Add": "যোগ করুন",
   "Clear": "মুছুন",
-  "Muhasabah v1.1.0 · Make Habit, Get Reward · Saved automatically on this device": "মুহাসাবা ১.১.০ · অভ্যাস গড়ুন, পুরস্কার অর্জন করুন · ডিভাইসে স্বয়ংক্রিয়ভাবে সংরক্ষিত",
+  "Muhasabah v1.3.0 · Make Habit, Get Reward · Saved automatically on this device": "মুহাসাবা ১.৩.০ · অভ্যাস গড়ুন, পুরস্কার অর্জন করুন · ডিভাইসে স্বয়ংক্রিয়ভাবে সংরক্ষিত",
   "Add Reward • Manual": "নিজে পুরস্কার যোগ করুন",
   "Title *": "শিরোনাম *",
   "Note 5+ chars *": "অন্তত ৫ অক্ষরের নোট *",
@@ -224,5 +224,13 @@ window.MHSBengali = {
   "All tasks done — well done!": "সব কাজ সম্পন্ন — মাশাআল্লাহ!",
   "Todo progress": "টুডুর অগ্রগতি",
   "Quick deadline": "দ্রুত সময়সীমা",
-  "Todo List": "টুডু তালিকা"
+  "Todo List": "টুডু তালিকা",
+  "v1.3.0 • Saved on this device • ": "সংস্করণ ১.৩.০ • এই ডিভাইসে সংরক্ষিত • ",
+  "Check-in": "সম্পন্ন",
+  "Auto penalty": "স্বয়ংক্রিয় কর্তন",
+  "Auto Penalty": "স্বয়ংক্রিয় কর্তন",
+  "Switch language": "ভাষা পরিবর্তন",
+  "Nothing scheduled yet. Active habits appear here at their start time.": "এখনো কিছু নির্ধারিত নেই। সক্রিয় অভ্যাসগুলো তাদের শুরুর সময়ে এখানে দেখা যাবে।",
+  "Clear search": "অনুসন্ধান মুছুন",
+  "Search the ledger": "হিসাবখাতায় খুঁজুন"
 };
