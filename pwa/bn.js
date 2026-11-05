@@ -232,5 +232,6 @@ window.MHSBengali = {
   "Switch language": "ভাষা পরিবর্তন",
   "Nothing scheduled yet. Active habits appear here at their start time.": "এখনো কিছু নির্ধারিত নেই। সক্রিয় অভ্যাসগুলো তাদের শুরুর সময়ে এখানে দেখা যাবে।",
   "Clear search": "অনুসন্ধান মুছুন",
-  "Search the ledger": "হিসাবখাতায় খুঁজুন"
+  "Search the ledger": "হিসাবখাতায় খুঁজুন",
+  "Point Weight 1-1000 • ": "পয়েন্টের ওজন ১–১০০০ • "
 };

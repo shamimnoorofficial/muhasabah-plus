@@ -6996,6 +6996,41 @@ function mhsDl(b, ref) {
   let p = String(b && b.deadline || "00:00:00").split(":").map(x => parseInt(x, 10) || 0);
   return new Date(n.getFullYear(), n.getMonth(), n.getDate(), p[0] || 0, p[1] || 0, p[2] || 0, 0).getTime() + Math.max(0, Number(b && b.grace) || 0) * 60000;
 }
+/* Pro customization: members can delete default (Fard) habits and fine-tune every habit setting. */
+function mhsIsPro() {
+  try { return document.documentElement.classList.contains("mhs-pro"); } catch (x) { return !1; }
+}
+function useMhsPro() {
+  const [p, setP] = U.useState(mhsIsPro);
+  U.useEffect(() => {
+    const f = () => setP(mhsIsPro());
+    document.addEventListener("mhs:pro-change", f);
+    f();
+    return () => document.removeEventListener("mhs:pro-change", f);
+  }, []);
+  return p;
+}
+function mhsOpenPro() {
+  try { window.MuhasabahPro && window.MuhasabahPro.open(); } catch (x) {}
+}
+function mhsProTx(l) {
+  return l === "bn" ? {
+    head: "প্রো কাস্টমাইজেশন", sub: "প্রতিটি অভ্যাস নিজের মতো সাজান — ডিফল্ট অভ্যাসও।", unlock: "প্রো দিয়ে আনলক করুন",
+    auto: "মিস করলে অটো পেনাল্টি", autoSub: "বন্ধ করলে ডেডলাইন মিস হলেও পয়েন্ট কাটা যাবে না।",
+    grace: "গ্রেস পিরিয়ড (মিনিট)", graceSub: "ডেডলাইনের পরে অতিরিক্ত সময়।", emoji: "নিজের ইমোজি", color: "নিজের রং",
+    pts: "পয়েন্ট ১–১০০০", proDel: "প্রো সদস্যরা ডিফল্ট অভ্যাস মুছতে পারেন", confirmDel: "\"{t}\" স্থায়ীভাবে মুছে ফেলবেন? এর ইতিহাস লেজারে থেকে যাবে."
+  } : l === "ar" ? {
+    head: "تخصيص Pro", sub: "خصّص كل عادة كما تشاء — حتى العادات الافتراضية.", unlock: "افتح مع Pro",
+    auto: "خصم تلقائي عند الفوات", autoSub: "عند الإيقاف لا تُخصم نقاط إذا فات الموعد.",
+    grace: "مهلة إضافية (دقائق)", graceSub: "وقت إضافي بعد الموعد.", emoji: "رمز تعبيري خاص", color: "لون خاص",
+    pts: "النقاط 1–1000", proDel: "يمكن لأعضاء Pro حذف العادات الافتراضية", confirmDel: "حذف \"{t}\" نهائيًا؟ يبقى سجلها في الدفتر."
+  } : {
+    head: "Pro customization", sub: "Tune every habit your way — including the default ones.", unlock: "Unlock with Pro",
+    auto: "Auto-penalty when missed", autoSub: "Turn off to keep points when this deadline is missed.",
+    grace: "Grace period (minutes)", graceSub: "Extra time after the deadline.", emoji: "Custom emoji", color: "Custom color",
+    pts: "Points 1–1000", proDel: "Pro members can delete default habits", confirmDel: "Delete \"{t}\" for good? Its history stays in the ledger."
+  };
+}
 function mhsT(b, full) {
   let x = window.MHSPrayer && window.MHSPrayer.dl(b),
     v = b && b.deadline || "";
@@ -7133,6 +7168,8 @@ function na() {
     [tw, twS] = U.useState(Array.isArray(S0.todos) ? S0.todos.filter(x => x && x.id) : []),
     [m, g] = U.useState("active"),
     [y, E] = U.useState("all"),
+    mhsPro = useMhsPro(),
+    mhsPx = mhsProTx(l),
     [P, C] = U.useState(""),
     [M, p] = U.useState(""),
     [A, v] = U.useState("daily"),
@@ -8659,7 +8696,8 @@ function na() {
                   }), i("span", {
                     className: "font-medium text-sm",
                     children: a.title
-                  }), a.category === "Fard" && i("span", {
+                  }), a.category === "Fard" && !mhsPro && i("span", {
+                    title: u.fardLock,
                     children: "\uD83D\uDD12"
                   })]
                 }), f("div", {
@@ -8703,15 +8741,18 @@ function na() {
                   } : w)),
                   className: "h-11 min-h-[44px] min-w-[44px] rounded-xl border border-border px-3 text-xs active:scale-[0.97]",
                   children: "Archive"
-                }), i("button", {
-                  disabled: a.category === "Fard",
-                  title: a.category === "Fard" ? u.fardLock : "",
+                }), f("button", {
+                  title: a.category === "Fard" && !mhsPro ? u.fardLock + " • " + mhsPx.proDel : "",
                   onClick: () => {
-                    if (a.category === "Fard") return;
+                    if (a.category === "Fard" && !mhsPro) {
+                      mhsOpenPro();
+                      return;
+                    }
+                    if (a.category === "Fard" && !window.confirm(mhsPx.confirmDel.replace("{t}", a.title))) return;
                     c(h => h.filter(w => w.id !== a.id));
                   },
-                  className: `h-11 min-h-[44px] min-w-[44px] rounded-xl border px-3 text-xs active:scale-[0.97] ${a.category === "Fard" ? "opacity-40 cursor-not-allowed border-border" : "border-[#FF3B30]/30 text-[#FF3B30] hover:bg-[#FF3B30]/10"}`,
-                  children: "Delete"
+                  className: `h-11 min-h-[44px] min-w-[44px] rounded-xl border px-3 text-xs active:scale-[0.97] ${a.category === "Fard" && !mhsPro ? "mhs-del-locked opacity-60 border-border" : "border-[#FF3B30]/30 text-[#FF3B30] hover:bg-[#FF3B30]/10"}`,
+                  children: [a.category === "Fard" && !mhsPro ? "\uD83D\uDD12 " : null, "Delete"]
                 })]
               })]
             })]
@@ -9415,13 +9456,13 @@ function na() {
           }), f("div", {
             children: [f("label", {
               className: "text-[11px] uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]",
-              children: ["Point Weight 1-100 • ", _.points]
+              children: [mhsPro ? "Point Weight 1-1000 • " : "Point Weight 1-100 • ", _.points]
             }), f("div", {
               className: "mt-2 flex gap-2 items-center",
               children: [i("input", {
                 type: "range",
                 min: 1,
-                max: 100,
+                max: mhsPro ? 1000 : 100,
                 value: _.points || 25,
                 onChange: a => se({
                   ..._,
@@ -9521,6 +9562,68 @@ function na() {
               }, a))
             })]
           }), f("div", {
+            className: "mhs-procust" + (mhsPro ? " is-pro" : " is-locked"),
+            children: [f("div", {
+              className: "mhs-procust-head",
+              children: [f("div", {
+                children: [i("b", { children: mhsPx.head }), i("small", { children: mhsPx.sub })]
+              }), i("span", { className: "mhs-procust-badge", children: "\uD83D\uDC51 PRO" })]
+            }), f("fieldset", {
+              disabled: !mhsPro,
+              className: "mhs-procust-grid",
+              children: [f("label", {
+                className: "mhs-procust-row full",
+                children: [i("input", {
+                  type: "checkbox",
+                  checked: _.autoPenalty !== false,
+                  onChange: a => se({ ..._, autoPenalty: a.target.checked })
+                }), f("span", {
+                  children: [i("b", { children: mhsPx.auto }), i("small", { children: mhsPx.autoSub })]
+                })]
+              }), f("label", {
+                className: "mhs-procust-field",
+                children: [i("span", { children: mhsPx.grace }), i("input", {
+                  type: "number",
+                  min: 0,
+                  max: 240,
+                  inputMode: "numeric",
+                  value: Number(_.grace) || 0,
+                  onChange: a => se({ ..._, grace: Math.min(240, Math.max(0, parseInt(a.target.value, 10) || 0)) })
+                }), i("small", { children: mhsPx.graceSub })]
+              }), f("label", {
+                className: "mhs-procust-field",
+                children: [i("span", { children: mhsPx.pts }), i("input", {
+                  type: "number",
+                  min: 1,
+                  max: 1000,
+                  inputMode: "numeric",
+                  value: _.points || 25,
+                  onChange: a => se({ ..._, points: Math.min(1000, Math.max(1, parseInt(a.target.value, 10) || 1)) })
+                })]
+              }), f("label", {
+                className: "mhs-procust-field",
+                children: [i("span", { children: mhsPx.emoji }), i("input", {
+                  type: "text",
+                  maxLength: 8,
+                  value: _.icon || "",
+                  placeholder: "\uD83C\uDF19",
+                  onChange: a => se({ ..._, icon: a.target.value.trim() })
+                })]
+              }), f("label", {
+                className: "mhs-procust-field",
+                children: [i("span", { children: mhsPx.color }), i("input", {
+                  type: "color",
+                  value: /^#[0-9a-f]{6}$/i.test(_.color || "") ? _.color : "#00C853",
+                  onChange: a => se({ ..._, color: a.target.value })
+                })]
+              })]
+            }), !mhsPro && i("button", {
+              type: "button",
+              onClick: mhsOpenPro,
+              className: "mhs-procust-unlock",
+              children: "\uD83D\uDC51 " + mhsPx.unlock
+            })]
+          }), f("div", {
             children: [i("label", {
               className: "text-[11px] uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]",
               children: "Templates • 20 Ready one-tap"
@@ -9544,7 +9647,7 @@ function na() {
                 title: _.title.trim() || "New Habit",
                 desc: _.desc,
                 category: _.category || "Nafl",
-                points: _.points || 25,
+                points: Math.min(mhsPro ? 1000 : Math.max(100, Number(Wt && Wt.points) || 0), Math.max(1, Number(_.points) || 25)),
                 deadline: _.deadline || "05:00:00",
                 repeat: _.repeat || ["Mon", "Tue"],
                 grace: Math.max(0, Number(_.grace) || 0),

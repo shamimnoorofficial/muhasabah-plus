@@ -208,3 +208,25 @@ html.mhs-theme-light .mhs-pro-cash,html[data-theme=light] .mhs-pro-cash{color:#0
 .mhs-lock-bio{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid rgba(246,196,70,.45);background:transparent;color:#f6d365;font:600 14px Inter,system-ui,sans-serif;cursor:pointer}
 .mhs-lock-foot{display:grid;gap:4px;margin-top:6px}
 @media (prefers-reduced-motion:reduce){#mhs-lock,.mhs-lock-dots.shake{animation:none}}
+
+/* ---------- Pro customization block in the habit editor ---------- */
+.mhs-procust{position:relative;border-radius:1rem;padding:14px;border:1px solid rgba(212,160,23,.35);background:linear-gradient(160deg,rgba(246,211,101,.08),rgba(168,119,10,.04));display:grid;gap:12px}
+.mhs-procust-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.mhs-procust-head b{display:block;font-size:13px;font-weight:600;color:var(--gold-2)}
+.mhs-procust-head small{display:block;font-size:11px;opacity:.7;margin-top:2px}
+.mhs-procust-badge{flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.08em;padding:3px 8px;border-radius:999px;color:#2a1c00;background:linear-gradient(135deg,var(--gold-1),var(--gold-2) 45%,var(--gold-3))}
+.mhs-procust-grid{border:0;margin:0;padding:0;min-width:0;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mhs-procust-grid[disabled]{opacity:.5;filter:saturate(.6)}
+.mhs-procust-row{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.mhs-procust-row.full{grid-column:1/-1}
+.mhs-procust-row input{width:18px;height:18px;margin-top:1px;accent-color:var(--gold-3);flex-shrink:0}
+.mhs-procust-row b{display:block;font-size:12.5px;font-weight:500}
+.mhs-procust-row small,.mhs-procust-field small{display:block;font-size:10.5px;opacity:.65}
+.mhs-procust-field{display:grid;gap:4px;font-size:11px;min-width:0}
+.mhs-procust-field>span{opacity:.8}
+.mhs-procust-field input{height:40px;width:100%;border-radius:.75rem;border:1px solid hsl(var(--border));background:hsl(var(--card)/.8);padding:0 10px;font-size:14px;color:inherit}
+.mhs-procust-field input[type=color]{padding:4px;cursor:pointer}
+.mhs-procust-unlock{height:42px;border-radius:.75rem;font-size:13px;font-weight:600;color:#2a1c00;background:linear-gradient(135deg,var(--gold-1),var(--gold-2) 45%,var(--gold-3));box-shadow:0 4px 18px -6px var(--gold-glow)}
+.mhs-procust-unlock:active{transform:scale(.97)}
+.mhs-del-locked{cursor:pointer}
+@media (max-width:380px){.mhs-procust-grid{grid-template-columns:1fr}}
