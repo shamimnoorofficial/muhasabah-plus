@@ -20,6 +20,7 @@
     "test:ui": "playwright test",
     "typecheck": "tsc --noEmit",
     "test:startup": "node tests/startup.cjs",
-    "test:celebrate": "node tests/celebrate.cjs"
+    "test:celebrate": "node tests/celebrate.cjs",
+    "test:donate": "node tests/donate.cjs"
   }
 }
