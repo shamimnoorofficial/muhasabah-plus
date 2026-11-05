@@ -35,6 +35,7 @@
       updTitle: "Update available",
       updText: "A new version of Muhasabah is ready.",
       updBtn: "Update",
+      updDone: "App updated to latest version",
       nudgeTitle: "Time to back up",
       nudgeNever: "Your data is only on this phone. Save a backup file so nothing is lost if the phone is lost or reset.",
       nudgeDays: "Last backup was {d} days ago. Save a fresh copy to stay safe.",
@@ -70,6 +71,7 @@
       updTitle: "تحديث متوفر",
       updText: "إصدار جديد من محاسبة جاهز.",
       updBtn: "تحديث",
+      updDone: "تم تحديث التطبيق إلى أحدث إصدار",
       nudgeTitle: "حان وقت النسخ الاحتياطي",
       nudgeNever: "بياناتك على هذا الهاتف فقط. احفظ ملف نسخة احتياطية حتى لا تضيع إذا فُقد الهاتف أو أُعيد ضبطه.",
       nudgeDays: "آخر نسخة احتياطية قبل {d} يوم. احفظ نسخة جديدة.",
@@ -381,7 +383,7 @@
       if (!hadController || reloading || silentUpdate) { hadController = true; return; }
       reloading = true;
       try {
-        toast((window.MHSBengali && window.MHSBengali["App updated to latest version"]) || "✨ মুহাসাবাহ প্লাসের নতুন সংস্করণ স্বয়ংক্রিয়ভাবে আপডেট হয়েছে");
+        toast("✨ " + t("updDone"));
       } catch (e) {}
       function reloadWhenReady() {
         if (document.hidden || document.querySelector('.kb-modal-panel') || (document.activeElement && document.activeElement.matches && document.activeElement.matches('input,textarea,select'))) {
