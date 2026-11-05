@@ -20,13 +20,16 @@
   "private": true,
   "scripts": {
     "test": "node tests/penalties.cjs",
-    "test:ui": "playwright test",
+    "test:ui": "npm run -s test:startup && npm run -s test:languages && npm run -s test:celebrate && npm run -s test:donate && npm run -s test:flow && npm run -s test:settings && npm run -s test:journal",
     "typecheck": "tsc --noEmit",
     "test:startup": "node tests/startup.cjs",
     "test:celebrate": "node tests/celebrate.cjs",
     "test:donate": "node tests/donate.cjs",
     "test:languages": "node tests/languages.cjs",
     "i18n:catalog": "node scripts/i18n-catalog.mjs",
-    "test:lemonsqueezy": "node tests/lemonsqueezy.mjs"
+    "test:lemonsqueezy": "node tests/lemonsqueezy.mjs",
+    "test:journal": "node tests/journal.cjs",
+    "test:flow": "node tests/flow.cjs",
+    "test:settings": "node tests/settings-flow.cjs"
   }
 }

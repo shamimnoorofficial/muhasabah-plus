@@ -18,8 +18,10 @@ const {chromium} = require('playwright');
     if(r.request().method()==='PUT') rows=r.request().postDataJSON();
     await r.fulfill({json:rows});
    });
+   // An existing install: the first-run onboarding stays closed.
+   await page.addInitScript(()=>{if(!localStorage.getItem('muhasabah:data:v1'))localStorage.setItem('muhasabah:data:v1',JSON.stringify({lang:'en',onboarded:true,habits:[],ledger:[]}));});
    await page.goto('http://localhost:8889');
-   await page.getByRole('button',{name:'Continue',exact:true}).click();
+   await page.locator('#mhs-startup').waitFor({state:'detached'});
    await page.getByRole('button',{name:'Settings',exact:true}).filter({visible:true}).last().click();
    await page.getByRole('button',{name:'Configure journal',exact:true}).click();
    const dialog=page.getByRole('dialog');
