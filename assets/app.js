@@ -7392,7 +7392,7 @@ function na() {
         y: B,
         text: a,
         color: h
-      }]), setTimeout(() => la(K => K.filter(Jr => Jr.id !== w)), 1200), He(!0), setTimeout(() => He(!1), 1200), uA && navigator.vibrate) navigator.vibrate(50);
+      }]), setTimeout(() => la(K => K.filter(Jr => Jr.id !== w)), 1200), He(!0), setTimeout(() => He(!1), 1200), window.dispatchEvent(new CustomEvent("mhs:points", { detail: { text: a, color: h } })), uA && navigator.vibrate) navigator.vibrate(50);
     },
     aa = a => {
       if (Xr.has(a.id)) return;
@@ -8107,7 +8107,7 @@ function na() {
               })]
             })]
           })]
-        })]
+        }), i("mhs-insights", { lang: l })]
       }), e === "today" && f("div", {
         className: "space-y-6",
         children: [(() => {
