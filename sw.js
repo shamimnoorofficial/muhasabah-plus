@@ -1,7 +1,7 @@
 /* Muhasabah service worker — full offline support.
  * Bump VERSION whenever app files change so installed apps update automatically.
  */
-const VERSION = "2026-11-05.17";
+const VERSION = "2026-11-05.18";
 const CORE = "mhs-core-" + VERSION;
 const RUNTIME = "mhs-runtime";
 const PRECACHE = [
@@ -146,6 +146,8 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
   const url = new URL(request.url);
 
+  /* Android Digital Asset Links must always come straight from the server. */
+  if (url.origin === self.location.origin && url.pathname.startsWith("/.well-known/")) return;
   /* Legal pages are standalone documents, not app routes. */
   if (url.origin === self.location.origin && url.pathname.startsWith("/legal/")) { event.respondWith(networkFirst(request)); return; }
   if (request.mode === "navigate" && url.origin === self.location.origin) {

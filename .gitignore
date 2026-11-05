@@ -3,3 +3,13 @@
 
 node_modules/
 pwa/identity.js
+
+# Android (Bubblewrap) build output and signing keys — never commit these
+android/*.keystore
+android/*.jks
+android/*.apk
+android/*.aab
+android/app/
+android/gradle/
+android/.gradle/
+android/build/
