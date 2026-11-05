@@ -7166,6 +7166,9 @@ function na() {
       type: "manualReward"
     }),
     [twM, twMf] = U.useState(!1),
+    [twFl, twFlS] = U.useState("all"),
+    [twQ, twQS] = U.useState(""),
+    [twDc, twDcS] = U.useState(null),
     [twF, twFs] = U.useState({
       title: "",
       points: 10,
@@ -7204,6 +7207,10 @@ function na() {
     window.addEventListener("popstate", back);
     return () => window.removeEventListener("popstate", back);
   }, []);
+  U.useEffect(() => {
+    // Keep the current history entry on the visible tab so closing a modal (history.back) returns here.
+    if (!history.state?.modal) history.replaceState({...(history.state || {}), mhs:true, tab:e}, "");
+  }, [e]);
   U.useEffect(() => {
     if (modalOpen) history.pushState({mhs:true, tab:e, modal:true}, "");
     else if (history.state?.modal) history.back();
@@ -7440,8 +7447,64 @@ function na() {
       };
       d(w => [h, ...w]), Tu(`+${pts}`, "#00C853");
     },
+    twArm = id => {
+      twDcS(id);
+      clearTimeout(window.__mhsTwArm);
+      window.__mhsTwArm = setTimeout(() => twDcS(x => x === id ? null : x), 3500);
+    },
+    twNew = () => {
+      twEw(null), twFs({
+        title: twQ.trim(),
+        points: 10,
+        penalty: 5,
+        deadline: "23:59:00",
+        icon: "📌"
+      }), twMf(!0);
+    },
+    twQuick = () => {
+      let title = twQ.trim();
+      if (title.length < 2) return;
+      twS(w => [{
+        id: "t" + Date.now() + Math.random(),
+        title,
+        points: 10,
+        penalty: 5,
+        deadline: "23:59:00",
+        icon: "📌",
+        status: "active",
+        doneAt: null,
+        createdAt: Date.now()
+      }, ...w]);
+      twQS(""), twFl === "done" && twFlS("all");
+      vn(l === "ar" ? "تمت إضافة المهمة" : l === "bn" ? "টুডু যোগ হয়েছে" : "Todo added");
+    },
+    twSave = () => {
+      if ((twF.title || "").trim().length < 2) return;
+      let a = {
+        id: twE ? twE.id : "t" + Date.now() + Math.random(),
+        title: twF.title.trim(),
+        points: Math.max(0, Number(twF.points) || 0),
+        penalty: Math.max(0, Number(twF.penalty) || 0),
+        deadline: twF.deadline || "",
+        icon: twF.icon || "📌",
+        status: twE && twE.status === "done" ? "done" : "active",
+        doneAt: twE && twE.doneAt ? twE.doneAt : null,
+        createdAt: twE && twE.createdAt ? twE.createdAt : Date.now()
+      };
+      if (twE) twS(w => w.map(x => x.id === twE.id ? a : x));else twS(w => [a, ...w]);
+      twE || twQS("");
+      twMf(!1), vn(l === "ar" ? "تم حفظ المهمة" : l === "bn" ? "টুডু সংরক্ষিত হয়েছে" : "Todo saved");
+    },
+    twClear = () => {
+      if (twDc !== "__done") return twArm("__done");
+      let n = tw.filter(x => x.status === "done").length;
+      twS(w => w.filter(x => x.status !== "done")), twDcS(null);
+      vn((l === "ar" ? "تم مسح المكتملة: " : l === "bn" ? "সম্পন্ন টুডু মুছে ফেলা হয়েছে: " : "Cleared completed: ") + (l === "bn" ? n.toLocaleString("bn-BD") : n));
+    },
     twDel = a => {
       if (!a) return;
+      if (twDc !== a.id) return twArm(a.id);
+      twDcS(null);
       twS(w => w.filter(x => x.id !== a.id));
       vn(l === "ar" ? "تم حذف المهمة" : l === "bn" ? "টুডু মুছে ফেলা হয়েছে" : "Todo deleted");
     },
@@ -8003,36 +8066,125 @@ function na() {
         })]
       }), e === "today" && f("div", {
         className: "space-y-6",
-        children: [f("div", {
+        children: [(() => {
+          let twDn = tw.filter(x => x.status === "done"),
+            twAc = tw.length - twDn.length,
+            twPct = tw.length ? Math.round(twDn.length / tw.length * 100) : 0,
+            twPts = twDn.reduce((n, x) => n + Math.abs(Number(x.points) || 0), 0),
+            twKey = x => x.deadline ? String(x.deadline) : "99",
+            twL = [...tw].filter(x => twFl === "all" || (twFl === "done" ? x.status === "done" : x.status !== "done")).sort((x, y) => (x.status === "done" ? 1 : 0) - (y.status === "done" ? 1 : 0) || (x.status === "done" ? (Number(y.doneAt) || 0) - (Number(x.doneAt) || 0) : twKey(x).localeCompare(twKey(y))));
+          return f("section", {
           className: "mhs-todo-panel panel p-5 sm:p-6",
+          "aria-label": "Todo List",
           children: [f("div", {
-            className: "flex items-center justify-between gap-3 mb-3",
-            children: [f("h3", {
-              className: "text-sm font-semibold",
-              style: {
-                fontFamily: "var(--font-display)"
-              },
-              children: l === "ar" ? "📋 قائمة المهام" : "📋 Todo List"
+            className: "mhs-todo-head",
+            children: [f("div", {
+              className: "min-w-0",
+              children: [i("h3", {
+                className: "text-sm font-semibold",
+                style: {
+                  fontFamily: "var(--font-display)"
+                },
+                children: l === "ar" ? "📋 قائمة المهام" : "📋 Todo List"
+              }), tw.length ? f("p", {
+                className: "mhs-todo-sub",
+                children: [i("span", {
+                  className: "num",
+                  children: twDn.length
+                }), i("span", {
+                  children: "/"
+                }), i("span", {
+                  className: "num",
+                  children: tw.length
+                }), i("span", {
+                  children: l === "ar" ? " مكتملة" : " done"
+                }), twPts ? i("span", {
+                  className: "mhs-todo-pts num",
+                  children: "+" + twPts
+                }) : null]
+              }) : null]
             }), i("button", {
               type: "button",
-              onClick: () => {
-                twEw(null), twFs({
-                  title: "",
-                  points: 10,
-                  penalty: 5,
-                  deadline: "23:59:00",
-                  icon: "📌"
-                }), twMf(!0);
-              },
-              className: "h-9 rounded-xl bg-[hsl(var(--primary))] px-4 text-xs font-medium text-[hsl(var(--primary-foreground))] active:scale-[0.97] flex items-center gap-1.5",
+              onClick: twNew,
+              className: "mhs-todo-new h-9 rounded-xl bg-[hsl(var(--primary))] px-4 text-xs font-medium text-[hsl(var(--primary-foreground))] active:scale-[0.97] flex items-center gap-1.5",
               children: l === "ar" ? "＋ مهمة جديدة" : "＋ New Todo"
             })]
-          }), !tw.length ? i("div", {
-            className: "text-xs text-[hsl(var(--muted-foreground))] py-3",
-            children: l === "ar" ? "لا مهام بعد — أضف أول مهمة اليوم" : "No todos yet — add your first task"
+          }), tw.length ? i("div", {
+            className: "mhs-todo-progress",
+            role: "progressbar",
+            "aria-valuemin": 0,
+            "aria-valuemax": 100,
+            "aria-valuenow": twPct,
+            "aria-label": "Todo progress",
+            children: i("span", {
+              style: {
+                width: twPct + "%"
+              }
+            })
+          }) : null, f("form", {
+            className: "mhs-todo-quick",
+            onSubmit: a => {
+              a.preventDefault(), twQuick();
+            },
+            children: [i("input", {
+              value: twQ,
+              onChange: a => twQS(a.target.value),
+              maxLength: 200,
+              enterKeyHint: "done",
+              "aria-label": "Quick add a todo",
+              placeholder: l === "ar" ? "أضف مهمة سريعة… ثم Enter" : "Quick add a task… press Enter"
+            }), i("button", {
+              type: "submit",
+              disabled: twQ.trim().length < 2,
+              "aria-label": "Add todo",
+              title: "Add todo",
+              children: "＋"
+            }), i("button", {
+              type: "button",
+              className: "mhs-todo-more",
+              onClick: twNew,
+              "aria-label": "More options",
+              title: "More options",
+              children: "⚙"
+            })]
+          }), tw.length ? f("div", {
+            className: "mhs-todo-filters",
+            role: "group",
+            "aria-label": "Filter todos",
+            children: [["all", l === "ar" ? "الكل" : "All", tw.length], ["active", l === "ar" ? "النشطة" : "Active", twAc], ["done", l === "ar" ? "المكتملة" : "Done", twDn.length]].map(([k, lb, c]) => f("button", {
+              type: "button",
+              "aria-pressed": twFl === k,
+              onClick: () => twFlS(k),
+              className: twFl === k ? "is-on" : "",
+              children: [i("span", {
+                children: lb
+              }), i("b", {
+                className: "num",
+                children: c
+              })]
+            }, k)).concat(twDn.length ? [i("button", {
+              type: "button",
+              onClick: twClear,
+              className: "mhs-todo-clear" + (twDc === "__done" ? " is-armed" : ""),
+              children: twDc === "__done" ? l === "ar" ? "اضغط مجدداً للمسح" : "Tap again to clear" : l === "ar" ? "مسح المكتملة" : "Clear done"
+            }, "clr")] : [])
+          }) : null, !tw.length ? f("div", {
+            className: "mhs-todo-empty",
+            children: [i("span", {
+              className: "mhs-todo-empty-ic",
+              "aria-hidden": "true",
+              children: "🌱"
+            }), i("b", {
+              children: l === "ar" ? "لا مهام بعد" : "No todos yet"
+            }), i("p", {
+              children: l === "ar" ? "اكتب مهمة أعلاه واضغط Enter، أو افتح الخيارات لتحديد النقاط والموعد." : "Type a task above and press Enter, or open more options to set points and a deadline."
+            })]
+          }) : !twL.length ? i("div", {
+            className: "mhs-todo-empty is-small",
+            children: twFl === "done" ? l === "ar" ? "لا مهام مكتملة بعد." : "Nothing completed yet." : l === "ar" ? "كل المهام مكتملة — أحسنت!" : "All tasks done — well done!"
           }) : i("div", {
-            className: "space-y-2",
-            children: [...tw].sort((x, y) => (x.status === "done" ? 1 : 0) - (y.status === "done" ? 1 : 0)).map(a => {
+            className: "space-y-2 mhs-todo-list",
+            children: twL.map(a => {
               let done = a.status === "done",
                 dl = a.deadline ? mhsDl(a, dn) : 1 / 0,
                 past = !done && Date.now() >= dl,
@@ -8041,7 +8193,7 @@ function na() {
                 exd = !done && s.some(x => x.type === "excuse" && x.todoId === a.id && new Date(x.ts).toDateString() === dn.toDateString()),
                 ms = !!pen && !exd;
               return f("div", {
-                className: `mhs-todo flex items-center justify-between gap-3 rounded-xl border p-3.5 transition-all ${done ? "border-[hsl(var(--primary)/0.35)] bg-[hsl(var(--primary)/0.06)]" : ms ? "is-missed" : exd ? "is-excused" : "border-border hover:border-[hsl(var(--primary)/0.2)]"}`,
+                className: `mhs-todo flex items-center justify-between gap-3 rounded-xl border p-3.5 transition-all ${done ? "is-done border-[hsl(var(--primary)/0.35)] bg-[hsl(var(--primary)/0.06)]" : ms ? "is-missed" : exd ? "is-excused" : "border-border hover:border-[hsl(var(--primary)/0.2)]"}`,
                 children: [f("div", {
                   className: "flex items-center gap-3.5 flex-1 min-w-0",
                   children: [i("button", {
@@ -8049,7 +8201,8 @@ function na() {
                     onClick: () => twCheck(a),
                     disabled: done || ms || exd,
                     "aria-label": done ? "Completed" : ms ? "Missed" : exd ? "Excused" : "Mark done",
-                    className: `h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 rounded-xl border-2 flex items-center justify-center transition-all active:scale-[0.97] ${done ? "bg-[hsl(var(--primary))] border-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]" : "border-border hover:border-[hsl(var(--primary)/0.4)]"}`,
+                    title: done ? "Completed" : ms ? "Missed" : exd ? "Excused" : "Mark done",
+                    className: `mhs-todo-check h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 rounded-xl border-2 flex items-center justify-center transition-all active:scale-[0.97] ${done ? "bg-[hsl(var(--primary))] border-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]" : "border-border hover:border-[hsl(var(--primary)/0.4)]"}`,
                     children: done ? "✓" : ms ? "✕" : na ? "🆕" : exd ? "🕊" : ""
                   }), f("div", {
                     className: "min-w-0",
@@ -8106,20 +8259,23 @@ function na() {
                       }), twMf(!0);
                     },
                     "aria-label": "Edit todo",
-                    className: "h-9 w-9 rounded-lg border border-border flex items-center justify-center text-xs",
+                    title: "Edit todo",
+                    className: "mhs-todo-edit h-9 w-9 rounded-lg border border-border flex items-center justify-center text-xs",
                     children: "✎"
                   }), i("button", {
                     type: "button",
                     onClick: () => twDel(a),
-                    "aria-label": "Delete todo",
-                    className: "h-9 w-9 rounded-lg border border-[#FF3B30]/30 text-[#FF3B30] flex items-center justify-center text-xs",
-                    children: "🗑"
+                    "aria-label": twDc === a.id ? "Tap again to delete" : "Delete todo",
+                    title: twDc === a.id ? "Tap again to delete" : "Delete todo",
+                    className: "mhs-todo-del h-9 rounded-lg border border-[#FF3B30]/30 text-[#FF3B30] flex items-center justify-center text-xs" + (twDc === a.id ? " is-armed px-3" : " w-9"),
+                    children: twDc === a.id ? l === "ar" ? "احذف؟" : "Delete?" : "🗑"
                   })]
                 })]
               }, a.id);
             })
           })]
-        }), f("div", {
+          });
+        })(), f("div", {
           className: "flex flex-wrap items-start justify-between gap-4 lg:gap-6",
           children: [f("div", {
             children: [i("div", {
@@ -8610,7 +8766,7 @@ function na() {
               className: "text-xs text-[hsl(var(--muted-foreground))] mt-1",
               children: u.everyRewardLedger
             })]
-          }), i("mhs-journal", {lang: l}), i("div", {
+          }), i("div", {
             className: "flex gap-1.5 p-1 rounded-xl border border-border bg-[hsl(var(--card)/0.6)]",
             children: ["all", "gains", "losses"].map(a => i("button", {
               onClick: () => E(a),
@@ -9341,16 +9497,28 @@ function na() {
         })]
       })
     }), twM && i("div", {
-      className: "fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur p-4 kb-modal-root",
+      className: "fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur p-4 kb-modal-root mhs-todo-modal",
+      onClick: a => {
+        a.target === a.currentTarget && twMf(!1);
+      },
       children: f("div", {
         className: "panel w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 space-y-4 kb-modal-panel",
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-labelledby": "mhs-tw-title",
+        onKeyDown: a => {
+          a.key === "Escape" && (a.stopPropagation(), twMf(!1));
+        },
         children: [f("div", {
           className: "flex items-center justify-between",
           children: [f("h3", {
             className: "font-semibold",
+            id: "mhs-tw-title",
             children: [twE ? l === "ar" ? "تعديل مهمة • قائمة المهام" : "Edit Todo • Todo List" : l === "ar" ? "مهمة جديدة • قائمة المهام" : "New Todo • Todo List"]
           }), i("button", {
+            type: "button",
             onClick: () => twMf(!1),
+            "aria-label": "Close",
             className: "h-8 w-8 rounded-lg border border-border flex items-center justify-center",
             children: "✕"
           })]
@@ -9358,9 +9526,17 @@ function na() {
           className: "space-y-3",
           children: [f("div", {
             children: [i("label", {
+              htmlFor: "mhs-tw-name",
               className: "text-[11px] uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]",
               children: l === "ar" ? "العنوان *" : "Title *"
             }), i("input", {
+              id: "mhs-tw-name",
+              autoFocus: !0,
+              maxLength: 200,
+              enterKeyHint: "done",
+              onKeyDown: a => {
+                a.key === "Enter" && !a.nativeEvent.isComposing && (a.preventDefault(), twSave());
+              },
               value: twF.title || "",
               onChange: a => twFs({
                 ...twF,
@@ -9373,9 +9549,11 @@ function na() {
             className: "grid grid-cols-2 gap-3",
             children: [f("div", {
               children: [i("label", {
+                htmlFor: "mhs-tw-pts",
                 className: "text-[11px] uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]",
                 children: l === "ar" ? "نقاط المكافأة" : "Reward Points"
               }), i("input", {
+                id: "mhs-tw-pts",
                 type: "number",
                 min: "0",
                 value: twF.points,
@@ -9387,9 +9565,11 @@ function na() {
               })]
             }), f("div", {
               children: [i("label", {
+                htmlFor: "mhs-tw-pen",
                 className: "text-[11px] uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]",
                 children: l === "ar" ? "نقاط الخصم" : "Penalty Points"
               }), i("input", {
+                id: "mhs-tw-pen",
                 type: "number",
                 min: "0",
                 value: twF.penalty,
@@ -9404,9 +9584,11 @@ function na() {
             className: "grid grid-cols-2 gap-3",
             children: [f("div", {
               children: [i("label", {
+                htmlFor: "mhs-tw-dl",
                 className: "text-[11px] uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]",
                 children: l === "ar" ? "الموعد النهائي" : "Deadline"
               }), i("input", {
+                id: "mhs-tw-dl",
                 type: "time",
                 step: "60",
                 value: String(twF.deadline || "").slice(0, 5),
@@ -9418,9 +9600,11 @@ function na() {
               })]
             }), f("div", {
               children: [i("label", {
+                htmlFor: "mhs-tw-ic",
                 className: "text-[11px] uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]",
                 children: l === "ar" ? "الأيقونة" : "Icon"
               }), i("input", {
+                id: "mhs-tw-ic",
                 value: twF.icon || "",
                 maxLength: "32",
                 onChange: a => twFs({
@@ -9430,6 +9614,19 @@ function na() {
                 className: "mt-1 w-full rounded-xl border border-border bg-[hsl(var(--card)/0.8)] px-4 py-2.5 text-sm text-center"
               })]
             })]
+          }), f("div", {
+            className: "mhs-tw-presets",
+            role: "group",
+            "aria-label": "Quick deadline",
+            children: [["⏱ 1h", () => {
+              let a = new Date(Date.now() + 36e5);
+              return a.getDate() !== new Date().getDate() ? "23:59:00" : String(a.getHours()).padStart(2, "0") + ":" + String(a.getMinutes()).padStart(2, "0") + ":00";
+            }], ["🌅 12:00", () => "12:00:00"], ["🌇 18:00", () => "18:00:00"], ["🌙 21:00", () => "21:00:00"], ["🕛 23:59", () => "23:59:00"]].map(([lb, fn]) => i("button", {
+              type: "button",
+              onClick: () => twFs(prev => ({...prev, deadline: fn()})),
+              "aria-pressed": lb.length > 4 && String(twF.deadline || "").slice(0, 5) === lb.slice(-5),
+              children: lb
+            }, lb))
           }), i("div", {
             className: "mhs-icon-picker",
             role: "group",
@@ -9442,22 +9639,8 @@ function na() {
             className: "text-[11px] text-[hsl(var(--muted-foreground))] leading-relaxed border-t border-border pt-3",
             children: l === "ar" ? "أكمل قبل الموعد النهائي لتكسب المكافأة. إذا فات الموعد دون إتمام، يُخصم الخصم تلقائياً مرة واحدة." : "Complete before the deadline to earn the reward. If the deadline passes without Done, the penalty is deducted automatically once."
           }), i("button", {
-            onClick: () => {
-              if (twF.title.trim().length < 2) return;
-              let a = {
-                id: twE ? twE.id : "t" + Date.now() + Math.random(),
-                title: twF.title.trim(),
-                points: Math.max(0, Number(twF.points) || 0),
-                penalty: Math.max(0, Number(twF.penalty) || 0),
-                deadline: twF.deadline || "",
-                icon: twF.icon || "📌",
-                status: twE && twE.status === "done" ? "done" : "active",
-                doneAt: twE && twE.doneAt ? twE.doneAt : null,
-                createdAt: twE && twE.createdAt ? twE.createdAt : Date.now()
-              };
-              if (twE) twS(w => w.map(x => x.id === twE.id ? a : x));else twS(w => [a, ...w]);
-              twMf(!1), vn(l === "ar" ? "تم حفظ المهمة" : l === "bn" ? "টুডু সংরক্ষিত হয়েছে" : "Todo saved");
-            },
+            type: "button",
+            onClick: twSave,
             disabled: twF.title.trim().length < 2,
             className: "h-11 w-full rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-sm font-medium disabled:opacity-40 active:scale-[0.97]",
             children: [twE ? l === "ar" ? "حفظ التغييرات" : "Save Changes" : l === "ar" ? "إنشاء المهمة" : "Create Todo"]

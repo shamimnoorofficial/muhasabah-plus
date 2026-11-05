@@ -92,7 +92,7 @@
     var t=e.target; if(!t) return;
     if(t.tagName!=="TEXTAREA"&&t.tagName!=="INPUT") return;
     focusEl=t;
-    if(t.tagName==="TEXTAREA"){ t.style.height="auto"; t.style.height=Math.min(t.scrollHeight,160)+"px"; }
+    if(t.tagName==="TEXTAREA"&&!t.classList.contains("mhs-j-paper")){ t.style.height="auto"; t.style.height=Math.min(t.scrollHeight,160)+"px"; }
     schedule(); setTimeout(function(){ keepVisible(t); },40);
   },true);
   schedule();

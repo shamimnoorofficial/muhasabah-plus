@@ -44,7 +44,12 @@
     bn: {settings:'লেখার পছন্দ',fontSize:'লেখার আকার',small:'ছোট',medium:'মাঝারি',large:'বড়',weekStart:'সপ্তাহের শুরু',sunday:'রবিবার',monday:'সোমবার',reminderTime:'মনে করানোর সময়',template:'লেখার ধরন',free:'মুক্ত লেখা',guided:'প্রশ্নভিত্তিক আত্মপর্যালোচনা',showLedger:'দিনের লেজার দেখান',goal:'দৈনিক শব্দের লক্ষ্য',export:'দিনলিপি এক্সপোর্ট',settingsHelp:'অ্যাপ খোলা থাকলে রিমাইন্ডার দেখা যায়। পছন্দগুলো ব্যক্তিগত সার্ভার স্টোরেজে সংরক্ষিত হয়।',prompt:'আজকের কৃতজ্ঞতা\n\nআজ কী ভালো হয়েছে?\n\nকী উন্নতি করতে পারি?\n\nআগামীকালের নিয়ত\n',usePrompt:'আত্মপর্যালোচনার প্রশ্ন যোগ করুন',more:'আরও দেখুন',retry:'আবার চেষ্টা করুন'},
     ar: {settings:'تفضيلات الكتابة',fontSize:'حجم النص',small:'صغير',medium:'متوسط',large:'كبير',weekStart:'بداية الأسبوع',sunday:'الأحد',monday:'الاثنين',reminderTime:'وقت التذكير',template:'أسلوب الكتابة',free:'كتابة حرة',guided:'تأمل موجّه',showLedger:'عرض السجل اليومي',goal:'هدف الكلمات اليومي',export:'تصدير اليوميات',settingsHelp:'تظهر التذكيرات أثناء فتح التطبيق. تُحفظ التفضيلات في تخزين خاص بالخادم.',prompt:'الامتنان\n\nماذا أحسنت اليوم؟\n\nماذا يمكنني تحسينه؟\n\nنيتي للغد\n',usePrompt:'إضافة أسئلة التأمل',more:'عرض المزيد',retry:'أعد المحاولة'}
   };
-  const t = k => (configWords[lang()] || configWords.en)[k] || (words[lang()] || words.en)[k] || words.en[k] || k;
+  const uxWords = {
+    en: {prevDay:'Previous day',nextDay:'Next day',goalOf:'of',goalDone:'Daily goal reached',monthCount:'entries this month',shortcut:'Ctrl/⌘ + S to save',noFuture:'Future day',reminderOn:'Evening reminder',prefsTab:'Settings'},
+    bn: {prevDay:'আগের দিন',nextDay:'পরের দিন',goalOf:'/',goalDone:'আজকের লক্ষ্য পূরণ হয়েছে',monthCount:'টি লেখা এই মাসে',shortcut:'সংরক্ষণ করতে Ctrl/⌘ + S',noFuture:'আগামী দিন',reminderOn:'সন্ধ্যার রিমাইন্ডার',prefsTab:'সেটিংস'},
+    ar: {prevDay:'اليوم السابق',nextDay:'اليوم التالي',goalOf:'من',goalDone:'تم بلوغ الهدف اليومي',monthCount:'تدوينات هذا الشهر',shortcut:'Ctrl/⌘ + S للحفظ',noFuture:'يوم قادم',reminderOn:'تذكير مسائي',prefsTab:'الإعدادات'}
+  };
+  const t = k => (uxWords[lang()] || uxWords.en)[k] || (configWords[lang()] || configWords.en)[k] || (words[lang()] || words.en)[k] || words.en[k] || k;
   const locale = () => ({ bn: 'bn-BD', ar: 'ar', en: 'en-GB' }[lang()] || 'en-GB');
   const n = x => Number(x).toLocaleString(locale());
   const quote = () => { const q = quotes[lang()] || quotes.en; return q[quoteIdx % q.length]; };
@@ -114,12 +119,14 @@
     const data = M.current() || {}; entries = valid(data.journal); reminder = !!data.journalReminder;
     Object.keys(entries).forEach(d => dirty.add(d)); loaded = true;
   }
-  function setStatus(i) { status = i; const s = dialog && dialog.querySelector('[data-status]'); if (s) s.textContent = t(i); }
+  function setStatus(i) { status = i; const s = dialog && dialog.querySelector('[data-status]'); if (s) { s.textContent = t(i); s.dataset.state = i; } }
   function setCounts(scope, text) {
     const w = countWords(text), m = readMins(text);
     scope.querySelectorAll('[data-words]').forEach(x => x.textContent = n(w) + ' ' + t('words'));
     scope.querySelectorAll('[data-goal]').forEach(x => { x.max = settings.goal; x.value = Math.min(w, settings.goal); x.setAttribute('aria-label', t('goal') + ': ' + w + '/' + settings.goal); });
     scope.querySelectorAll('[data-read]').forEach(x => x.textContent = m ? n(m) + ' ' + t('minRead') : '');
+    scope.querySelectorAll('[data-goal-label]').forEach(x => { const done = w >= settings.goal; x.textContent = done ? '🎯 ' + t('goalDone') : n(w) + ' ' + t('goalOf') + ' ' + n(settings.goal); x.classList.toggle('is-done', done); });
+    scope.querySelectorAll('[data-goal]').forEach(x => x.classList.toggle('is-done', w >= settings.goal));
   }
   async function cache() {
     try { await M.saveJournal(entries, reminder); setStatus(navigator.onLine ? 'savedDevice' : 'offline'); return true; }
@@ -173,19 +180,24 @@
     document.body.append(dialog);
     dialog.addEventListener('cancel', e => { e.preventDefault(); close(); });
     dialog.addEventListener('click', e => { if (e.target === dialog) close(); });
-    dialog.addEventListener('close', () => { dialog.remove(); dialog = null; document.body.style.overflow = ''; document.querySelector('.mhs-journal-fab')?.classList.remove('is-hidden'); opener?.focus?.(); });
+    dialog.addEventListener('close', () => { dialog.remove(); dialog = null; document.body.style.overflow = ''; document.querySelectorAll('.mhs-journal-fab').forEach(f => f.classList.remove('is-hidden')); opener?.focus?.(); });
     render(); dialog.showModal(); document.body.style.overflow = 'hidden';
-    document.querySelector('.mhs-journal-fab')?.classList.add('is-hidden');
+    document.querySelectorAll('.mhs-journal-fab').forEach(f => f.classList.add('is-hidden'));
     sync();
   }
   function close() { clearTimeout(timer); sync(); dialog.close(); }
   function render() {
     if (!dialog) return;
+    const keepScroll = dialog.scrollTop;
     dialog.replaceChildren(); dialog.dir = lang() === 'ar' ? 'rtl' : 'ltr';
+    dialog.dataset.view = view;
     dialog.append(cover(), tabs(), body(), footer());
+    dialog.scrollTop = view === 'write' ? 0 : keepScroll;
     const ta = dialog.querySelector('textarea');
-    if (ta) { setCounts(dialog, ta.value); if (focusWrite) { focusWrite = false; ta.focus(); try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch {} } }
+    if (ta) { grow(ta); setCounts(dialog, ta.value); if (focusWrite) { focusWrite = false; ta.focus(); try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch {} } }
   }
+  function grow(ta) { ta.style.height = 'auto'; ta.style.height = Math.min(Math.max(ta.scrollHeight + 2, 280), Math.round(window.innerHeight * 0.62)) + 'px'; }
+  const shiftDay = (d, by) => { const x = new Date(d + 'T12:00:00'); x.setDate(x.getDate() + by); return day(x); };
   function cover() {
     const q = quote();
     const header = el('header', null, { class: 'mhs-j-cover' });
@@ -202,16 +214,18 @@
       c.append(el('span', ic, { class: 'mhs-j-stat-ic', 'aria-hidden': 'true' }), el('b', v), el('span', l));
       stats.append(c);
     });
-    header.append(top, title, sub, stats);
+    if (view === 'write') { header.classList.add('is-compact'); header.append(top, title); }
+    else header.append(top, title, sub, stats);
     return header;
   }
   function tabs() {
     const bar = el('nav', null, { class: 'mhs-j-tabs' });
-    [['calendar', t('calendar')], ['entries', t('diary')], ['write', selected ? t('edit') : t('write')], ['settings', t('settings')]].forEach(([v, label]) => {
+    [['calendar', t('calendar')], ['entries', t('diary')], ['write', selected ? t('edit') : t('write')], ['settings', t('prefsTab')]].forEach(([v, label]) => {
       const b = button(label, () => {
         if (v === 'write' && !selected) selected = day();
         view = v; render();
-      }, { class: v === view ? 'is-active' : '', 'aria-current': v === view ? 'page' : null });
+      }, { class: v === view ? 'is-active' : '' });
+      if (v === view) b.setAttribute('aria-current', 'page');
       bar.append(b);
     });
     return bar;
@@ -226,7 +240,7 @@
   }
   function footer() {
     const f = el('footer');
-    f.append(el('span', t(status), { 'data-status': '', role: 'status' }), button(t('saveNow'), async () => { if (await cache()) sync(); }));
+    f.append(el('span', t(status), { 'data-status': '', 'data-state': status, role: 'status' }), button(t('saveNow'), async () => { clearTimeout(timer); if (await cache()) sync(); }, { title: t('shortcut') }));
     return f;
   }
 
@@ -243,32 +257,24 @@
     const grid = el('div', null, { class: 'mhs-journal-grid' });
     for (let i = 0; i < 7; i++) grid.append(el('span', new Date(2026, 10, 1 + i + Number(settings.weekStart)).toLocaleDateString(locale(), { weekday: 'short' }), { class: 'mhs-journal-weekday' }));
     for (let i = 0; i < (month.getDay() - Number(settings.weekStart) + 7) % 7; i++) grid.append(el('span'));
-    const total = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+    const total = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate(), today = day();
+    let monthCount = 0;
     for (let i = 1; i <= total; i++) {
-      const d = day(new Date(month.getFullYear(), month.getMonth(), i)), has = !!entries[d]?.text.trim();
-      const b = button(n(i), () => { selected = d; view = 'write'; render(); }, { class: (d === day() ? 'is-today ' : '') + (has ? 'has-entry' : ''), 'aria-label': d + (has ? ' • ' + t('journal') : '') });
-      if (d === day()) b.setAttribute('aria-current', 'date'); grid.append(b);
-    }
-    root.append(grid, el('p', '🔥 ' + n(streak()) + ' ' + t('streakDays'), { class: 'mhs-journal-streak' }));
-    const search = el('input', null, { type: 'search', placeholder: t('searchPh'), 'aria-label': t('searchPh') });
-    const results = el('div', null, { class: 'mhs-journal-results' });
-    search.oninput = () => {
-      results.replaceChildren(); const q = search.value.trim().toLocaleLowerCase();
-      if (!q) return;
-      const matches = Object.keys(entries).sort().reverse().filter(d => entries[d].text.trim() && (d.includes(q) || entries[d].text.toLocaleLowerCase().includes(q)));
-      if (!matches.length) results.append(el('p', t('emptySearch'), { class: 'mhs-j-empty' }));
-      matches.slice(0, 20).forEach(d => {
-        const b = button('', () => { selected = d; view = 'write'; month = new Date(d.slice(0, 7) + '-01T12:00:00'); render(); });
-        b.append(el('strong', d), el('span', entries[d].text.slice(0, 140)));
-        results.append(b);
+      const d = day(new Date(month.getFullYear(), month.getMonth(), i)), text = entries[d]?.text || '', has = !!text.trim(), future = d > today;
+      const w = has ? countWords(text) : 0, level = !has ? 0 : w >= settings.goal ? 3 : w >= settings.goal / 2 ? 2 : 1;
+      if (has) monthCount++;
+      const b = button(n(i), () => { selected = d; view = 'write'; focusWrite = d === today; render(); }, {
+        class: [d === today ? 'is-today' : '', has ? 'has-entry lv-' + level : '', future ? 'is-future' : ''].join(' ').trim(),
+        'aria-label': new Date(d + 'T12:00:00').toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long' }) + (has ? ' • ' + n(w) + ' ' + t('words') : future ? ' • ' + t('noFuture') : '')
       });
-    };
-    root.append(search, results);
-    const label = el('label', null, { class: 'mhs-journal-reminder' });
-    const check = el('input', null, { type: 'checkbox' });
-    check.checked = reminder; check.onchange = () => { reminder = check.checked; cache(); };
-    label.append(check, document.createTextNode(t('reminder').replace('20:00', settings.reminderTime).replace('রাত ৮টা', settings.reminderTime)));
-    root.append(label, el('p', t('settingsHelp'), { class: 'mhs-journal-note' }), el('p', t('backupNote'), { class: 'mhs-journal-note' }));
+      if (future) b.disabled = true;
+      if (d === today) b.setAttribute('aria-current', 'date'); grid.append(b);
+    }
+    const summary = el('div', null, { class: 'mhs-j-month-sum' });
+    summary.append(el('span', '🔥 ' + n(streak()) + ' ' + t('streakDays')), el('span', '✍ ' + n(monthCount) + ' ' + t('monthCount')));
+    root.append(grid, summary);
+    const cta = entries[today]?.text.trim() ? t('continueWriting') : t('startWriting');
+    root.append(button('✍ ' + cta, () => { selected = today; view = 'write'; month = new Date(today.slice(0, 7) + '-01T12:00:00'); focusWrite = true; render(); }, { class: 'mhs-j-new' }));
   }
 
   function configuration(root) {
@@ -293,6 +299,9 @@
     field('weekStart', [['0','sunday'],['1','monday']]);
     field('template', [['free','free'],['guided','guided']]);
     field('goal'); field('reminderTime', null, 'time'); field('showLedger', null, 'checkbox');
+    const remind = el('label', t('reminderOn')), check = el('input', null, { type: 'checkbox', 'aria-label': t('reminderOn') });
+    check.checked = reminder; check.onchange = () => { reminder = check.checked; cache(); };
+    remind.append(check); root.append(remind, el('p', t('backupNote'), { class: 'mhs-journal-note' }));
     root.append(el('p', settingsReady ? '' : t('saving'), {'data-config-status':'',role:'status'}));
     root.append(button(t('retry'), () => syncSettings()));
     root.append(button(t('export'), () => {
@@ -314,13 +323,15 @@
       if (q) days = days.filter(d => d.includes(q) || entries[d].text.toLocaleLowerCase().includes(q));
       const shown = days.slice(0, limit);
       if (!shown.length) { list.append(el('p', q ? t('emptySearch') : t('emptyMonth'), { class: 'mhs-j-empty' })); return; }
+      let lastMonth = '';
       shown.forEach(d => {
         const text = entries[d].text;
+        if (d.slice(0, 7) !== lastMonth) { lastMonth = d.slice(0, 7); list.append(el('h4', new Date(d + 'T12:00:00').toLocaleDateString(locale(), { month: 'long', year: 'numeric' }), { class: 'mhs-j-group' })); }
         const card = button('', () => { selected = d; view = 'write'; month = new Date(d.slice(0, 7) + '-01T12:00:00'); render(); }, { class: 'mhs-j-card' });
         card.append(
           el('strong', new Date(d + 'T12:00:00').toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long' })),
           el('span', text.slice(0, 160) + (text.length > 160 ? '…' : '')),
-          el('em', n(countWords(text)) + ' ' + t('words'))
+          el('em', n(countWords(text)) + ' ' + t('words') + ' · ' + n(readMins(text)) + ' ' + t('minRead'))
         );
         list.append(card);
       });
@@ -336,7 +347,14 @@
   function editor(root) {
     if (!selected) { selected = day(); }
     const date = selected;
-    root.append(button(t('backToCal'), () => { selected = null; view = 'calendar'; render(); }, { class: 'mhs-j-back' }));
+    const nav = el('div', null, { class: 'mhs-j-daynav' });
+    const go = d => { selected = d; month = new Date(d.slice(0, 7) + '-01T12:00:00'); render(); };
+    const prev = button(lang() === 'ar' ? '›' : '‹', () => go(shiftDay(date, -1)), { 'aria-label': t('prevDay'), title: t('prevDay') });
+    const next = button(lang() === 'ar' ? '‹' : '›', () => go(shiftDay(date, 1)), { 'aria-label': t('nextDay'), title: t('nextDay') });
+    if (date >= day()) next.disabled = true;
+    const back = button(t('backToCal'), () => { selected = null; view = 'calendar'; render(); }, { class: 'mhs-j-back' });
+    nav.append(back, el('span', '', { class: 'mhs-j-spacer' }), prev, date !== day() ? button(t('today'), () => go(day()), { class: 'mhs-j-today' }) : el('span'), next);
+    root.append(nav);
     const rows = ((M.current() || {}).ledger || []).filter(e => day(new Date(e.ts)) === date);
     const net = rows.reduce((sum, e) => sum + (Number(e.delta) || 0), 0);
     const summary = el('section', null, { class: 'mhs-journal-summary' });
@@ -344,12 +362,13 @@
     rows.slice(0, 5).forEach(e => summary.append(el('div', (e.reason || e.type || '') + ' · ' + n(e.delta || 0))));
     if (settings.showLedger) root.append(summary);
     const meta = el('div', null, { class: 'mhs-j-meta' });
-    meta.append(el('span', '', { 'data-words': '' }), el('span', '', { 'data-read': '' }));
+    meta.append(el('span', '', { 'data-words': '' }), el('span', '', { 'data-read': '' }), el('span', '', { 'data-goal-label': '', class: 'mhs-j-goal' }));
     const textarea = el('textarea', null, { placeholder: t('writePh'), 'aria-label': t('journal'), maxlength: '100000', rows: '12', class: 'mhs-j-paper' });
     textarea.style.fontSize = {small:'16px',medium:'19px',large:'23px'}[settings.fontSize];
     textarea.value = entries[date]?.text || '';
     if (settings.template === 'guided' && !textarea.value) root.append(button(t('usePrompt'), () => { textarea.value = t('prompt'); change(date, textarea.value); setCounts(root, textarea.value); textarea.focus(); }));
-    textarea.oninput = () => { change(date, textarea.value); setCounts(root, textarea.value); };
+    textarea.oninput = () => { change(date, textarea.value); setCounts(root, textarea.value); grow(textarea); };
+    textarea.onkeydown = e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); clearTimeout(timer); cache().then(ok => ok && sync()); } };
     root.append(meta, el('progress', null, {'data-goal':'',max:settings.goal,value:0}), textarea);
     const del = button(t('delete'), () => {
       if (!del.dataset.armed) {
@@ -365,57 +384,30 @@
     root.append(del);
   }
 
-  /* ---------- floating sticky button (Meta-AI style, every section) ---------- */
+  /* ---------- floating sticky buttons (every section) ---------- */
+  // "+" opens the Todo composer; the calendar button above it opens the Journal.
   function ensureFab() {
-    if (document.querySelector('.mhs-journal-fab')) return;
-    const fab = button('', openTodoComposer, { class: 'mhs-journal-fab', 'aria-label': todoLabel(), title: todoLabel() });
-    fab.append(icon(PLUS_ICON));
-    fab.append(el('span', '', { class: 'mhs-journal-fab-ring', 'aria-hidden': 'true' }));
-    document.body.append(fab);
-  }
-
-  /* ---------- ledger promo banner: quote + Read / Write / Edit ---------- */
-  let promoTimer = 0;
-  function ensurePromo() {
-    const host = document.querySelector('mhs-journal');
-    let promo = document.querySelector('.mhs-journal-promo');
-    if (!host) { promo?.remove(); return; }
-    const section = host.parentElement?.parentElement;
-    if (!section || !section.contains(host)) return;
-    if (!promo || promo.parentElement !== section) {
-      promo?.remove();
-      promo = el('section', null, { class: 'mhs-journal-promo', 'aria-label': t('journal') });
-      const header = host.parentElement;
-      header.after ? header.after(promo) : section.append(promo);
+    if (!document.querySelector('.mhs-journal-fab:not(.mhs-journal-fab--cal)')) {
+      const fab = button('', openTodoComposer, { class: 'mhs-journal-fab', 'aria-label': todoLabel(), title: todoLabel() });
+      fab.append(icon(PLUS_ICON));
+      fab.append(el('span', '', { class: 'mhs-journal-fab-ring', 'aria-hidden': 'true' }));
+      document.body.append(fab);
     }
-    drawPromo(promo);
+    if (!document.querySelector('.mhs-journal-fab--cal')) {
+      const cal = button('', () => open(), { class: 'mhs-journal-fab mhs-journal-fab--cal', 'aria-label': t('openJournal'), title: t('openJournal') });
+      cal.append(icon(CAL_ICON));
+      document.body.append(cal);
+    }
+    if (dialog?.open) document.querySelectorAll('.mhs-journal-fab').forEach(f => f.classList.add('is-hidden'));
   }
-  function drawPromo(promo) {
-    promo.replaceChildren(); promo.dir = lang() === 'ar' ? 'rtl' : 'ltr';
-    const q = quote();
-    const left = el('div', null, { class: 'mhs-jp-text' });
-    left.append(
-      el('p', '✨ ' + t('quoteEyebrow'), { class: 'mhs-jp-eyebrow' }),
-      el('blockquote', '“' + q.text + '”', {}),
-      el('cite', '— ' + q.by, {})
-    );
-    const actions = el('div', null, { class: 'mhs-jp-actions' });
-    actions.append(
-      button('📖 ' + t('read'), () => open(null, {}), { class: 'mhs-jp-btn' }),
-      button('✍ ' + t('write'), () => open(day(), { focus: true }), { class: 'mhs-jp-btn is-primary' }),
-      button('🗓 ' + t('edit'), () => open(), { class: 'mhs-jp-btn' })
-    );
-    const go = button(t('openJournal') + ' →', () => open(), { class: 'mhs-jp-go' });
-    promo.append(left, actions, go);
-    promo.querySelectorAll('button').forEach(b => b.type = 'button');
-  }
-  function rotateQuote() {
-    const q = quotes[lang()] || quotes.en;
-    quoteIdx = (quoteIdx + 1) % q.length;
-    const promo = document.querySelector('.mhs-journal-promo');
-    if (promo && promo.isConnected) drawPromo(promo);
-    const fab = document.querySelector('.mhs-journal-fab');
+  // The journal launcher and promo box used to live in the Ledger section; they are no longer shown there.
+  function ensurePromo() { document.querySelectorAll('.mhs-journal-promo').forEach(p => p.remove()); }
+  function refreshFabLabels() {
+    const q = quotes[lang()] || quotes.en; quoteIdx = (quoteIdx + 1) % q.length;
+    const fab = document.querySelector('.mhs-journal-fab:not(.mhs-journal-fab--cal)');
     if (fab) { fab.setAttribute('aria-label', todoLabel()); fab.setAttribute('title', todoLabel()); }
+    const cal = document.querySelector('.mhs-journal-fab--cal');
+    if (cal) { cal.setAttribute('aria-label', t('openJournal')); cal.setAttribute('title', t('openJournal')); }
   }
 
   /* ---------- boot ---------- */
@@ -430,23 +422,8 @@
     }
   };
   customElements.define('mhs-journal', class extends HTMLElement {
-    static get observedAttributes() { return ['lang']; }
-    connectedCallback() { this.draw(); queuePromo(); }
-    attributeChangedCallback() { if (this.isConnected) { this.draw(); queuePromo(); } }
-    draw() {
-      this.replaceChildren();
-      const b = button('', () => open(), { 'aria-label': t('openJournal'), class: 'mhs-journal-launch' });
-      b.append(icon(CAL_ICON), el('span', '🗓 ' + t('journal')));
-      const shimmer = el('span', '', { class: 'mhs-j-shimmer', 'aria-hidden': 'true' });
-      b.append(shimmer);
-      this.append(b);
-    }
+    connectedCallback() { this.replaceChildren(); this.hidden = true; }
   });
-  let promoQueued = false;
-  function queuePromo() {
-    if (promoQueued) return; promoQueued = true;
-    requestAnimationFrame(() => { promoQueued = false; ensurePromo(); });
-  }
   // The app bundle re-renders views with React; watch for the ledger header mount/unmount.
   const root = document.getElementById('root');
   if (root && 'MutationObserver' in window) {
@@ -467,7 +444,7 @@
     bar.append(button('✍ ' + t('nudge'), () => { bar.remove(); open(day(), { focus: true }); }), button('×', () => bar.remove(), { 'aria-label': t('close') }));
     document.body.append(bar);
   }, 30000);
-  promoTimer = setInterval(rotateQuote, 8000);
+  setInterval(refreshFabLabels, 8000);
   window.addEventListener('load', () => { ensureFab(); ensurePromo(); });
   // Wait for the app's initial storage load before hydrating the journal cache.
   const ready = setInterval(() => { if (M.current()) { clearInterval(ready); init(); sync(); syncSettings(); ensureFab(); ensurePromo(); } }, 300);
