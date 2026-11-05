@@ -7197,6 +7197,8 @@ function na() {
     [pn, zu] = U.useState(null),
     [cf, setCf] = U.useState(!1),
     [Gr, vn] = U.useState(null),
+    scrollMem = U.useRef({}),
+    scrollTab = U.useRef(e),
     qv = a => {
       if (a === e) {
         window.scrollTo({
@@ -7205,11 +7207,36 @@ function na() {
         }), vn(`Already on ${a} • ${new Date().toLocaleTimeString()}`), ua(new Date());
         return;
       }
-      history.pushState({mhs:true, tab:a}, "", "?tab=" + a), n(a), window.scrollTo({
-        top: 0,
-        behavior: "auto"
-      });
+      scrollMem.current[e] = window.scrollY;
+      history.pushState({mhs:true, tab:a}, "", "?tab=" + a), n(a);
     };
+  // Each tab remembers its own scroll position; a tab never visited before opens at the top.
+  U.useEffect(() => {
+    try { history.scrollRestoration = "manual"; } catch (_) {}
+    const onScroll = () => { scrollMem.current[scrollTab.current] = window.scrollY; };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  U.useLayoutEffect(() => {
+    if (scrollTab.current === e) return;
+    scrollTab.current = e;
+    const target = scrollMem.current[e] || 0;
+    window.scrollTo({ top: target, behavior: "instant" });
+    scrollMem.current[e] = target;
+    // Content can still be growing (lazy lists, fonts); keep retrying briefly until the saved spot is reachable.
+    let tries = 0, raf = 0, user = false;
+    const stop = () => { user = true; };
+    const evs = ["wheel", "touchstart", "keydown", "pointerdown"];
+    evs.forEach(n => window.addEventListener(n, stop, { passive: true, once: true }));
+    const retry = () => {
+      if (user || scrollTab.current !== e || Math.abs(window.scrollY - target) < 2 || ++tries > 20) return;
+      window.scrollTo({ top: target, behavior: "instant" });
+      scrollMem.current[e] = target;
+      raf = requestAnimationFrame(retry);
+    };
+    raf = requestAnimationFrame(retry);
+    return () => { cancelAnimationFrame(raf); evs.forEach(n => window.removeEventListener(n, stop)); };
+  }, [e]);
   const modalOpen = !!(hu || ku || wu || Oe || Dn || Zt || pn || Eu || twM);
   const navRef = U.useRef({});
   navRef.current = { modalOpen, close: () => { gu(false); Su(false); Kr(false); ta(null); Fr(null); Cu(null); zu(null); twMf(false); nA(false); } };
