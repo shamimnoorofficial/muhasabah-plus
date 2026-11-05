@@ -1,6 +1,6 @@
 {
   "packageId": "com.shamimnoor.muhasabahplus",
-  "host": "muhasabah-plus.netlify.app",
+  "host": "muhasabah-plus.app",
   "name": "Muhasabah — Habit Tracker",
   "launcherName": "Muhasabah",
   "display": "standalone",
@@ -14,8 +14,8 @@
   "backgroundColor": "#0a0d14",
   "enableNotifications": true,
   "startUrl": "/?source=twa",
-  "iconUrl": "https://muhasabah-plus.netlify.app/icons/icon-512.png",
-  "maskableIconUrl": "https://muhasabah-plus.netlify.app/icons/maskable-512.png",
+  "iconUrl": "https://muhasabah-plus.app/icons/icon-512.png",
+  "maskableIconUrl": "https://muhasabah-plus.app/icons/maskable-512.png",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
     "path": "./android.keystore",
@@ -28,23 +28,23 @@
       "name": "Today's checklist",
       "shortName": "Today",
       "url": "/?tab=today&source=shortcut",
-      "chosenIconUrl": "https://muhasabah-plus.netlify.app/icons/shortcut.png"
+      "chosenIconUrl": "https://muhasabah-plus.app/icons/shortcut.png"
     },
     {
       "name": "Habits",
       "shortName": "Habits",
       "url": "/?tab=habits&source=shortcut",
-      "chosenIconUrl": "https://muhasabah-plus.netlify.app/icons/shortcut.png"
+      "chosenIconUrl": "https://muhasabah-plus.app/icons/shortcut.png"
     },
     {
       "name": "Backup",
       "shortName": "Backup",
       "url": "/?tab=settings&source=shortcut",
-      "chosenIconUrl": "https://muhasabah-plus.netlify.app/icons/shortcut.png"
+      "chosenIconUrl": "https://muhasabah-plus.app/icons/shortcut.png"
     }
   ],
   "generatorApp": "bubblewrap-cli",
-  "webManifestUrl": "https://muhasabah-plus.netlify.app/manifest.webmanifest",
+  "webManifestUrl": "https://muhasabah-plus.app/manifest.webmanifest",
   "fallbackType": "customtabs",
   "features": {},
   "alphaDependencies": { "enabled": false },
