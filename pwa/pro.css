@@ -230,3 +230,8 @@ html.mhs-theme-light .mhs-pro-cash,html[data-theme=light] .mhs-pro-cash{color:#0
 .mhs-procust-unlock:active{transform:scale(.97)}
 .mhs-del-locked{cursor:pointer}
 @media (max-width:380px){.mhs-procust-grid{grid-template-columns:1fr}}
+/* Legal links (Privacy, Terms, Refund) under the Pro sheet */
+.mhs-pro-legal{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 8px;margin:10px 0 0;font-size:12px;color:hsl(var(--muted-foreground,220 9% 62%))}
+.mhs-pro-legal a{color:inherit;text-decoration:underline;text-underline-offset:2px;padding:4px 2px}
+.mhs-pro-legal a:hover,.mhs-pro-legal a:focus-visible{color:hsl(var(--foreground,210 20% 96%))}
+.mhs-legal a.mhs-btn{text-decoration:none;display:inline-flex;align-items:center}

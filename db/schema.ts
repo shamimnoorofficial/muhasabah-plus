@@ -29,6 +29,9 @@ export const proMembers = pgTable('pro_members', {
   subscriptionAutoRenew: boolean('subscription_auto_renew').notNull().default(true),
   syncedAt: bigint('synced_at', { mode: 'number' }),
   createdAt: bigint('created_at', { mode: 'number' }).notNull(),
+  /* Which gateway each plan was bought through: null/'stripe' or 'lemonsqueezy'. */
+  lifetimeProvider: text('lifetime_provider'),
+  subscriptionProvider: text('subscription_provider'),
 });
 
 /* Each 40-day-streak cashback ($1, at most 10) refunded against the lifetime payment. */
