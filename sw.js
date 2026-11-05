@@ -1,7 +1,7 @@
 /* Muhasabah service worker — full offline support.
  * Bump VERSION whenever app files change so installed apps update automatically.
  */
-const VERSION = "2026-11-05.7";
+const VERSION = "2026-11-05.9";
 const CORE = "mhs-core-" + VERSION;
 const RUNTIME = "mhs-runtime";
 const PRECACHE = [
@@ -18,6 +18,9 @@ const PRECACHE = [
   "/pwa/insights.js",
   "/pwa/donate.js",
   "/pwa/donate.css",
+  "/pwa/pro.js",
+  "/pwa/pro.css",
+  "/pwa/protools.js",
   "/icons/favicon.png",
 
   "/pwa/bn.js",
@@ -145,7 +148,7 @@ self.addEventListener("fetch", (event) => {
   if (url.hostname === FONT_CSS) { event.respondWith(staleWhileRevalidate(request, RUNTIME)); return; }
   if (url.hostname === FONT_FILES) { event.respondWith(cacheFirst(request, RUNTIME)); return; }
   if (url.origin !== self.location.origin) return;
-  if (url.pathname === "/sw.js" || url.pathname.startsWith("/.netlify/") || url.pathname === "/api/donate") return;
+  if (url.pathname === "/sw.js" || url.pathname.startsWith("/.netlify/") || url.pathname.startsWith("/api/")) return;
 
   if (url.pathname.startsWith("/icons/")) { event.respondWith(cacheFirst(request, CORE)); return; }
   if (url.pathname.startsWith("/assets/") || url.pathname.startsWith("/pwa/") || url.pathname === "/manifest.webmanifest") { event.respondWith(shellFast(request)); return; }
