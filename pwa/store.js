@@ -146,7 +146,9 @@
 
   // Chromium grants this silently; other browsers may prompt, so only auto-ask there or when installed.
   try {
-    var standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+    var standalone = false;
+    try { var mq = window.matchMedia; standalone = !!(mq && (mq("(display-mode: standalone)").matches || mq("(display-mode: window-controls-overlay)").matches || mq("(display-mode: tabbed)").matches)); } catch (e) {}
+    standalone = standalone || navigator.standalone === true;
     if (navigator.userAgentData || standalone) MHS.persist();
   } catch (e) {}
 })();

@@ -372,7 +372,11 @@
 
   /* ---------- service worker + update banner ---------- */
   function standalone() {
-    return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true;
+    try {
+      var m = window.matchMedia;
+      if (m && (m("(display-mode: standalone)").matches || m("(display-mode: window-controls-overlay)").matches || m("(display-mode: tabbed)").matches)) return true;
+    } catch (e) {}
+    return window.navigator.standalone === true;
   }
   var silentUpdate = false;
   function showUpdate(reg) {

@@ -1,0 +1,199 @@
+/* Muhasabah — desktop chrome: Window Controls Overlay title bar, tabbed-mode
+ * polish and install-promo upgrades. Loaded after the app shell so it can
+ * override the sticky mobile header on desktop without touching app logic. */
+
+:root {
+  --mhs-titlebar-h: 0px;
+}
+
+/* ---------- custom title bar (only when WCO is active) ---------- */
+#mhs-titlebar {
+  display: none;
+}
+html.mhs-wco #mhs-titlebar {
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: env(titlebar-area-x, 0);
+  width: env(titlebar-area-width, 100%);
+  height: env(titlebar-area-height, 33px);
+  min-height: 33px;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 0.75rem;
+  z-index: 60;
+  color: #e5eee8;
+  background: linear-gradient(180deg, rgba(16, 21, 31, 0.96), rgba(10, 13, 20, 0.96));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  app-region: drag;
+  -webkit-app-region: drag;
+  user-select: none;
+  -webkit-user-select: none;
+  font-family: var(--font-display, "Sora", system-ui, sans-serif);
+}
+#mhs-titlebar .tb-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+#mhs-titlebar .tb-brand img {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+}
+#mhs-titlebar .tb-brand small {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #00e676;
+}
+#mhs-titlebar nav.tb-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  margin-left: 0.5rem;
+  app-region: no-drag;
+  -webkit-app-region: no-drag;
+}
+#mhs-titlebar nav.tb-tabs button {
+  border: 0;
+  background: transparent;
+  color: #9fb3a6;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 0.3rem 0.7rem;
+  border-radius: 0.55rem;
+  cursor: pointer;
+  white-space: nowrap;
+  app-region: no-drag;
+  -webkit-app-region: no-drag;
+}
+#mhs-titlebar nav.tb-tabs button:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+}
+#mhs-titlebar nav.tb-tabs button[aria-current="page"] {
+  background: rgba(0, 200, 83, 0.16);
+  color: #00e676;
+}
+#mhs-titlebar .tb-spacer {
+  flex: 1;
+}
+#mhs-titlebar .tb-install {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.32rem 0.9rem;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: #04140a;
+  background: linear-gradient(180deg, #00e676, #00c853);
+  app-region: no-drag;
+  -webkit-app-region: no-drag;
+  white-space: nowrap;
+}
+#mhs-titlebar .tb-install:hover {
+  filter: brightness(1.07);
+}
+@media (max-width: 720px) {
+  #mhs-titlebar nav.tb-tabs button:nth-child(n+4) {
+    display: none;
+  }
+}
+
+/* Push app content below the overlay title bar. The React header stays
+ * sticky underneath it; the sidebar keeps its own offset on desktop. */
+html.mhs-wco body {
+  padding-top: env(titlebar-area-height, 33px);
+}
+html.mhs-wco main.rail-pad {
+  scroll-margin-top: calc(env(titlebar-area-height, 33px) + 12px);
+}
+
+/* When the OS gives us no overlay width (e.g. tabbed mode without WCO),
+ * never show the custom bar — the browser draws its own tab strip. */
+html.mhs-tabbed:not(.mhs-wco) #mhs-titlebar {
+  display: none;
+}
+html.mhs-tabbed:not(.mhs-wco) body {
+  padding-top: 0;
+}
+
+/* ---------- tabbed-mode polish ---------- */
+html.mhs-tabbed main.rail-pad {
+  max-width: 76rem;
+}
+
+/* ---------- install promo upgrade ---------- */
+#mhs-install-bar {
+  gap: 0.7rem;
+  align-items: center;
+  padding: 0.7rem 0.9rem calc(0.7rem + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, rgba(18, 28, 22, 0.96), rgba(10, 13, 20, 0.97));
+  border-top: 1px solid rgba(0, 200, 83, 0.3);
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+#mhs-install-bar .txt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+#mhs-install-bar .txt b {
+  font-size: 0.9rem;
+}
+#mhs-install-bar .txt span {
+  font-size: 0.72rem;
+  color: #9fb3a6;
+}
+#mhs-install-bar .mhs-safe {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #04140a;
+  background: linear-gradient(180deg, #7cf3b0, #00e676);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  margin-top: 0.25rem;
+  width: fit-content;
+}
+#mhs-install-bar .go {
+  background: linear-gradient(180deg, #00e676, #00c853);
+  font-weight: 700;
+  min-height: 44px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 0.9rem;
+}
+#mhs-install-bar .go:hover {
+  filter: brightness(1.07);
+}
+@media (min-width: 640px) {
+  #mhs-install-bar {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    bottom: 1rem;
+    border: 1px solid rgba(0, 200, 83, 0.3);
+    border-radius: 1.1rem;
+    max-width: 34rem;
+    width: calc(100% - 2rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #mhs-titlebar .tb-install:hover,
+  #mhs-install-bar .go:hover {
+    filter: none;
+  }
+}
