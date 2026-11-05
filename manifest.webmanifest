@@ -174,6 +174,19 @@
       ]
     },
     {
+      "name": "Write in journal",
+      "short_name": "Journal",
+      "description": "Open today's journal entry",
+      "url": "/?source=note",
+      "icons": [
+        {
+          "src": "/icons/shortcut.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
       "name": "Backup",
       "short_name": "Backup",
       "description": "Back up or restore your data",
@@ -256,5 +269,41 @@
       "auto"
     ]
   },
-  "handle_links": "preferred"
+  "handle_links": "preferred",
+  "note_taking": {
+    "new_note_url": "/?source=note"
+  },
+  "scope_extensions": [
+    {
+      "type": "origin",
+      "origin": "https://muhasabah-plus.netlify.app"
+    }
+  ],
+  "widgets": [
+    {
+      "name": "Muhasabah — Today",
+      "short_name": "Today",
+      "description": "Today's habit progress, point balance and the next habit due.",
+      "tag": "mhs-today",
+      "template": "mhs-today",
+      "ms_ac_template": "/widgets/today-template.json",
+      "data": "/widgets/today-data.json",
+      "type": "application/json",
+      "screenshots": [
+        {
+          "src": "/screenshots/today-wide.webp",
+          "sizes": "1280x800",
+          "label": "Today's checklist widget"
+        }
+      ],
+      "icons": [
+        {
+          "src": "/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ],
+      "auth": false,
+      "update": 3600
+    }
+  ]
 }

@@ -1,7 +1,8 @@
 /* Muhasabah launch handling for installed-app integrations declared in the web manifest:
  *  - file_handlers  : open a Muhasabah .json backup (or a .txt note) with the app
  *  - share_target   : receive a backup file or text shared from another app
- *  - protocol_handlers : web+muhasabah://today, web+muhasabah://habits, web+muhasabah://todo?text=…
+ *  - protocol_handlers : web+muhasabah://today, web+muhasabah://habits, web+muhasabah://journal, web+muhasabah://todo?text=…
+ *  - note_taking    : /?source=note opens today's journal entry
  * Backups are validated, the current data is kept as a restore point, then the backup replaces it. */
 (function () {
   "use strict";
@@ -158,9 +159,23 @@
       if (!m) return;
       var what = m[1].toLowerCase(), args = new URLSearchParams(m[2] || "");
       if (what === "todo" || what === "add") { prefillTodo(args.get("text") || args.get("title") || ""); return; }
+      if (what === "journal" || what === "note") { openJournal(); return; }
       var tab = TABS[what];
       if (tab) goTab(tab === 1 ? what : tab);
     }).then(cleanUrl);
+  }
+
+  /* note_taking (manifest new_note_url) and the "write" widget action: open today's journal entry. */
+  function openJournal() {
+    var tries = 0;
+    (function go() {
+      if (window.MHSJournal && typeof window.MHSJournal.open === "function") { var d = new Date(), p = function (n) { return String(n).padStart(2, "0"); };
+        window.MHSJournal.open(d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()), { focus: true }); return; }
+      if (++tries < 50) setTimeout(go, 100);
+    })();
+  }
+  if (q.get("source") === "note" || q.get("tab") === "journal") {
+    ready().then(openJournal).then(cleanUrl);
   }
 
   if (q.get("source") === "file" && !("launchQueue" in window)) cleanUrl();

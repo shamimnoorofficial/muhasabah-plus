@@ -134,7 +134,7 @@
   }
   async function sync() {
     init();
-    if (!navigator.onLine) { setStatus('offline'); return; }
+    if (!navigator.onLine) { setStatus('offline'); queueBackground(); return; }
     if (syncing) { rerun = true; return; }
     syncing = true;
     const batch = [...dirty].map(d => ({ day: d, ...entries[d] }));
@@ -150,11 +150,32 @@
       if (!Array.isArray(rows)) throw Error('sync');
       batch.forEach(e => { if (entries[e.day]?.updatedAt === e.updatedAt) dirty.delete(e.day); });
       rows.forEach(e => { if (!dirty.has(e.day) && (!entries[e.day] || e.updatedAt >= entries[e.day].updatedAt)) entries[e.day] = { text: e.text, updatedAt: e.updatedAt }; });
+      if (!dirty.size) clearBackground();
       if (await cache()) setStatus(dirty.size ? 'savedDevice' : 'savedCloud');
       if (dialog?.open && view !== 'write' && document.activeElement?.type !== 'search') render();
-    } catch { setStatus('syncFail'); }
+    } catch { setStatus('syncFail'); queueBackground(); }
     finally { syncing = false; if (rerun) { rerun = false; sync(); } }
   }
+  /* Background Sync: hand unsynced entries to the service worker, which uploads them
+   * as soon as the device is back online — even if the app has been closed (sw.js "sync"). */
+  const OUTBOX = 'mhs-outbox', OUTBOX_KEY = '/__outbox/journal';
+  async function queueBackground() {
+    try {
+      if (!dirty.size || !('caches' in window) || !('serviceWorker' in navigator)) return;
+      const batch = [...dirty].filter(d => entries[d]).map(d => ({ day: d, ...entries[d] }));
+      const box = await caches.open(OUTBOX);
+      await box.put(OUTBOX_KEY, new Response(JSON.stringify(batch), { headers: { 'Content-Type': 'application/json' } }));
+      const reg = await navigator.serviceWorker.ready;
+      if (reg.sync) await reg.sync.register('mhs-journal-sync');
+    } catch {}
+  }
+  async function clearBackground() {
+    try { if ('caches' in window) await (await caches.open(OUTBOX)).delete(OUTBOX_KEY); } catch {}
+  }
+  if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data && e.data.type === 'JOURNAL_SYNCED') sync();
+  });
+
   function change(date, text) {
     entries = { ...entries, [date]: { text, updatedAt: Date.now() } }; dirty.add(date);
     setStatus('saving'); cache(); clearTimeout(timer); timer = setTimeout(sync, 700);
