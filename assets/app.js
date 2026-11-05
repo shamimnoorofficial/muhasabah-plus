@@ -7117,18 +7117,138 @@ function MhsFlowChart({ data, mode, zoom, ma7, ma30, inspect, empty, lang }) {
   ] });
 }
 
-function mhsLanguageOptions(i) {
-  const I = window.MHSI18n, all = I ? I.list() : [{ code: 'en', name: 'English', native: true }, { code: 'bn', name: 'বাংলা', native: true }, { code: 'ar', name: 'العربية', native: true }];
-  const opt = x => i('option', { value: x.code, children: x.english && x.english !== x.name ? `${x.name} — ${x.english}` : x.name }, x.code);
-  const native = all.filter(x => x.native), auto = all.filter(x => !x.native).sort((a, b) => a.english.localeCompare(b.english));
-  const L = window.MHSLocale, full = L === 'bn' ? 'সম্পূর্ণ অনুবাদ' : L === 'ar' ? 'ترجمة كاملة' : 'Full translation', machine = L === 'bn' ? 'স্বয়ংক্রিয় অনুবাদ' : L === 'ar' ? 'ترجمة تلقائية' : 'Automatic translation';
-  return [
-    i('optgroup', { label: full, children: native.map(opt) }, 'native'),
-    auto.length ? i('optgroup', { label: machine, children: auto.map(opt) }, 'auto') : null
-  ];
-}
 function mhsSavePreferences(language, theme) {
   return fetch('/.netlify/functions/preferences', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ language, theme: theme || window.MHSTheme?.get() || 'dark' }) });
+}
+const mhsReactDOM = Zn(Js(), 1);
+/* Searchable language picker: a button that opens a sheet with a search box. Matches the
+ * language's own name, its English name, its name in the current interface language and its code. */
+function mhsPickerText(L) {
+  return L === 'bn' ? { choose: 'ভাষা বেছে নিন', search: 'ভাষা খুঁজুন…', none: 'কোনো ভাষা পাওয়া যায়নি। অন্য নাম লিখে দেখুন।', close: 'বন্ধ করুন', device: 'আপনার ডিভাইসের ভাষা', full: 'হাতে লেখা অনুবাদ', auto: 'স্বয়ংক্রিয় অনুবাদ', found: 'টি ভাষা পাওয়া গেছে', current: 'বর্তমান' }
+    : L === 'ar' ? { choose: 'اختر اللغة', search: 'ابحث عن لغة…', none: 'لم يتم العثور على لغة. جرّب اسمًا آخر.', close: 'إغلاق', device: 'لغة جهازك', full: 'ترجمة يدوية', auto: 'ترجمة تلقائية', found: ' لغة', current: 'الحالية' }
+    : { choose: 'Choose language', search: 'Search languages…', none: 'No language found. Try another name.', close: 'Close', device: 'Your device language', full: 'Hand-written translation', auto: 'Automatic translation', found: ' languages found', current: 'Current' };
+}
+function mhsNorm(s) { return String(s || '').toLocaleLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+function MhsLanguagePicker({ value, onChange, disabled, label, className }) {
+  const [open, setOpen] = U.useState(false), [query, setQuery] = U.useState(''), [active, setActive] = U.useState(0);
+  const button = U.useRef(null), input = U.useRef(null), list = U.useRef(null);
+  const I = window.MHSI18n, L = window.MHSLocale || 'en', tx = mhsPickerText(L);
+  const all = U.useMemo(() => {
+    const base = I ? I.list() : [{ code: 'en', name: 'English', english: 'English', native: true }, { code: 'bn', name: 'বাংলা', english: 'Bangla', native: true }, { code: 'ar', name: 'العربية', english: 'Arabic', native: true }];
+    let local = null; try { local = new Intl.DisplayNames([I ? I.locale(L) : L], { type: 'language' }); } catch (e) {}
+    return base.map(x => { let here = ''; try { here = local ? local.of(x.code) || '' : ''; } catch (e) {} return { ...x, local: here, keys: [x.name, x.english, here, x.code].map(mhsNorm) }; });
+  }, [L]);
+  const current = all.find(x => x.code === value) || all[0];
+  const device = I && I.deviceLanguage();
+  const rows = U.useMemo(() => {
+    const needle = mhsNorm(query.trim());
+    if (needle) {
+      const scored = [];
+      all.forEach(x => {
+        let best = -1;
+        x.keys.forEach(k => { if (!k) return; if (k === needle) best = Math.max(best, 3); else if (k.startsWith(needle)) best = Math.max(best, 2); else if (k.split(/[\s()\-–,]+/).some(w => w.startsWith(needle))) best = Math.max(best, 1); else if (k.includes(needle)) best = Math.max(best, 0); });
+        if (best >= 0) scored.push([best, x]);
+      });
+      scored.sort((a, b) => b[0] - a[0] || a[1].english.localeCompare(b[1].english));
+      return scored.map(p => ({ item: p[1] }));
+    }
+    const out = [], seen = new Set();
+    const group = (title, items) => { items = items.filter(x => !seen.has(x.code)); if (!items.length) return; out.push({ head: title }); items.forEach(x => { seen.add(x.code); out.push({ item: x }); }); };
+    if (device && device !== value) group(tx.device, all.filter(x => x.code === device));
+    group(tx.full, all.filter(x => x.native));
+    group(tx.auto, all.filter(x => !x.native).sort((a, b) => a.english.localeCompare(b.english)));
+    return out;
+  }, [all, query, value, device, L]);
+  const items = rows.filter(r => r.item);
+  U.useEffect(() => { setActive(Math.max(0, query ? 0 : items.findIndex(r => r.item.code === value))); }, [query, open]);
+  U.useEffect(() => {
+    if (!open) return;
+    const t = setTimeout(() => input.current && input.current.focus(), 30);
+    const prev = document.body.style.overflow; document.body.style.overflow = 'hidden';
+    return () => { clearTimeout(t); document.body.style.overflow = prev; };
+  }, [open]);
+  U.useEffect(() => {
+    if (!open || !list.current) return;
+    const el = list.current.querySelector('[data-active="true"]');
+    if (el && el.scrollIntoView) el.scrollIntoView({ block: 'nearest' });
+  }, [active, open, rows]);
+  const close = () => { setOpen(false); setQuery(''); setTimeout(() => button.current && button.current.focus(), 0); };
+  const pick = code => { close(); if (code !== value) onChange(code); };
+  const onKey = ev => {
+    if (ev.key === 'Escape') { ev.preventDefault(); close(); }
+    else if (ev.key === 'ArrowDown') { ev.preventDefault(); setActive(a => Math.min(items.length - 1, a + 1)); }
+    else if (ev.key === 'ArrowUp') { ev.preventDefault(); setActive(a => Math.max(0, a - 1)); }
+    else if (ev.key === 'Enter') { ev.preventDefault(); const r = items[active]; if (r) pick(r.item.code); }
+  };
+  const nameOf = x => x.english && x.english !== x.name ? x.english : '';
+  let k = -1;
+  const sheet = open && mhsReactDOM.createPortal(i('div', { className: 'mhs-lp-overlay', onMouseDown: ev => { if (ev.target === ev.currentTarget) close(); }, children: f('div', { className: 'mhs-lp', role: 'dialog', 'aria-modal': 'true', 'aria-label': tx.choose, dir: I ? I.dir(L) : 'ltr', onKeyDown: onKey, children: [
+    f('div', { className: 'mhs-lp-head', children: [i('h3', { children: tx.choose }), i('button', { type: 'button', className: 'mhs-lp-x', 'aria-label': tx.close, onClick: close, children: '✕' })] }),
+    f('div', { className: 'mhs-lp-search', children: [i('span', { 'aria-hidden': 'true', children: '🔍' }), i('input', { ref: input, type: 'search', value: query, placeholder: tx.search, 'aria-label': tx.search, autoComplete: 'off', spellCheck: false, role: 'combobox', 'aria-expanded': 'true', 'aria-controls': 'mhs-lp-list', 'aria-activedescendant': items[active] ? `mhs-lp-${items[active].item.code}` : undefined, onChange: ev => setQuery(ev.target.value) })] }),
+    query.trim() && i('p', { className: 'mhs-lp-count', role: 'status', children: items.length ? `${items.length}${tx.found}` : '' }),
+    f('div', { ref: list, id: 'mhs-lp-list', className: 'mhs-lp-list', role: 'listbox', 'aria-label': tx.choose, children: [
+      ...rows.map((r, n) => {
+        if (r.head) return i('div', { className: 'mhs-lp-group', role: 'presentation', children: r.head }, `h${n}`);
+        k++; const idx = k, x = r.item, sel = x.code === value;
+        return f('div', { id: `mhs-lp-${x.code}`, role: 'option', 'aria-selected': sel ? 'true' : 'false', 'data-active': idx === active ? 'true' : 'false', className: 'mhs-lp-opt', onMouseMove: () => idx !== active && setActive(idx), onClick: () => pick(x.code), children: [
+          f('span', { className: 'mhs-lp-names notranslate', translate: 'no', children: [i('b', { lang: x.code, dir: I ? I.dir(x.code) : 'auto', children: x.name }), nameOf(x) && i('small', { children: x.local && x.local !== x.name && x.local !== x.english && L !== 'en' ? `${x.local} · ${x.english}` : nameOf(x) })] }),
+          sel ? i('span', { className: 'mhs-lp-check', 'aria-hidden': 'true', children: '✓' }) : i('span', { className: 'mhs-lp-code notranslate', translate: 'no', children: x.code })
+        ] }, x.code);
+      }),
+      !items.length && i('p', { className: 'mhs-lp-none', children: tx.none }, 'none')
+    ] })
+  ] }) }), document.body);
+  return f(U.Fragment, { children: [
+    f('button', { ref: button, type: 'button', className: `mhs-lp-btn ${className || ''}`, disabled, 'aria-haspopup': 'dialog', 'aria-label': `${label}: ${current.name}`, onClick: () => setOpen(true), children: [
+      f('span', { className: 'mhs-lp-names notranslate', translate: 'no', children: [i('b', { children: current.name }), nameOf(current) && i('small', { children: nameOf(current) })] }),
+      i('span', { className: 'mhs-lp-caret', 'aria-hidden': 'true', children: '▾' })
+    ] }),
+    sheet
+  ] });
+}
+/* Welcome screen: ask for location (prayer times) and notifications (deadline reminders)
+ * the same way the language is chosen. Both are optional and can be changed later in Settings. */
+function mhsPermText(L) {
+  return L === 'bn' ? { title: 'অনুমতি (ঐচ্ছিক)', loc: 'অবস্থান', locSub: 'আপনার এলাকার সঠিক নামাজের ওয়াক্ত', notif: 'নোটিফিকেশন', notifSub: 'সময়সীমার আগে রিমাইন্ডার', allow: 'অনুমতি দিন', asking: 'অপেক্ষা করুন…', granted: 'চালু ✓', denied: 'বন্ধ — ব্রাউজার বা ফোনের সেটিংস থেকে চালু করুন', unsupported: 'এই ডিভাইসে নেই', error: 'পাওয়া যায়নি — আবার চেষ্টা করুন', note: 'সবকিছু শুধু এই ডিভাইসে থাকে। পরে সেটিংস থেকেও পরিবর্তন করা যাবে।' }
+    : L === 'ar' ? { title: 'الأذونات (اختيارية)', loc: 'الموقع', locSub: 'مواقيت صلاة دقيقة لمكانك', notif: 'الإشعارات', notifSub: 'تذكير قبل انتهاء المواعيد', allow: 'سماح', asking: 'لحظة…', granted: 'مفعّل ✓', denied: 'محظور — فعّله من إعدادات المتصفح أو الهاتف', unsupported: 'غير متاح على هذا الجهاز', error: 'تعذر — حاول مرة أخرى', note: 'كل شيء يبقى على هذا الجهاز، ويمكنك تغييره لاحقًا من الإعدادات.' }
+    : { title: 'Permissions (optional)', loc: 'Location', locSub: 'Exact prayer times for where you are', notif: 'Notifications', notifSub: 'Reminders before each deadline', allow: 'Allow', asking: 'Waiting…', granted: 'Allowed ✓', denied: 'Blocked — allow it in your browser or phone settings', unsupported: 'Not available on this device', error: "Couldn't get it — try again", note: 'Everything stays on this device. You can change this later in Settings.' };
+}
+function MhsWelcomePermissions({ lang }) {
+  const tx = mhsPermText(lang);
+  const [loc, setLoc] = U.useState('prompt'), [notif, setNotif] = U.useState(() => window.MHSRemind ? window.MHSRemind.state() : ('Notification' in window ? (Notification.permission === 'default' ? 'prompt' : Notification.permission) : 'unsupported'));
+  U.useEffect(() => {
+    let live = true;
+    const P = window.MHSPrayer;
+    if (P && P.locationState) P.locationState().then(s => live && setLoc(s));
+    else if (!navigator.geolocation) setLoc('unsupported');
+    if (window.MHSRemind) { const s = window.MHSRemind.state(); setNotif(s === 'default' ? 'prompt' : s); }
+    return () => { live = false; };
+  }, []);
+  const askLoc = () => {
+    setLoc('asking');
+    const P = window.MHSPrayer;
+    if (P && P.enableLocation) P.enableLocation().then(setLoc);
+    else if (navigator.geolocation) navigator.geolocation.getCurrentPosition(() => setLoc('granted'), e => setLoc(e && e.code === 1 ? 'denied' : 'error'));
+    else setLoc('unsupported');
+  };
+  const askNotif = () => {
+    setNotif('asking');
+    const R = window.MHSRemind;
+    (R ? R.enable() : Promise.resolve(Notification.requestPermission()).then(p => p === 'default' ? 'prompt' : p)).then(setNotif, () => setNotif('error'));
+  };
+  const row = (icon, title, sub, state, ask, key) => f('div', { className: `mhs-perm-row is-${state}`, children: [
+    i('span', { className: 'mhs-perm-icon', 'aria-hidden': 'true', children: icon }),
+    f('span', { className: 'mhs-perm-text', children: [i('b', { children: title }), i('small', { children: state === 'denied' || state === 'unsupported' || state === 'error' ? tx[state] : sub })] }),
+    state === 'granted' ? i('span', { className: 'mhs-perm-ok', role: 'status', children: tx.granted })
+      : state === 'denied' || state === 'unsupported' ? null
+      : i('button', { type: 'button', className: 'mhs-perm-btn', disabled: state === 'asking', onClick: ask, children: state === 'asking' ? tx.asking : tx.allow })
+  ] }, key);
+  return f('div', { className: 'mhs-perm', role: 'group', 'aria-label': tx.title, children: [
+    i('div', { className: 'mhs-perm-title', children: tx.title }),
+    row('📍', tx.loc, tx.locSub, loc, askLoc, 'loc'),
+    row('🔔', tx.notif, tx.notifSub, notif, askNotif, 'notif'),
+    i('p', { className: 'mhs-perm-note', children: tx.note })
+  ] });
 }
 function MhsPreferences({ lang, setLanguage }) {
   const [theme, setTheme] = U.useState(() => window.MHSTheme?.get() || 'dark'), [status, setStatus] = U.useState('loading');
@@ -7161,7 +7281,7 @@ function MhsPreferences({ lang, setLanguage }) {
   return f('section', { className: 'panel mhs-preferences', children: [
     f('div', { className: 'mhs-pref-head', children: [i('h2', { children: text.title }), i('span', { className: 'mhs-pref-chip', children: `🌐 ${count}${text.languages}` })] }),
     f('div', { className: 'mhs-preference-grid', children: [
-      f('label', { children: [text.language, i('select', { 'aria-label': text.language, translate: 'no', className: 'notranslate', value: lang, disabled, onChange: ev => save(ev.target.value, theme), children: mhsLanguageOptions(i) })] }),
+      f('div', { className: 'mhs-pref-field', children: [i('span', { children: text.language }), i(MhsLanguagePicker, { value: lang, disabled, label: text.language, onChange: code => save(code, theme) })] }),
       f('label', { children: [text.theme, i('select', { 'aria-label': text.theme, value: theme, disabled, onChange: ev => save(lang, ev.target.value), children: ['dark','light','system'].map(value => i('option', { value, children: text[value] }, value)) })] })
     ] }),
     device && device !== lang && f('div', { className: 'mhs-pref-suggest', children: [
@@ -9891,7 +10011,7 @@ function na() {
         })]
       })
     }), Eu && i("div", {
-      className: "fixed inset-0 z-[100] flex items-center justify-center bg-[hsl(var(--background))] p-4",
+      className: "mhs-welcome fixed inset-0 z-[100] flex items-center justify-center bg-[hsl(var(--background))] p-4",
       children: f("div", {
         className: "relative max-w-md w-full p-8 sm:p-10 rounded-[1.5rem] border border-white/10 border-t-white/20 bg-gradient-to-br from-white/[0.08] to-white/[0.03] backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.36),inset_0_1px_0_0_rgba(255,255,255,0.10)] text-center space-y-6 overflow-hidden",
         style: {
@@ -9925,17 +10045,14 @@ function na() {
               fontFamily: "var(--font-display)"
             },
             children: "Life is the sum of time — if you don’t use it properly, it’ll destroy you."
-          }), f("label", {
+          }), f("div", {
             className: "mhs-welcome-lang",
-            children: [i("span", { "aria-hidden": "true", children: "🌐" }), i("select", {
-              "aria-label": "Language",
-              translate: "no",
-              className: "notranslate",
+            children: [i("span", { "aria-hidden": "true", children: "🌐" }), i(MhsLanguagePicker, {
+              label: l === "bn" ? "ভাষা" : l === "ar" ? "اللغة" : "Language",
               value: t,
-              onChange: ev => { r(ev.target.value); mhsSavePreferences(ev.target.value).catch(() => {}); },
-              children: mhsLanguageOptions(i)
+              onChange: code => { r(code); mhsSavePreferences(code).catch(() => {}); }
             })]
-          }), i("button", {
+          }), i(MhsWelcomePermissions, { lang: l }), i("button", {
             onClick: () => {
               nA(!1), He(!0), setTimeout(() => He(!1), 900);
             },

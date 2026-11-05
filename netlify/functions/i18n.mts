@@ -1,5 +1,5 @@
-/* Automatic interface translation for every language beyond the hand-written English,
- * Bengali and Arabic. Only strings from the app's own interface catalog are accepted, so
+/* Automatic interface translation for every language except English. Bengali and Arabic
+ * have hand-written translations; this only fills in strings they do not cover. Only strings from the app's own interface catalog are accepted, so
  * nothing personal is ever translated here. Each string is translated once per language
  * with AI Gateway and cached in Netlify Blobs, so every later visitor gets it instantly. */
 import Anthropic from '@anthropic-ai/sdk';
@@ -10,14 +10,14 @@ import languages from '../../i18n/languages.json' with { type: 'json' };
 
 const CATALOG = new Set<string>(catalog as string[]);
 const LANGUAGES = new Set<string>(languages as string[]);
-const NATIVE = new Set(['en', 'bn', 'ar']);
+const SOURCE = 'en';
 const MAX_BATCH = 40;
 type Dict = Record<string, string>;
 
 const englishNames = new Intl.DisplayNames(['en'], { type: 'language', fallback: 'none' });
 function languageName(code: string) {
-  if (!LANGUAGES.has(code) || NATIVE.has(code)) return null;
-  const special: Record<string, string> = { 'zh-CN': 'Simplified Chinese', 'zh-TW': 'Traditional Chinese', 'pt-BR': 'Brazilian Portuguese', pt: 'European Portuguese', ckb: 'Central Kurdish (Sorani)', ku: 'Kurdish (Kurmanji)' };
+  if (!LANGUAGES.has(code) || code === SOURCE) return null;
+  const special: Record<string, string> = { 'zh-CN': 'Simplified Chinese', 'zh-TW': 'Traditional Chinese', 'pt-BR': 'Brazilian Portuguese', pt: 'European Portuguese', ckb: 'Central Kurdish (Sorani)', bn: 'Bengali (Bangla, as used in Bangladesh)', ar: 'Modern Standard Arabic', ku: 'Kurdish (Kurmanji)' };
   try { return special[code] || englishNames.of(code) || null; } catch { return null; }
 }
 
