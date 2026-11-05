@@ -6952,7 +6952,7 @@ var xs = {
   ea = Array.isArray(S0.habits) ? S0.habits : [],
   Fv = Array.isArray(S0.ledger) ? S0.ledger : [],
   Mn = e => e.toTimeString().slice(0, 8),
-  mu = (e, n) => e.toLocaleDateString(n === "ar" ? "ar-EG" : n === "bn" ? "bn-BD" : "en-US", {
+  mu = (e, n) => e.toLocaleDateString(n === "ar" ? "ar-EG" : n === "bn" ? "bn-BD" : !n || n === "en" ? "en-US" : n, {
     weekday: "long",
     month: "long",
     day: "numeric"
@@ -7117,11 +7117,25 @@ function MhsFlowChart({ data, mode, zoom, ma7, ma30, inspect, empty, lang }) {
   ] });
 }
 
+function mhsLanguageOptions(i) {
+  const I = window.MHSI18n, all = I ? I.list() : [{ code: 'en', name: 'English', native: true }, { code: 'bn', name: 'বাংলা', native: true }, { code: 'ar', name: 'العربية', native: true }];
+  const opt = x => i('option', { value: x.code, children: x.english && x.english !== x.name ? `${x.name} — ${x.english}` : x.name }, x.code);
+  const native = all.filter(x => x.native), auto = all.filter(x => !x.native).sort((a, b) => a.english.localeCompare(b.english));
+  const L = window.MHSLocale, full = L === 'bn' ? 'সম্পূর্ণ অনুবাদ' : L === 'ar' ? 'ترجمة كاملة' : 'Full translation', machine = L === 'bn' ? 'স্বয়ংক্রিয় অনুবাদ' : L === 'ar' ? 'ترجمة تلقائية' : 'Automatic translation';
+  return [
+    i('optgroup', { label: full, children: native.map(opt) }, 'native'),
+    auto.length ? i('optgroup', { label: machine, children: auto.map(opt) }, 'auto') : null
+  ];
+}
+function mhsSavePreferences(language, theme) {
+  return fetch('/.netlify/functions/preferences', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ language, theme: theme || window.MHSTheme?.get() || 'dark' }) });
+}
 function MhsPreferences({ lang, setLanguage }) {
   const [theme, setTheme] = U.useState(() => window.MHSTheme?.get() || 'dark'), [status, setStatus] = U.useState('loading');
   const [revision, retry] = U.useState(0);
+  const [progress, setProgress] = U.useState(null);
   const latest = U.useRef({ lang, theme }); latest.current = { lang, theme };
-  const text = lang === 'bn' ? { title: 'অ্যাপের পছন্দ', language: 'ভাষা', theme: 'থিম', dark: 'ডার্ক', light: 'লাইট', system: 'ডিভাইস অনুযায়ী', loading: 'সেটিংস লোড হচ্ছে…', saving: 'সংরক্ষণ হচ্ছে…', saved: 'সংরক্ষিত', error: 'সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।', retry: 'আবার চেষ্টা করুন' } : lang === 'ar' ? { title: 'تفضيلات التطبيق', language: 'اللغة', theme: 'المظهر', dark: 'داكن', light: 'فاتح', system: 'حسب الجهاز', loading: 'جارٍ التحميل…', saving: 'جارٍ الحفظ…', saved: 'تم الحفظ', error: 'تعذر الحفظ. أعد المحاولة.', retry: 'إعادة المحاولة' } : { title: 'App preferences', language: 'Language', theme: 'Theme', dark: 'Dark', light: 'Light', system: 'Use device setting', loading: 'Loading settings…', saving: 'Saving…', saved: 'Saved', error: 'Could not save. Please retry.', retry: 'Retry' };
+  const text = lang === 'bn' ? { title: 'অ্যাপের পছন্দ', language: 'ভাষা', theme: 'থিম', dark: 'ডার্ক', light: 'লাইট', system: 'ডিভাইস অনুযায়ী', loading: 'সেটিংস লোড হচ্ছে…', saving: 'সংরক্ষণ হচ্ছে…', saved: 'সংরক্ষিত', error: 'সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।', retry: 'আবার চেষ্টা করুন', loadError: 'সেটিংস লোড করা যায়নি। আবার চেষ্টা করুন।', languages: 'টি ভাষা', device: 'আপনার ডিভাইসের ভাষা', use: 'ব্যবহার করুন' } : lang === 'ar' ? { title: 'تفضيلات التطبيق', language: 'اللغة', theme: 'المظهر', dark: 'داكن', light: 'فاتح', system: 'حسب الجهاز', loading: 'جارٍ التحميل…', saving: 'جارٍ الحفظ…', saved: 'تم الحفظ', error: 'تعذر الحفظ. أعد المحاولة.', retry: 'إعادة المحاولة', loadError: 'تعذر تحميل الإعدادات. أعد المحاولة.', languages: ' لغة', device: 'لغة جهازك', use: 'استخدام' } : { title: 'App preferences', language: 'Language', theme: 'Theme', dark: 'Dark', light: 'Light', system: 'Use device setting', loading: 'Loading settings…', saving: 'Saving…', saved: 'Saved', error: 'Could not save. Please retry.', retry: 'Retry', loadError: 'Could not load settings. Please retry.', languages: ' languages', device: 'Your device language', use: 'Use it' };
   U.useEffect(() => {
     let active = true;
     fetch('/.netlify/functions/preferences').then(res => { if (!res.ok) throw Error(); return res.json(); }).then(value => {
@@ -7132,21 +7146,33 @@ function MhsPreferences({ lang, setLanguage }) {
     return () => { active = false; };
   }, [revision]);
   U.useEffect(() => { window.MHSTheme?.set(theme); }, [theme]);
+  U.useEffect(() => window.MHSI18n ? window.MHSI18n.onChange(setProgress) : undefined, []);
   // Keep the selected theme active after navigating away from Settings.
   const save = (language, value) => {
     window.dispatchEvent(new Event('mhs:theme-edit'));
     setLanguage(language); setTheme(value); setStatus('saving');
-    fetch('/.netlify/functions/preferences', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ language, theme: value }) })
-      .then(res => { if (!res.ok) throw Error(); setStatus('saved'); }).catch(() => setStatus('error'));
+    mhsSavePreferences(language, value).then(res => { if (!res.ok) throw Error(); setStatus('saved'); }).catch(() => setStatus('error'));
   };
   const disabled = status === 'loading' || status === 'saving';
+  const I18n = window.MHSI18n, auto = !!(I18n && I18n.isAuto(lang));
+  const device = I18n && I18n.deviceLanguage();
+  const count = I18n ? I18n.codes.length : 3;
+  const pct = progress && progress.lang === lang && progress.total ? Math.round(progress.done / progress.total * 100) : 0;
   return f('section', { className: 'panel mhs-preferences', children: [
-    i('h2', { children: text.title }),
+    f('div', { className: 'mhs-pref-head', children: [i('h2', { children: text.title }), i('span', { className: 'mhs-pref-chip', children: `🌐 ${count}${text.languages}` })] }),
     f('div', { className: 'mhs-preference-grid', children: [
-      f('label', { children: [text.language, i('select', { 'aria-label': text.language, value: lang, disabled, onChange: ev => save(ev.target.value, theme), children: [['en','English'],['bn','বাংলা'],['ar','العربية']].map(([value,label]) => i('option', { value, children: label }, value)) })] }),
+      f('label', { children: [text.language, i('select', { 'aria-label': text.language, translate: 'no', className: 'notranslate', value: lang, disabled, onChange: ev => save(ev.target.value, theme), children: mhsLanguageOptions(i) })] }),
       f('label', { children: [text.theme, i('select', { 'aria-label': text.theme, value: theme, disabled, onChange: ev => save(lang, ev.target.value), children: ['dark','light','system'].map(value => i('option', { value, children: text[value] }, value)) })] })
     ] }),
-    i('p', { role: 'status', children: status === 'loadError' ? (lang === 'bn' ? 'সেটিংস লোড করা যায়নি। আবার চেষ্টা করুন।' : 'Could not load settings. Please retry.') : text[status] || '' }),
+    device && device !== lang && f('div', { className: 'mhs-pref-suggest', children: [
+      f('span', { children: [text.device, ': ', i('b', { translate: 'no', className: 'notranslate', children: I18n.nativeName(device) })] }),
+      i('button', { type: 'button', disabled, onClick: () => save(device, theme), children: text.use })
+    ] }),
+    auto && f('div', { className: 'mhs-pref-auto', role: 'status', children: [
+      i('p', { children: progress && progress.busy ? `Translating the interface… ${pct}%` : 'Translated automatically. A few words may show in English for a moment while they load.' }),
+      i('div', { className: 'mhs-pref-bar', 'aria-hidden': 'true', children: i('span', { style: { width: `${Math.max(pct, progress && progress.busy ? 6 : 100)}%` } }) })
+    ] }),
+    i('p', { role: 'status', className: 'mhs-pref-status', children: status === 'loadError' ? text.loadError : text[status] || '' }),
     ['error','loadError'].includes(status) && i('button', { type: 'button', onClick: () => status === 'loadError' ? (setStatus('loading'), retry(v => v + 1)) : save(latest.current.lang, latest.current.theme), children: text.retry })
   ] });
 }
@@ -7160,7 +7186,7 @@ function na() {
         return "dashboard";
       }
     }),
-    [t, r] = U.useState(["en", "ar", "bn"].includes(S0.lang) ? S0.lang : "en"),
+    [t, r] = U.useState(window.MHSI18n ? (window.MHSI18n.supported(S0.lang) ? S0.lang : "en") : ["en", "ar", "bn"].includes(S0.lang) ? S0.lang : "en"),
     l = (window.MHSLocale = t),
     u = xs[l] || xs.en,
     [o, c] = U.useState(ea),
@@ -7378,7 +7404,7 @@ function na() {
       once: !0
     }), () => window.removeEventListener("click", a);
   }, []), U.useEffect(() => {
-    document.documentElement.dir = l === "ar" ? "rtl" : "ltr", document.documentElement.lang = l;
+    document.documentElement.dir = window.MHSI18n ? window.MHSI18n.dir(l) : l === "ar" ? "rtl" : "ltr", document.documentElement.lang = l;
   }, [l]), U.useEffect(() => {
     try {
       let a = (h, w) => {
@@ -7743,7 +7769,7 @@ function na() {
         className: "mhs-pro-btn mhs-pro-btn-wide mt-5",
         children: [i("svg", { className: "mhs-pro-btn-ic", viewBox: "0 0 24 24", "aria-hidden": "true", children: [i("defs", { children: i("linearGradient", { id: "mhsGoldG", x1: "0", y1: "0", x2: "1", y2: "1", children: [i("stop", { offset: "0", stopColor: "#fff6d5" }), i("stop", { offset: ".45", stopColor: "#f6d365" }), i("stop", { offset: "1", stopColor: "#c8900e" })] }) }), i("path", { fill: "url(#mhsGoldG)", d: "M3 7.5 7.6 11 12 4l4.4 7L21 7.5 19.2 18H4.8L3 7.5Zm2 12h14v1.8H5V19.5Z" })] }), i("span", { className: "mhs-pro-spark s1", "aria-hidden": "true" }), i("span", { className: "mhs-pro-spark s2", "aria-hidden": "true" }), i("span", { className: "mhs-pro-btn-get", children: l === "bn" ? "প্রো নিন" : l === "ar" ? "احصل على Pro" : "Get Pro" }), i("span", { className: "mhs-pro-btn-on", children: l === "bn" ? "প্রো মেম্বার" : l === "ar" ? "عضو Pro" : "Pro member" })]
       }), i("nav", {
-        className: "mt-8 hidden flex-col gap-1.5",
+        className: "mhs-side-nav mt-8 hidden flex-col gap-1.5", "aria-label": "Sections",
         children: [{
           k: "dashboard",
           label: u.dashboard,
@@ -7766,9 +7792,11 @@ function na() {
           icon: "⚙"
         }].map(a => f("button", {
           onClick: () => n(a.k),
+          "aria-current": e === a.k ? "page" : undefined,
           className: `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all active:scale-[0.97] ${e === a.k ? "bg-[hsl(var(--primary)/0.10)] text-foreground ring-1 ring-[hsl(var(--primary)/0.25)]" : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))] hover:text-foreground"}`,
           children: [i("span", {
             className: "h-4 w-4 flex items-center justify-center text-xs",
+            "aria-hidden": "true",
             children: a.icon
           }), a.label]
         }, a.k))
@@ -9897,6 +9925,16 @@ function na() {
               fontFamily: "var(--font-display)"
             },
             children: "Life is the sum of time — if you don’t use it properly, it’ll destroy you."
+          }), f("label", {
+            className: "mhs-welcome-lang",
+            children: [i("span", { "aria-hidden": "true", children: "🌐" }), i("select", {
+              "aria-label": "Language",
+              translate: "no",
+              className: "notranslate",
+              value: t,
+              onChange: ev => { r(ev.target.value); mhsSavePreferences(ev.target.value).catch(() => {}); },
+              children: mhsLanguageOptions(i)
+            })]
           }), i("button", {
             onClick: () => {
               nA(!1), He(!0), setTimeout(() => He(!1), 900);

@@ -20,7 +20,7 @@ const {chromium} = require('playwright');
    });
    await page.goto('http://localhost:8889');
    await page.getByRole('button',{name:'Continue',exact:true}).click();
-   await page.getByRole('button',{name:'Settings',exact:true}).last().click();
+   await page.getByRole('button',{name:'Settings',exact:true}).filter({visible:true}).last().click();
    await page.getByRole('button',{name:'Configure journal',exact:true}).click();
    const dialog=page.getByRole('dialog');
    await dialog.getByLabel('Text size',{exact:true}).selectOption('large');

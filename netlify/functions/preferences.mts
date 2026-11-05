@@ -3,6 +3,9 @@ import type { Context } from '@netlify/functions';
 import { eq } from 'drizzle-orm';
 import { database } from '../../db/index.js';
 import { appPreferences } from '../../db/schema.js';
+import languages from '../../i18n/languages.json' with { type: 'json' };
+
+const LANGUAGES = new Set<string>(languages as string[]);
 
 export default async (req: Request, context: Context) => {
   const headers = { 'Cache-Control': 'private, no-store' };
@@ -21,7 +24,7 @@ export default async (req: Request, context: Context) => {
       if (raw.length > 1024) return new Response('Too large', { status: 413, headers });
       let value;
       try { value = JSON.parse(raw); } catch { return new Response('Invalid JSON', { status: 400, headers }); }
-      if (!value || !['en', 'bn', 'ar'].includes(value.language) || !['dark', 'light', 'system'].includes(value.theme)) return new Response('Invalid preferences', { status: 400, headers });
+      if (!value || !LANGUAGES.has(value.language) || !['dark', 'light', 'system'].includes(value.theme)) return new Response('Invalid preferences', { status: 400, headers });
       await db.insert(appPreferences).values({ owner, language: value.language, theme: value.theme }).onConflictDoUpdate({ target: appPreferences.owner, set: { language: value.language, theme: value.theme } });
     }
     const [value] = await db.select({ language: appPreferences.language, theme: appPreferences.theme }).from(appPreferences).where(eq(appPreferences.owner, owner));
