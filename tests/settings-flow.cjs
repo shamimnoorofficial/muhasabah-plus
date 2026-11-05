@@ -22,7 +22,7 @@ const { chromium } = require('playwright');
    await page.getByText('Reading',{exact:true}).first().waitFor(); await page.keyboard.press('Escape');
    // Close the trade detail with its explicit close button if Escape is not handled.
    await page.evaluate(() => history.back()); await page.waitForTimeout(100);
-   await page.getByRole('button',{name:'Settings',exact:true}).last().click();
+   await page.getByRole('button',{name:'Settings',exact:true}).filter({visible:true}).last().click();
    await page.getByRole('heading',{name:'Settings',exact:true}).waitFor();
    await page.getByLabel('Theme',{exact:true}).selectOption('light'); await page.getByText('Saved',{exact:true}).waitFor();
    assert.equal(await page.locator('html').getAttribute('data-theme'),'light');

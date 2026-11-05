@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.5.0",
+    "@netlify/blobs": "^11.1.7",
     "@netlify/database": "^2.0.1",
     "@netlify/functions": "^6.1.0",
     "@netlify/identity": "^2.0.0",
@@ -22,6 +24,8 @@
     "typecheck": "tsc --noEmit",
     "test:startup": "node tests/startup.cjs",
     "test:celebrate": "node tests/celebrate.cjs",
-    "test:donate": "node tests/donate.cjs"
+    "test:donate": "node tests/donate.cjs",
+    "test:languages": "node tests/languages.cjs",
+    "i18n:catalog": "node scripts/i18n-catalog.mjs"
   }
 }
