@@ -82,8 +82,8 @@
     return !!(d.standalone || d.wco || d.tabbed) || window.navigator.standalone === true;
   }
   function dismissed() { try { return sessionStorage.getItem(KEY) === "1"; } catch (e) { return false; } }
-  function show() { if (!bar || isStandalone() || dismissed() || installed) return; bar.hidden = false; bar.classList.add("show"); }
-  function hide() { if (bar) { bar.classList.remove("show"); bar.hidden = true; } }
+  function show() { if (!bar || isStandalone() || dismissed() || installed) return; bar.hidden = false; bar.classList.add("show"); document.documentElement.classList.add("mhs-install-shown"); }
+  function hide() { if (bar) { bar.classList.remove("show"); bar.hidden = true; } document.documentElement.classList.remove("mhs-install-shown"); }
 
   function gotPrompt(e) {
     deferred = e;

@@ -336,8 +336,11 @@
         .then(function () { return window.MHS.replace(data); }).then(function () { location.reload(); });
     }
   };
+  /* Used by the storage-preference panel (pwa/sync.js). */
+  window.MHSDrive = { state: function () { return Drive.state(); }, setAuto: function (on) { if (Drive.state().connected) Drive.save({ auto: !!on }); if (on) scheduleAuto(); } };
+  function storagePref() { try { return localStorage.getItem("mhs:storage") || "device"; } catch (e) { return "device"; } }
   function scheduleAuto() {
-    var s = Drive.state(); if (!s.connected || s.auto === false || !isPro() || !Drive.clientId()) return;
+    var s = Drive.state(); if (!s.connected || s.auto === false || !isPro() || !Drive.clientId() || storagePref() === "server") return;
     clearTimeout(autoTimer);
     autoTimer = setTimeout(function () {
       var tk = Drive.token();

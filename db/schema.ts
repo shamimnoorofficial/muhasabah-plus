@@ -57,3 +57,14 @@ export const pushSubscriptions = pgTable('push_subscriptions', {
   createdAt: bigint('created_at', { mode: 'number' }).notNull(),
   updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
 });
+
+/* Account data sync (Monthly Pro): the whole on-device dataset (habits, to-dos, ledger, journal,
+ * preferences) mirrored as one JSON document per signed-in Netlify Identity user. */
+export const userData = pgTable('user_data', {
+  userId: text('user_id').primaryKey(),
+  data: jsonb('data').notNull(),
+  updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
+  device: text('device'),
+  size: integer('size').notNull().default(0),
+  createdAt: bigint('created_at', { mode: 'number' }).notNull(),
+});

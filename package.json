@@ -18,11 +18,11 @@
   },
   "type": "module",
   "name": "muhasabah-plus",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "private": true,
   "scripts": {
-    "test": "node tests/penalties.cjs",
-    "test:ui": "npm run -s test:startup && npm run -s test:languages && npm run -s test:celebrate && npm run -s test:donate && npm run -s test:flow && npm run -s test:settings && npm run -s test:journal",
+    "test": "node tests/penalties.cjs && node tests/qibla.cjs",
+    "test:ui": "npm run -s test:startup && npm run -s test:languages && npm run -s test:celebrate && npm run -s test:donate && npm run -s test:flow && npm run -s test:settings && npm run -s test:journal && npm run -s test:home",
     "typecheck": "tsc --noEmit",
     "test:startup": "node tests/startup.cjs",
     "test:celebrate": "node tests/celebrate.cjs",
@@ -32,6 +32,7 @@
     "test:lemonsqueezy": "node tests/lemonsqueezy.mjs",
     "test:journal": "node tests/journal.cjs",
     "test:flow": "node tests/flow.cjs",
-    "test:settings": "node tests/settings-flow.cjs"
+    "test:settings": "node tests/settings-flow.cjs",
+    "test:home": "node tests/home-actions.cjs"
   }
 }

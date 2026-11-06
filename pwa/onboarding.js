@@ -31,8 +31,10 @@
       s5t: "A journal for every day", s5b: "Write a few lines about your day, look back on any date in the calendar and search everything you've written.",
       p1t: "Muhasabah Pro", p1b: "Choose Lifetime or Monthly Pro for full customization, automatic Google Drive backup, the app lock and the golden crest.",
       c1t: "Point flow chart", c1b: "See your balance daily, weekly or monthly, as candles or a line. Tap any candle to see the entries behind it.",
-      j1t: "Daily journal", j1b: "Tap here to write about your day. Browse past days in the calendar and search everything you've written.",
-      f1t: "Quick to-do", f1b: "Add a to-do from any screen with this button, with points and a deadline if you like.",
+      ht: "Start with your daily habits", hb: "Pick the habits you want to track from day one. You can edit them, add more or remove them anytime in Habits.", picked: "{n} selected",
+      hc1t: "Today's focus", hc1b: "Check off today's habits and to-dos right here with one tap. The circle fills in the moment you tap it.",
+      ts1t: "Habits & To-do settings", ts1b: "Defaults for new to-dos, list options and shortcuts to the habit, prayer and reminder settings.",
+      f1t: "Quick actions", f1b: "One button for everything: a new to-do, your journal, the Quran and Hadith readers, a daily reminder, and prayer times with the Qibla compass.",
       e1t: "Islamic essentials", e1b: "Add the five daily prayers, Tahajjud and daily Quran as habits in one tap, or one by one.",
       pr1t: "Prayer time settings", pr1b: "Change your location or city, the calculation method and the Asr madhab here.",
       rm1t: "Deadline reminders", rm1b: "Turn reminders on and choose how many minutes before a deadline you're notified.",
@@ -42,9 +44,9 @@
       dn1t: "Support Muhasabah", dn1b: "If the app helps you, a donation keeps it growing.",
       in1t: "Install the app", in1b: "Add Muhasabah to your home screen so it opens like a regular app, even offline.",
       h4t: "Filter to-dos", h4b: "Switch between all, active and completed to-dos.",
-      t1t: "Dashboard", t1b: "Your point balance, streak and progress chart, all in one place.",
+      t1t: "Home", t1b: "Your point balance, streak, progress chart and today's checklist, all in one place.",
       t2t: "Add a reward or penalty", t2b: "Did something good that isn't a habit, or slipped up? Log it here by hand.",
-      t3t: "Today's checklist", t3b: "Check in your habits before their deadline, and type quick to-dos here.",
+      t3t: "To Do", t3b: "Check in your habits before their deadline, type quick to-dos, and see habits and to-dos at a glance.",
       t4t: "Create a habit", t4b: "Set the points, deadline and repeat days. A missed habit deducts points automatically.",
       t5t: "Ledger", t5b: "Every reward, penalty and check-in with its exact time. You can search it too.",
       t6t: "Settings", t6b: "Prayer times, reminders, journal, language, theme and backup live here.",
@@ -85,9 +87,12 @@
       dn1t: "মুহাসাবাকে সহযোগিতা করুন", dn1b: "অ্যাপটি উপকারে এলে আপনার অনুদান এটিকে এগিয়ে নিতে সাহায্য করবে।",
       in1t: "অ্যাপ ইনস্টল করুন", in1b: "মুহাসাবাকে হোম স্ক্রিনে যোগ করুন, যাতে সাধারণ অ্যাপের মতো খোলে, ইন্টারনেট ছাড়াও।",
       h4t: "টুডু ফিল্টার", h4b: "সব, চলমান ও সম্পন্ন টুডুর মধ্যে বদলে দেখুন।",
-      t1t: "ড্যাশবোর্ড", t1b: "আপনার পয়েন্টের স্থিতি, ধারাবাহিকতা ও অগ্রগতির চার্ট, সব এক জায়গায়।",
+      ht: "দৈনিক অভ্যাস দিয়ে শুরু করুন", hb: "প্রথম দিন থেকেই যে অভ্যাসগুলো ট্র্যাক করতে চান তা বেছে নিন। পরে অভ্যাস বিভাগে যেকোনো সময় বদলানো, যোগ বা বাদ দেওয়া যাবে।", picked: "{n}টি নির্বাচিত",
+      hc1t: "আজকের লক্ষ্য", hc1b: "আজকের অভ্যাস ও করণীয় এখানেই এক চাপে টিক দিন। চাপলেই বৃত্তটি ভরে যাবে।",
+      ts1t: "অভ্যাস ও করণীয় সেটিংস", ts1b: "নতুন করণীয়র ডিফল্ট, তালিকার অপশন এবং অভ্যাস, নামাজ ও রিমাইন্ডার সেটিংসের শর্টকাট।",
+      t1t: "হোম", t1b: "আপনার পয়েন্টের স্থিতি, ধারাবাহিকতা ও অগ্রগতির চার্ট, সব এক জায়গায়।",
       t2t: "পুরস্কার বা কর্তন যোগ করুন", t2b: "অভ্যাসের বাইরে কোনো ভালো কাজ করেছেন, বা ভুল হয়ে গেছে? এখানে নিজে লিখে রাখুন।",
-      t3t: "আজকের কাজের তালিকা", t3b: "সময়সীমার আগে অভ্যাসগুলো সম্পন্ন করুন, আর এখানে দ্রুত টুডু লিখুন।",
+      t3t: "করণীয়", t3b: "সময়সীমার আগে অভ্যাসগুলো সম্পন্ন করুন, আর এখানে দ্রুত টুডু লিখুন।",
       t4t: "নতুন অভ্যাস তৈরি করুন", t4b: "পয়েন্ট, সময়সীমা ও পুনরাবৃত্তির দিন ঠিক করুন। অভ্যাস বাদ পড়লে নিজে থেকেই পয়েন্ট কাটা যাবে।",
       t5t: "হিসাবখাতা", t5b: "প্রতিটি পুরস্কার, কর্তন ও সম্পন্ন কাজ সঠিক সময়সহ। চাইলে খুঁজেও দেখতে পারবেন।",
       t6t: "সেটিংস", t6b: "নামাজের ওয়াক্ত, রিমাইন্ডার, দিনলিপি, ভাষা, থিম ও ব্যাকআপ এখানে।",
@@ -118,7 +123,7 @@
       p1t: "محاسبة Pro", p1b: "اختر Pro مدى الحياة أو الشهري للتخصيص الكامل والنسخ الاحتياطي التلقائي إلى Google Drive وقفل التطبيق والشعار الذهبي.",
       c1t: "رسم تدفق النقاط", c1b: "شاهد رصيدك يوميًا أو أسبوعيًا أو شهريًا، شموعًا أو خطًا. اضغط على أي شمعة لترى القيود خلفها.",
       j1t: "اليوميات", j1b: "اضغط هنا لتكتب عن يومك. تصفّح الأيام السابقة في التقويم وابحث في كل ما كتبت.",
-      f1t: "مهمة سريعة", f1b: "أضف مهمة من أي شاشة بهذا الزر، مع نقاط وموعد إن شئت.",
+      f1t: "إجراءات سريعة", f1b: "زر واحد لكل شيء: مهمة جديدة، يومياتك، قارئ القرآن والحديث، تذكرة يومية، ومواقيت الصلاة مع بوصلة القبلة.",
       e1t: "الأساسيات الإسلامية", e1b: "أضف الصلوات الخمس والتهجد والقرآن اليومي عاداتٍ بضغطة واحدة، أو واحدة تلو الأخرى.",
       pr1t: "إعدادات أوقات الصلاة", pr1b: "غيّر موقعك أو مدينتك وطريقة الحساب ومذهب العصر من هنا.",
       rm1t: "تذكير قبل المواعيد", rm1b: "فعّل التذكيرات واختر قبل كم دقيقة من الموعد يصلك الإشعار.",
@@ -128,9 +133,12 @@
       dn1t: "ادعم محاسبة", dn1b: "إن نفعك التطبيق، فتبرعك يساعده على النمو.",
       in1t: "ثبّت التطبيق", in1b: "أضف محاسبة إلى الشاشة الرئيسية ليفتح كتطبيق عادي، حتى دون إنترنت.",
       h4t: "تصفية المهام", h4b: "بدّل بين كل المهام والنشطة والمكتملة.",
-      t1t: "لوحة القيادة", t1b: "رصيد نقاطك وسلسلة التزامك ورسم تقدّمك في مكان واحد.",
+      ht: "ابدأ بعاداتك اليومية", hb: "اختر العادات التي تريد متابعتها من اليوم الأول. يمكنك تعديلها أو إضافة المزيد أو حذفها في أي وقت من قسم العادات.", picked: "{n} مختارة",
+      hc1t: "تركيز اليوم", hc1b: "أنجز عادات ومهام اليوم من هنا بضغطة واحدة. تمتلئ الدائرة فور الضغط عليها.",
+      ts1t: "إعدادات العادات والمهام", ts1b: "افتراضيات المهام الجديدة وخيارات القائمة واختصارات إعدادات العادات والصلاة والتذكير.",
+      t1t: "الرئيسية", t1b: "رصيد نقاطك وسلسلة التزامك ورسم تقدّمك في مكان واحد.",
       t2t: "أضف مكافأة أو خصمًا", t2b: "فعلت خيرًا ليس من عاداتك، أو حصل تقصير؟ سجّله هنا يدويًا.",
-      t3t: "قائمة اليوم", t3b: "سجّل إنجاز عاداتك قبل موعدها، واكتب مهامك السريعة هنا.",
+      t3t: "المهام", t3b: "سجّل إنجاز عاداتك قبل موعدها، واكتب مهامك السريعة هنا.",
       t4t: "أنشئ عادة", t4b: "حدّد النقاط والموعد وأيام التكرار. العادة الفائتة تُخصم نقاطها تلقائيًا.",
       t5t: "السجل", t5b: "كل مكافأة وخصم وإنجاز بوقته الدقيق، ويمكنك البحث فيه أيضًا.",
       t6t: "الإعدادات", t6b: "أوقات الصلاة والتذكيرات واليوميات واللغة والمظهر والنسخ الاحتياطي هنا.",
@@ -156,10 +164,36 @@
     { icon: "📈", t: "s3t", b: "s3b" },
     { icon: "📖", t: "s5t", b: "s5b" },
     { icon: "🔒", t: "s4t", b: "s4b" },
+    { kind: "habits", icon: "🕌", t: "ht", b: "hb" },
     { kind: "loc", icon: "📍", t: "pt", b: "pb" },
     { kind: "notif", icon: "🔔", t: "nt", b: "nb" }
   ];
-  var FIRST_PERMISSION = 6; // "Skip" on the intro slides jumps here: permissions are still offered.
+  var FIRST_PERMISSION = 6; // "Skip" on the intro slides jumps here: habit setup and permissions are still offered.
+  /* Default habits offered on first launch. Titles match the Habits section's one-tap essentials. */
+  var HABITS = [
+    { title: "Fajr 2 Sunnah+2 Fard+Quran+Adhkar", icon: "🌙", pts: 30, dl: "05:00:00", cat: "Fard", on: true, en: "Fajr prayer", bn: "ফজরের নামাজ", ar: "صلاة الفجر" },
+    { title: "Dhuhr 4 Fard", icon: "☀️", pts: 25, dl: "13:15:00", cat: "Fard", on: true, en: "Dhuhr prayer", bn: "যোহরের নামাজ", ar: "صلاة الظهر" },
+    { title: "Asr 4 Fard", icon: "🕌", pts: 25, dl: "16:45:00", cat: "Fard", on: true, en: "Asr prayer", bn: "আসরের নামাজ", ar: "صلاة العصر" },
+    { title: "Maghrib 3 Fard+2 Sunnah", icon: "🌅", pts: 25, dl: "18:30:00", cat: "Fard", on: true, en: "Maghrib prayer", bn: "মাগরিবের নামাজ", ar: "صلاة المغرب" },
+    { title: "Isha 4 Fard+Witr", icon: "✨", pts: 25, dl: "20:15:00", cat: "Fard", on: true, en: "Isha prayer", bn: "এশার নামাজ", ar: "صلاة العشاء" },
+    { title: "Quran Daily", icon: "📖", pts: 20, dl: "21:00:00", cat: "Sunnah", on: true, en: "Read Quran daily", bn: "প্রতিদিন কুরআন পড়া", ar: "قراءة القرآن يوميًا" },
+    { title: "Tahajjud 04:00", icon: "🌙", pts: 40, dl: "04:00:00", cat: "Nafl", en: "Tahajjud", bn: "তাহাজ্জুদ", ar: "التهجد" },
+    { title: "Adhkar Morning", icon: "🌄", pts: 15, dl: "09:00:00", cat: "Sunnah", en: "Morning adhkar", bn: "সকালের যিকির", ar: "أذكار الصباح" },
+    { title: "Adhkar Evening", icon: "🌆", pts: 15, dl: "19:30:00", cat: "Sunnah", en: "Evening adhkar", bn: "সন্ধ্যার যিকির", ar: "أذكار المساء" },
+    { title: "Sadaqah Daily", icon: "🤲", pts: 15, dl: "22:00:00", cat: "Nafl", en: "Daily sadaqah", bn: "দৈনিক সদকা", ar: "صدقة يومية" },
+    { title: "Exercise 30m", icon: "🏃", pts: 15, dl: "22:00:00", cat: "Personal", en: "Exercise 30 min", bn: "৩০ মিনিট ব্যায়াম", ar: "رياضة 30 دقيقة" },
+    { title: "Early Sleep 22:00", icon: "😴", pts: 10, dl: "22:30:00", cat: "Personal", en: "Sleep early", bn: "তাড়াতাড়ি ঘুম", ar: "النوم مبكرًا" }
+  ];
+  var picked = {}; HABITS.forEach(function (h) { if (h.on) picked[h.title] = true; });
+  /* The app bundle exposes window.MHSApp once it has rendered; add the chosen habits then. */
+  function applyHabits() {
+    var list = HABITS.filter(function (h) { return picked[h.title]; }).map(function (h) { return { title: h.title, icon: h.icon, points: h.pts, deadline: h.dl, category: h.cat }; });
+    if (!list.length) return;
+    var tries = 0, timer = setInterval(function () {
+      if (window.MHSApp && window.MHSApp.addHabits) { clearInterval(timer); window.MHSApp.addHabits(list); }
+      else if (++tries > 80) clearInterval(timer);
+    }, 100);
+  }
   /* Each step opens its tab, then spotlights the target (or the tab button if the target isn't there).
    * Optional steps are left out when their target isn't on screen (no habits yet, not installable…). */
   var STEPS = [
@@ -168,9 +202,10 @@
     { tab: "dashboard", sel: '[data-tour="add-reward"]', t: "t2t", b: "t2b" },
     { tab: "dashboard", sel: '[data-tour="point-flow"]', t: "c1t", b: "c1b", optional: true },
     { tab: "dashboard", sel: "mhs-insights", t: "h3t", b: "h3b", optional: true },
-    { tab: "dashboard", sel: ".mhs-journal-fab--cal", t: "j1t", b: "j1b", optional: true },
-    { tab: "dashboard", sel: ".mhs-journal-fab:not(.mhs-journal-fab--cal)", t: "f1t", b: "f1b", optional: true },
+    { tab: "dashboard", sel: '[data-tour="home-check"]', t: "hc1t", b: "hc1b", optional: true },
+    { tab: "dashboard", sel: "#mhs-fab", t: "f1t", b: "f1b", optional: true },
     { tab: "today", sel: '[data-tour="quick-todo"]', t: "t3t", b: "t3b" },
+    { tab: "today", sel: '[data-tour="todo-settings"]', t: "ts1t", b: "ts1b", optional: true },
     { tab: "habits", sel: '[data-tour="new-habit"]', t: "t4t", b: "t4b" },
     { tab: "habits", sel: '[data-tour="essentials"]', t: "e1t", b: "e1b", optional: true },
     { tab: "habits", sel: "mhs-waqt", t: "h2t", b: "h2b", optional: true },
@@ -232,6 +267,7 @@
     var at = 0, prevFocus = document.activeElement;
     var root = el("div", { class: "mhs-ftue-intro", role: "dialog", "aria-modal": "true", "aria-label": t("introLabel"), dir: document.documentElement.dir || "ltr" });
     function finish(tour) {
+      if (!read().intro) applyHabits();
       write({ intro: 1 });
       root.classList.add("is-leaving");
       setTimeout(function () { root.remove(); busy = false; if (prevFocus && prevFocus.focus) try { prevFocus.focus(); } catch (e) {} then(tour); }, reduced ? 0 : 220);
@@ -288,6 +324,26 @@
       // Let the app apply the language (and text direction) before drawing the slide again.
       setTimeout(function () { root.setAttribute("dir", document.documentElement.dir || "ltr"); render(); }, 120);
     }
+    function habitsBlock() {
+      var L = lang();
+      var list = el("div", { class: "mhs-ftue-habits", role: "group", "aria-label": t("ht") });
+      var count = el("p", { class: "mhs-ftue-note" });
+      function update() { var n = Object.keys(picked).filter(function (k) { return picked[k]; }).length; count.textContent = t("picked").replace("{n}", String(n)); }
+      HABITS.forEach(function (h) {
+        var on = !!picked[h.title];
+        var b = el("button", { type: "button", role: "checkbox", class: "mhs-ftue-habit" + (on ? " on" : ""), "aria-checked": on ? "true" : "false", on: { click: function () {
+          picked[h.title] = !picked[h.title]; var now = !!picked[h.title];
+          b.classList.toggle("on", now); b.setAttribute("aria-checked", now ? "true" : "false"); b.querySelector(".mhs-ftue-tick").textContent = now ? "✓" : ""; update();
+        } } }, [
+          el("span", { class: "mhs-ftue-tick", "aria-hidden": "true", text: on ? "✓" : "" }),
+          el("span", { class: "mhs-ftue-hab-ic", "aria-hidden": "true", text: h.icon }),
+          el("span", { class: "mhs-ftue-hab-txt" }, [el("b", { text: h[L] || h.en }), el("small", { text: "+" + h.pts })])
+        ]);
+        list.appendChild(b);
+      });
+      update();
+      return el("div", { class: "mhs-ftue-langbox" }, [list, count]);
+    }
     function langBlock() {
       var I = window.MHSI18n, cur = window.MHSLocale || "en";
       var all = I ? I.list() : [{ code: "en", name: "English", english: "English" }, { code: "bn", name: "বাংলা", english: "Bangla" }, { code: "ar", name: "العربية", english: "Arabic" }];
@@ -327,13 +383,13 @@
       SLIDES.forEach(function (_, k) {
         dots.appendChild(el("button", { type: "button", role: "tab", class: k === at ? "on" : "", "aria-selected": k === at ? "true" : "false", "aria-label": (k + 1) + " / " + SLIDES.length, on: { click: function () { go(k); } } }));
       });
-      var extra = s.kind === "lang" ? langBlock() : s.kind ? permBlock(s.kind) : null;
-      var card = el("div", { class: "mhs-ftue-card" + (s.kind === "lang" ? " is-lang" : "") }, [
+      var extra = s.kind === "lang" ? langBlock() : s.kind === "habits" ? habitsBlock() : s.kind ? permBlock(s.kind) : null;
+      var card = el("div", { class: "mhs-ftue-card" + (s.kind === "lang" || s.kind === "habits" ? " is-lang" : "") }, [
         el("div", { class: "mhs-ftue-top" }, [
           el("img", { src: "/icons/logo.webp", alt: "", width: "36", height: "36", class: "mhs-ftue-logo" }),
           last ? null : el("button", { type: "button", class: "mhs-ftue-link", text: t("skip"), on: { click: function () { go(at < FIRST_PERMISSION ? FIRST_PERMISSION : at + 1); } } })
         ]),
-        el("div", { class: "mhs-ftue-slide" + (s.kind === "lang" ? " is-compact" : ""), "aria-live": "polite" }, [
+        el("div", { class: "mhs-ftue-slide" + (s.kind === "lang" || s.kind === "habits" ? " is-compact" : ""), "aria-live": "polite" }, [
           el("div", { class: "mhs-ftue-art", "aria-hidden": "true", text: s.icon }),
           el("h2", { id: "mhs-ftue-h", text: t(s.t) }),
           el("p", { text: t(s.b) }),

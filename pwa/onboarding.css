@@ -156,3 +156,20 @@
 .mhs-ftue-note { font-size: .76rem; color: hsl(var(--muted-foreground)); }
 .mhs-ftue-btn:disabled { opacity: .7; cursor: progress; }
 html[data-theme=light] .mhs-ftue-warn { color: #9a6200; }
+
+/* ---------- first-launch habit picker ---------- */
+.mhs-ftue-habits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem; max-height: min(44vh, 22rem); overflow-y: auto; overscroll-behavior: contain; padding: .15rem; }
+@media (max-width: 380px) { .mhs-ftue-habits { grid-template-columns: 1fr; } }
+.mhs-ftue-habit {
+  display: flex; align-items: center; gap: .55rem; min-height: 52px; padding: .5rem .6rem; text-align: start;
+  border-radius: .9rem; border: 1px solid hsl(var(--border)); background: hsl(var(--card) / .6); color: hsl(var(--foreground));
+  font: inherit; cursor: pointer; transition: border-color .2s ease, background-color .2s ease, transform .15s ease;
+}
+.mhs-ftue-habit:active { transform: scale(.98); }
+.mhs-ftue-habit.on { border-color: hsl(var(--primary) / .55); background: hsl(var(--primary) / .1); }
+.mhs-ftue-tick { width: 22px; height: 22px; min-width: 22px; border-radius: 50%; border: 2px solid hsl(var(--muted-foreground) / .5); display: grid; place-items: center; font-size: 12px; font-weight: 700; color: hsl(var(--primary-foreground, 0 0% 4%)); transition: background-color .2s ease, border-color .2s ease; }
+.mhs-ftue-habit.on .mhs-ftue-tick { background: hsl(var(--primary)); border-color: hsl(var(--primary)); }
+.mhs-ftue-hab-ic { font-size: 1.1rem; }
+.mhs-ftue-hab-txt { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
+.mhs-ftue-hab-txt b { font-size: .84rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mhs-ftue-hab-txt small { font-size: .7rem; color: hsl(var(--primary)); font-variant-numeric: tabular-nums; }

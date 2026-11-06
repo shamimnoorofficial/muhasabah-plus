@@ -407,33 +407,17 @@
 
   /* ---------- floating sticky buttons (every section) ---------- */
   // "+" opens the Todo composer; the calendar button above it opens the Journal.
-  function ensureFab() {
-    if (!document.querySelector('.mhs-journal-fab:not(.mhs-journal-fab--cal)')) {
-      const fab = button('', openTodoComposer, { class: 'mhs-journal-fab', 'aria-label': todoLabel(), title: todoLabel() });
-      fab.append(icon(PLUS_ICON));
-      fab.append(el('span', '', { class: 'mhs-journal-fab-ring', 'aria-hidden': 'true' }));
-      document.body.append(fab);
-    }
-    if (!document.querySelector('.mhs-journal-fab--cal')) {
-      const cal = button('', () => open(), { class: 'mhs-journal-fab mhs-journal-fab--cal', 'aria-label': t('openJournal'), title: t('openJournal') });
-      cal.append(icon(CAL_ICON));
-      document.body.append(cal);
-    }
-    if (dialog?.open) document.querySelectorAll('.mhs-journal-fab').forEach(f => f.classList.add('is-hidden'));
-  }
+  // The separate "+" and calendar buttons were replaced by the unified quick-action button
+  // (pwa/actions.js). Remove any leftover copies from older builds.
+  function ensureFab() { document.querySelectorAll('.mhs-journal-fab').forEach(f => f.remove()); }
   // The journal launcher and promo box used to live in the Ledger section; they are no longer shown there.
   function ensurePromo() { document.querySelectorAll('.mhs-journal-promo').forEach(p => p.remove()); }
-  function refreshFabLabels() {
-    const q = quotes[lang()] || quotes.en; quoteIdx = (quoteIdx + 1) % q.length;
-    const fab = document.querySelector('.mhs-journal-fab:not(.mhs-journal-fab--cal)');
-    if (fab) { fab.setAttribute('aria-label', todoLabel()); fab.setAttribute('title', todoLabel()); }
-    const cal = document.querySelector('.mhs-journal-fab--cal');
-    if (cal) { cal.setAttribute('aria-label', t('openJournal')); cal.setAttribute('title', t('openJournal')); }
-  }
+  function refreshFabLabels() { const q = quotes[lang()] || quotes.en; quoteIdx = (quoteIdx + 1) % q.length; }
 
   /* ---------- boot ---------- */
   window.MHSJournal = {
     open,
+    newTodo: openTodoComposer,
     openSettings() { open(); view = 'settings'; render(); syncSettings(); },
     restore(data, enabled) {
       init(); const next = valid(data), now = Date.now();

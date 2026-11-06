@@ -2945,8 +2945,9 @@ html.kb-open,html.kb-open body{overflow:hidden;height:100%;height:100dvh;touch-a
   .kb-modal-root{align-items:center!important;padding:1rem!important}
   .kb-modal-panel{border-radius:1.15rem!important;max-height:min(90vh, calc(100dvh - var(--kb-offset, 0px) - 2rem))!important}
 }
-#mhs-install-bar{position:fixed;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top,0px));max-width:32rem;margin:0 auto;z-index:80;display:none;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:linear-gradient(180deg,rgba(20,24,34,.96),rgba(10,13,20,.98));border:1px solid rgba(0,200,83,.28);box-shadow:0 12px 40px rgba(0,0,0,.55);backdrop-filter:blur(16px)}
-#mhs-install-bar.show{display:flex;animation:mhsInstallDown .28s ease-out}
+#mhs-install-bar{position:fixed;left:12px;right:12px;bottom:calc(var(--nf-badge-space,4.25rem) + 1rem + env(safe-area-inset-bottom,0px));max-width:32rem;margin:0 auto;z-index:80;display:none;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:linear-gradient(180deg,rgba(20,24,34,.96),rgba(10,13,20,.98));border:1px solid rgba(0,200,83,.28);box-shadow:0 12px 40px rgba(0,0,0,.55);backdrop-filter:blur(16px)}
+#mhs-install-bar.show{display:flex;animation:mhsInstallUp .32s cubic-bezier(.2,.8,.2,1)}
+@keyframes mhsInstallUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
 @keyframes mhsInstallDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:none}}
 #mhs-install-bar .txt{flex:1;min-width:0}
 #mhs-install-bar .txt b{display:block;font-size:13px;color:#fff;font-weight:600}
@@ -2972,7 +2973,6 @@ mhs-backup{display:block}
 .mhs-btn.danger{border-color:#FF3B30;color:#FF3B30}
 .mhs-list{display:flex;flex-direction:column;gap:.4rem;margin-top:.6rem}
 .mhs-item{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.5rem .75rem;border:1px solid hsl(var(--border));border-radius:.75rem;font-size:13px}
-#mhs-install-bar.show ~ #mhs-update-bar{top:calc(88px + env(safe-area-inset-top,0px))}
 .mhs-item .mhs-btn{padding:.4rem .75rem;font-size:12px}
 .mhs-toast{position:fixed;left:50%;bottom:calc(2rem + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:90;padding:.6rem 1rem;border-radius:999px;background:hsl(var(--card));border:1px solid hsl(var(--border));font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,.5);transition:opacity .25s}.mhs-toast.out{opacity:0}
 /* Base v1.1 — phones: navigation as a bottom tab bar so content gets the full width */

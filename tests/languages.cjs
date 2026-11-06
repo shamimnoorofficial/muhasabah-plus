@@ -31,13 +31,17 @@ const { chromium } = require('playwright');
       await page.locator('.mhs-ftue-lang').click();
       await page.getByRole('heading', { name: '[he] Choose your language', exact: true }).waitFor();
       await page.getByRole('button', { name: '[he] Skip', exact: true }).click();
+      // Skip lands on the first-launch habit picker, then the permissions.
+      await page.getByRole('heading', { name: '[he] Start with your daily habits', exact: true }).waitFor();
+      assert.ok(await page.locator('.mhs-ftue-habit').count() >= 10, 'habit picker');
+      await page.getByRole('button', { name: '[he] Next', exact: true }).click();
       await page.getByRole('heading', { name: '[he] Exact prayer times', exact: true }).waitFor();
       assert.equal(await page.locator('.mhs-ftue-perm').count(), 1, 'location step');
       await page.getByRole('button', { name: '[he] Next', exact: true }).click();
       await page.getByRole('heading', { name: '[he] Reminders before deadlines', exact: true }).waitFor();
       assert.equal(await page.locator('.mhs-ftue-perm').count(), 1, 'notification step');
       await page.getByRole('button', { name: "[he] I'll explore myself", exact: true }).click();
-      await page.getByRole('heading', { name: '[he] Dashboard', exact: true }).waitFor();
+      await page.getByRole('heading', { name: '[he] Home', exact: true }).waitFor();
       assert.equal(await page.locator('html').getAttribute('dir'), 'rtl');
       assert.ok(asked.every(s => typeof s === 'string') && !asked.some(s => /^\d+$/.test(s)));
       await page.getByRole('button', { name: '[he] Settings', exact: true }).filter({ visible: true }).last().click();
