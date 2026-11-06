@@ -17,12 +17,8 @@ html[data-theme=light] .mhs-j-config input,html[data-theme=light] .mhs-j-config 
 @media (max-width:639px){
   /* Streak, habits and trades side by side, not a tall single column. */
   .mhs-stat-row{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:.75rem!important}
-  /* Floating buttons sit just above the tab bar and are slightly smaller. */
-  .mhs-journal-fab{width:54px;height:54px;bottom:calc(var(--nf-badge-space) + 4.75rem + env(safe-area-inset-bottom,0px))}
-  .mhs-journal-fab--cal{width:46px;height:46px;inset-inline-end:20px;bottom:calc(var(--nf-badge-space) + 4.75rem + 54px + 12px + env(safe-area-inset-bottom,0px))}
-  /* Enough room at the end of every page so the last item scrolls clear of both buttons. */
-  main.rail-pad{padding-bottom:calc(var(--nf-badge-space) + 4.75rem + 54px + 12px + 46px + 1.25rem + env(safe-area-inset-bottom,0px))!important}
-  html.kb-open .mhs-journal-fab{opacity:0;pointer-events:none}
+  /* Enough room at the end of every page so the last item scrolls clear of the quick-action button. */
+  main.rail-pad{padding-bottom:calc(var(--nf-badge-space) + 4.75rem + 58px + 1.5rem + env(safe-area-inset-bottom,0px))!important}
 }
 .mhs-link-btn{min-height:36px;padding:.5rem .6rem;margin:-.5rem -.6rem;border-radius:.6rem;transition:color .15s ease,background-color .15s ease}
 .mhs-link-btn:hover{color:hsl(var(--primary));background:hsl(var(--primary)/.08)}

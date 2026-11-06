@@ -174,9 +174,9 @@
   ],
   "shortcuts": [
     {
-      "name": "Today's checklist",
-      "short_name": "Today",
-      "description": "Open today's habits and todos",
+      "name": "To Do",
+      "short_name": "To Do",
+      "description": "Open your habits and to-dos for today",
       "url": "/?tab=today&source=shortcut",
       "icons": [
         {
@@ -200,9 +200,9 @@
       ]
     },
     {
-      "name": "Dashboard",
-      "short_name": "Dashboard",
-      "description": "See your point balance and streak",
+      "name": "Home",
+      "short_name": "Home",
+      "description": "See your point balance, streak and today's checklist",
       "url": "/?tab=dashboard&source=shortcut",
       "icons": [
         {

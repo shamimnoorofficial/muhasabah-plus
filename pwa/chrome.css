@@ -132,16 +132,26 @@ html.mhs-tabbed main.rail-pad {
 }
 
 /* ---------- install promo upgrade ---------- */
+/* Install banner: a sleek card at the bottom of the screen, above the phone tab bar. */
 #mhs-install-bar {
-  gap: 0.7rem;
+  gap: 0.75rem;
   align-items: center;
-  padding: 0.7rem 0.9rem calc(0.7rem + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(180deg, rgba(18, 28, 22, 0.96), rgba(10, 13, 20, 0.97));
-  border-top: 1px solid rgba(0, 200, 83, 0.3);
-  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.5);
+  padding: 0.75rem 0.8rem 0.75rem 0.9rem;
+  border-radius: 1.25rem;
+  background: linear-gradient(135deg, rgba(14, 34, 24, 0.97), rgba(10, 13, 20, 0.98));
+  border: 1px solid rgba(0, 200, 83, 0.35);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.03) inset, 0 0 30px rgba(0, 200, 83, 0.12);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
+#mhs-install-bar .ico { width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; box-shadow: 0 6px 16px rgba(0, 0, 0, .4); }
+#mhs-install-bar .x { width: 36px; height: 36px; padding: 0; border-radius: 50%; display: grid; place-items: center; font-size: 18px; line-height: 1; }
+@media (max-width: 639px) {
+  #mhs-install-bar { bottom: calc(var(--nf-badge-space, 4.25rem) + 4.5rem + env(safe-area-inset-bottom, 0px)); left: 10px; right: 10px; }
+  #mhs-install-bar .mhs-safe { display: none; }
+  #mhs-install-bar .ico { width: 40px; height: 40px; }
+}
+html.kb-open #mhs-install-bar { display: none !important; }
 #mhs-install-bar .txt {
   display: flex;
   flex-direction: column;
@@ -183,12 +193,10 @@ html.mhs-tabbed main.rail-pad {
     left: 50%;
     right: auto;
     transform: translateX(-50%);
-    bottom: 1rem;
-    border: 1px solid rgba(0, 200, 83, 0.3);
-    border-radius: 1.1rem;
     max-width: 34rem;
     width: calc(100% - 2rem);
   }
+  @keyframes mhsInstallUp { from { opacity: 0; transform: translate(-50%, 18px); } to { opacity: 1; transform: translateX(-50%); } }
 }
 
 @media (prefers-reduced-motion: reduce) {

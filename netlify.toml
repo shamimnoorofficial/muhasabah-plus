@@ -12,7 +12,7 @@
     X-Frame-Options = "DENY"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Cross-Origin-Opener-Policy = "same-origin-allow-popups"
-    Permissions-Policy = "camera=(), microphone=(), geolocation=(self), fullscreen=(self), payment=(self \"https://js.stripe.com\" \"https://app.lemonsqueezy.com\"), screen-wake-lock=(self), web-share=(self), clipboard-write=(self), display-capture=(), usb=(), serial=(), hid=(), bluetooth=(), midi=(), magnetometer=(), gyroscope=(), accelerometer=(), browsing-topics=()"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(self), fullscreen=(self), payment=(self \"https://js.stripe.com\" \"https://app.lemonsqueezy.com\"), screen-wake-lock=(self), web-share=(self), clipboard-write=(self), display-capture=(), usb=(), serial=(), hid=(), bluetooth=(), midi=(), magnetometer=(self), gyroscope=(self), accelerometer=(self), browsing-topics=()"
 
 [[headers]]
   for = "/sw.js"

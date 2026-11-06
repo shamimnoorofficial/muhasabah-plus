@@ -6792,9 +6792,9 @@ var KEY = "muhasabah:data:v1",
 var xs = {
     en: {
       liveAudit: "Live audit",
-      dashboard: "Dashboard",
+      dashboard: "Home",
       executionWindow: "Execution window",
-      todayChecklist: "Today's checklist",
+      todayChecklist: "To Do",
       engineRoom: "Engine room",
       controlPanel: "Control panel",
       auditTrail: "Audit trail",
@@ -6802,7 +6802,7 @@ var xs = {
       backupData: "Backup & Data",
       backupTitle: "Data Backup",
       backupSubtitle: "Your data stays on your device. Export to backup, import to restore.",
-      openChecklist: "Open today's checklist",
+      openChecklist: "Open To Do",
       netBalance: "Net point balance",
       trending: "Trending up",
       streak: "Streak",
@@ -6862,8 +6862,8 @@ var xs = {
       fardLock: "Fard / Farz فرض cannot be deleted",
       productiveBlocks: "Productive blocks",
       hadith: "Life is the sum of time — if you don’t use it properly, it’ll destroy you.",
-      dash: "Dash",
-      today: "Today",
+      dash: "Home",
+      today: "To Do",
       backup: "Backup",
       noHabitsYet: "No {status} habits yet",
       defineHabitHint: "Define a habit, weight it with points...",
@@ -6871,9 +6871,9 @@ var xs = {
     },
     ar: {
       liveAudit: "التدقيق المباشر",
-      dashboard: "لوحة القيادة",
+      dashboard: "الرئيسية",
       executionWindow: "نافذة التنفيذ",
-      todayChecklist: "قائمة اليوم",
+      todayChecklist: "المهام",
       engineRoom: "غرفة المحرك",
       controlPanel: "لوحة التحكم",
       auditTrail: "سجل التدقيق",
@@ -6881,7 +6881,7 @@ var xs = {
       backupData: "النسخ الاحتياطي والبيانات",
       backupTitle: "نسخ البيانات",
       backupSubtitle: "بياناتك تبقى على جهازك. صدّر للنسخ الاحتياطي واستورد للاستعادة.",
-      openChecklist: "افتح قائمة اليوم",
+      openChecklist: "افتح المهام",
       netBalance: "صافي النقاط",
       trending: "في ارتفاع",
       streak: "سلسلة",
@@ -6941,8 +6941,8 @@ var xs = {
       fardLock: "الفرض لا يمكن حذفه",
       productiveBlocks: "الفترات المنتجة",
       hadith: "الحياة مجموع الوقت — إن لم تستخدمه جيداً فسيدمرك.",
-      dash: "لوحة",
-      today: "اليوم",
+      dash: "الرئيسية",
+      today: "المهام",
       backup: "نسخ",
       noHabitsYet: "لا توجد عادات {status} بعد",
       defineHabitHint: "حدد عادة، ووزنها بالنقاط...",
@@ -7335,6 +7335,13 @@ function na() {
       type: "manualReward"
     }),
     [twM, twMf] = U.useState(!1),
+    [twP, twPS] = U.useState(() => {
+      let base = { points: 10, penalty: 5, deadline: "23:59:00", hideDone: !1, autoClear: !1 };
+      return S0.todoPrefs && typeof S0.todoPrefs === "object" && !Array.isArray(S0.todoPrefs) ? { ...base, ...S0.todoPrefs } : base;
+    }),
+    [hq, hqS] = U.useState(""),
+    [hsd, hsdS] = U.useState(!1),
+    [tcfg, tcfgS] = U.useState(!1),
     [twFl, twFlS] = U.useState("all"),
     [twQ, twQS] = U.useState(""),
     [twDc, twDcS] = U.useState(null),
@@ -7432,13 +7439,55 @@ function na() {
       let d = {
         habits: o,
         todos: tw,
+        todoPrefs: twP,
         ledger: s,
         lang: t,
         onboarded: S0.onboarded === true || !Eu
       };
       window.MHS ? window.MHS.save(d) : localStorage.setItem(KEY, JSON.stringify(d));
     } catch (e) {}
-  }, [o, tw, s, t, Eu]), U.useEffect(() => {
+  }, [o, tw, twP, s, t, Eu]), U.useEffect(() => {
+    /* Bridge for the vanilla modules in /pwa (quick actions menu, onboarding wizard, mini-apps). */
+    window.MHSApp = {
+      lang: l,
+      tab: e,
+      nav: tab => { if (["dashboard", "today", "habits", "ledger", "settings"].includes(tab)) n(tab); },
+      data: () => ({ habits: o, todos: tw, ledger: s, todoPrefs: twP }),
+      habitsToday: () => Vn.map(a => ({ ...a, done: Xr.has(a.id), missed: Ms.has(a.id) })),
+      checkHabit: id => { let a = o.find(x => x.id === id); a && aa(a); },
+      addHabits: list => {
+        if (!Array.isArray(list)) return 0;
+        let have = new Set(o.map(h => String(h.title || "").trim().toLowerCase()));
+        let add = list.filter(x => x && typeof x.title === "string" && x.title.trim().length > 1 && !have.has(x.title.trim().toLowerCase())).map((x, k) => ({
+          id: "h" + Date.now() + k + Math.random(),
+          title: x.title.trim(),
+          category: ["Fard", "Sunnah", "Nafl", "Personal"].includes(x.category) ? x.category : "Personal",
+          points: Math.min(1000, Math.max(1, Number(x.points) || 10)),
+          deadline: /^\d{2}:\d{2}:\d{2}$/.test(x.deadline || "") ? x.deadline : "23:59:00",
+          repeat: Array.isArray(x.repeat) && x.repeat.length ? x.repeat : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+          grace: 0,
+          autoPenalty: x.autoPenalty !== !1,
+          icon: x.icon || "🕌",
+          color: x.color || "#00C853",
+          status: "active",
+          createdAt: Date.now()
+        }));
+        if (add.length) c(h => [...add, ...h]);
+        return add.length;
+      },
+      todos: () => tw,
+      addTodo: title => twAdd(title),
+      checkTodo: id => { let a = tw.find(x => x.id === id); a && twCheck(a); },
+      newTodo: () => { n("today"); twNew(); },
+      todoPrefs: () => twP,
+      setTodoPrefs: patch => twPS(p => ({ ...p, ...(patch || {}) })),
+      toast: msg => vn(String(msg || ""))
+    };
+  }), U.useEffect(() => {
+    if (twP.autoClear) {
+      let start = new Date(dn.getFullYear(), dn.getMonth(), dn.getDate()).getTime();
+      twS(w => w.some(x => x.status === "done" && Number(x.doneAt || 0) < start) ? w.filter(x => !(x.status === "done" && Number(x.doneAt || 0) < start)) : w);
+    }
     tA(new Set(s.filter(x => x.type === "checkIn" && new Date(x.ts).toDateString() === dn.toDateString()).map(x => x.habitId)));
   }, [s, dn.toDateString()]), U.useEffect(() => {
     let run = () => {
@@ -7651,26 +7700,33 @@ function na() {
     twNew = () => {
       twEw(null), twFs({
         title: twQ.trim(),
-        points: 10,
-        penalty: 5,
-        deadline: "23:59:00",
+        points: Math.max(0, Number(twP.points) || 0),
+        penalty: Math.max(0, Number(twP.penalty) || 0),
+        deadline: twP.deadline || "23:59:00",
         icon: "📌"
       }), twMf(!0);
     },
-    twQuick = () => {
-      let title = twQ.trim();
-      if (title.length < 2) return;
-      twS(w => [{
+    twAdd = title => {
+      title = String(title || "").trim();
+      if (title.length < 2) return null;
+      let item = {
         id: "t" + Date.now() + Math.random(),
         title,
-        points: 10,
-        penalty: 5,
-        deadline: "23:59:00",
+        points: Math.max(0, Number(twP.points) || 0),
+        penalty: Math.max(0, Number(twP.penalty) || 0),
+        deadline: twP.deadline || "23:59:00",
         icon: "📌",
         status: "active",
         doneAt: null,
         createdAt: Date.now()
-      }, ...w]);
+      };
+      twS(w => [item, ...w]);
+      return item;
+    },
+    twQuick = () => {
+      let title = twQ.trim();
+      if (title.length < 2) return;
+      twAdd(title);
       twQS(""), twFl === "done" && twFlS("all");
       vn(l === "ar" ? "تمت إضافة المهمة" : l === "bn" ? "টুডু যোগ হয়েছে" : "Todo added");
     },
@@ -7764,6 +7820,7 @@ function na() {
         h = JSON.stringify({
           habits: o,
           todos: tw,
+          todoPrefs: twP,
           ledger: s,
           journal: window.MHS?.current()?.journal || {},
           journalReminder: window.MHS?.current()?.journalReminder || false,
@@ -7864,11 +7921,11 @@ function na() {
         children: [{
           k: "dashboard",
           label: u.dashboard,
-          icon: "◫"
+          icon: "⌂"
         }, {
           k: "today",
           label: u.todayChecklist,
-          icon: "◪"
+          icon: "☑"
         }, {
           k: "habits",
           label: u.habits,
@@ -8029,7 +8086,149 @@ function na() {
               })]
             }, a.label))
           })]
-        }), f("div", {
+        }), (() => {
+          /* Home checklist: today's habits and to-dos with circular one-tap check-ins. */
+          let today = dn.toDateString(),
+            kindL = x => x.kind === "habit" ? (x.it.category || (l === "ar" ? "عادة" : l === "bn" ? "অভ্যাস" : "Habit")) : (l === "ar" ? "مهمة" : l === "bn" ? "করণীয়" : "To-do"),
+            hItems = Vn.map(a => {
+              let h = Xr.has(a.id), dl = mhsDl(a, dn), past = Date.now() >= dl,
+                na = !h && !Ms.has(a.id) && past && Number(a.createdAt) > dl,
+                exd = !h && !Ms.has(a.id) && (na || xS.has(a.id) || xD && past),
+                ms = !h && !exd && (Ms.has(a.id) || past);
+              return { kind: "habit", it: a, done: h, ms, exd, dl, sub: mhsT(a) ? "⏱ " + mhsT(a) : "" };
+            }),
+            tItems = tw.filter(x => x.status !== "done" || (Number(x.doneAt) && new Date(Number(x.doneAt)).toDateString() === today)).map(a => {
+              let done = a.status === "done", dl = a.deadline ? mhsDl(a, dn) : 1 / 0, past = !done && Date.now() >= dl,
+                pen = !done && s.some(x => x.type === "todoPenalty" && x.todoId === a.id && new Date(x.ts).toDateString() === today),
+                exd = !done && s.some(x => x.type === "excuse" && x.todoId === a.id && new Date(x.ts).toDateString() === today),
+                ms = !done && !exd && (pen || past);
+              return { kind: "todo", it: a, done, ms, exd, dl, sub: a.deadline ? "⏱ " + String(a.deadline).slice(0, 5) : "" };
+            }),
+            all = [...hItems, ...tItems],
+            pending = all.filter(x => !x.done).sort((x, y) => ((x.ms || x.exd) ? 1 : 0) - ((y.ms || y.exd) ? 1 : 0) || x.dl - y.dl),
+            doneL = all.filter(x => x.done).sort((x, y) => (Number(y.it.doneAt) || 0) - (Number(x.it.doneAt) || 0)),
+            pct = all.length ? Math.round(doneL.length / all.length * 100) : 0,
+            row = x => {
+              let st = x.done ? "is-done" : x.ms ? "is-missed" : x.exd ? "is-excused" : "";
+              let lab = x.done ? (l === "ar" ? "مكتمل" : l === "bn" ? "সম্পন্ন" : "Completed") : x.ms ? (l === "ar" ? "فائت" : l === "bn" ? "মিস হয়েছে" : "Missed") : x.exd ? (l === "ar" ? "معذور" : l === "bn" ? "অজুহাত" : "Excused") : (l === "ar" ? "تم" : l === "bn" ? "সম্পন্ন করুন" : "Mark done");
+              return f("div", {
+                className: "mhs-hc-row " + st,
+                children: [i("button", {
+                  type: "button",
+                  className: "mhs-circle-check mhs-hc-check " + st,
+                  disabled: x.done || x.ms || x.exd,
+                  "aria-label": lab + ": " + x.it.title,
+                  title: lab,
+                  onClick: () => x.kind === "habit" ? aa(x.it) : twCheck(x.it),
+                  children: x.done ? "✓" : x.ms ? "✕" : x.exd ? "🕊" : ""
+                }), f("div", {
+                  className: "mhs-hc-body",
+                  children: [f("div", {
+                    className: "mhs-hc-title",
+                    children: [x.it.icon, " ", x.it.title]
+                  }), f("div", {
+                    className: "mhs-hc-meta",
+                    children: [i("span", {
+                      className: "mhs-hc-kind" + (x.kind === "habit" ? " is-habit" : " is-todo"),
+                      children: kindL(x)
+                    }), i("span", {
+                      className: "num",
+                      children: "+" + x.it.points
+                    }), x.sub ? i("span", {
+                      className: "num",
+                      children: x.sub
+                    }) : null, x.done && x.it.doneAt ? i("span", {
+                      className: "num",
+                      children: "✓ " + Mn(new Date(Number(x.it.doneAt))).slice(0, 5)
+                    }) : null]
+                  })]
+                })]
+              }, x.kind + x.it.id);
+            };
+          return f("section", {
+            className: "panel mhs-home-check p-5 sm:p-6",
+            "data-tour": "home-check",
+            "aria-label": l === "ar" ? "قائمة اليوم" : l === "bn" ? "আজকের তালিকা" : "Today's checklist",
+            children: [f("div", {
+              className: "mhs-hc-head",
+              children: [f("div", {
+                className: "min-w-0",
+                children: [i("div", {
+                  className: "text-[10px] uppercase tracking-[0.26em] text-[hsl(var(--primary))]",
+                  children: mu(dn, l)
+                }), i("h3", {
+                  className: "mt-1 text-base font-semibold",
+                  style: { fontFamily: "var(--font-display)" },
+                  children: l === "ar" ? "تركيز اليوم" : l === "bn" ? "আজকের লক্ষ্য" : "Today's focus"
+                }), all.length ? f("p", {
+                  className: "mhs-hc-sub",
+                  children: [i("span", { className: "num", children: doneL.length }), "/", i("span", { className: "num", children: all.length }), " ", l === "ar" ? "مكتملة" : l === "bn" ? "সম্পন্ন" : "done"]
+                }) : null]
+              }), f("div", {
+                className: "mhs-hc-side",
+                children: [f("div", {
+                  className: "mhs-hc-ring",
+                  role: "img",
+                  "aria-label": pct + "%",
+                  children: [f("svg", {
+                    viewBox: "0 0 36 36",
+                    children: [i("circle", { cx: "18", cy: "18", r: "16", fill: "none", stroke: "hsl(var(--border))", strokeWidth: "3" }), i("circle", { cx: "18", cy: "18", r: "16", fill: "none", stroke: "hsl(var(--primary))", strokeWidth: "3", strokeLinecap: "round", strokeDasharray: `${pct} 100` })]
+                  }), f("span", { className: "num", children: [pct, "%"] })]
+                }), f("button", {
+                  type: "button",
+                  onClick: () => n("today"),
+                  className: "mhs-link-btn text-[11px] text-[hsl(var(--muted-foreground))]",
+                  children: [u.openChecklist, " →"]
+                })]
+              })]
+            }), f("form", {
+              className: "mhs-hc-quick",
+              onSubmit: a => {
+                a.preventDefault();
+                if (hq.trim().length < 2) return;
+                twAdd(hq), hqS(""), vn(l === "ar" ? "تمت إضافة المهمة" : l === "bn" ? "করণীয় যোগ হয়েছে" : "To-do added");
+              },
+              children: [i("input", {
+                value: hq,
+                onChange: a => hqS(a.target.value),
+                maxLength: 200,
+                enterKeyHint: "done",
+                "data-tour": "home-quick",
+                "aria-label": l === "ar" ? "أضف مهمة سريعة" : l === "bn" ? "দ্রুত করণীয় যোগ করুন" : "Quick add a to-do",
+                placeholder: l === "ar" ? "أضف مهمة سريعة… ثم Enter" : l === "bn" ? "দ্রুত একটি করণীয় লিখুন… Enter চাপুন" : "Add a quick to-do… press Enter"
+              }), i("button", {
+                type: "submit",
+                disabled: hq.trim().length < 2,
+                "aria-label": l === "ar" ? "إضافة مهمة" : l === "bn" ? "করণীয় যোগ" : "Add to-do",
+                title: l === "ar" ? "إضافة مهمة" : l === "bn" ? "করণীয় যোগ" : "Add to-do",
+                children: "＋"
+              })]
+            }), !all.length ? f("div", {
+              className: "mhs-hc-empty",
+              children: [i("span", { className: "mhs-hc-empty-ic", "aria-hidden": "true", children: "🌱" }), i("p", {
+                children: l === "ar" ? "لا شيء في قائمة اليوم بعد. أضف عادة أو مهمة لتبدأ." : l === "bn" ? "আজকের তালিকায় এখনো কিছু নেই। একটি অভ্যাস বা করণীয় যোগ করে শুরু করুন।" : "Nothing on today's list yet. Add a habit or a to-do to begin."
+              }), f("div", {
+                className: "mhs-actions",
+                children: [i("button", { type: "button", className: "mhs-btn primary", onClick: () => n("habits"), children: u.buildHabit }), i("button", { type: "button", className: "mhs-btn", onClick: twNew, children: l === "ar" ? "مهمة جديدة" : l === "bn" ? "নতুন করণীয়" : "New to-do" })]
+              })]
+            }) : f("div", {
+              className: "mhs-hc-list",
+              children: pending.length ? pending.map(row) : i("div", {
+                className: "mhs-hc-allDone",
+                children: l === "ar" ? "✓ كل شيء مكتمل لليوم — ما شاء الله!" : l === "bn" ? "✓ আজকের সব কাজ শেষ — মাশাআল্লাহ!" : "✓ Everything done for today — MashaAllah!"
+              })
+            }), doneL.length ? f("div", {
+              className: "mhs-hc-done",
+              children: [i("button", {
+                type: "button",
+                className: "mhs-hc-toggle",
+                "aria-expanded": hsd,
+                onClick: () => hsdS(v => !v),
+                children: (l === "ar" ? "المكتملة" : l === "bn" ? "সম্পন্ন" : "Completed") + " · " + doneL.length + (hsd ? " ▾" : " ▸")
+              }), hsd ? i("div", { className: "mhs-hc-list is-done-list", children: doneL.map(row) }) : null]
+            }) : null]
+          });
+        })(), f("div", {
           className: "panel p-4 sm:p-5 min-w-0 space-y-5",
           "data-tour": "point-flow",
           children: [f("div", {
@@ -8276,12 +8475,85 @@ function na() {
       }), e === "today" && f("div", {
         className: "space-y-6",
         children: [(() => {
+          /* To Do overview: habits + to-dos at a glance, plus the settings for both. */
+          let today = dn.toDateString(),
+            tdD = tw.filter(x => x.status === "done").length,
+            tdA = tw.length - tdD,
+            ptsToday = s.filter(x => new Date(x.ts).toDateString() === today).reduce((n, x) => n + (Number(x.delta) || 0), 0),
+            week = Date.now() - 6 * 864e5,
+            wkIn = s.filter(x => x.type === "checkIn" && x.ts >= week).length,
+            wkTd = s.filter(x => x.type === "todoCheckIn" && x.ts >= week).length,
+            wkMs = s.filter(x => (x.type === "autoPenalty" || x.type === "todoPenalty") && x.ts >= week).length,
+            wkRate = wkIn + wkMs ? Math.round(wkIn / (wkIn + wkMs) * 100) : null,
+            tile = (label, value, sub, cls) => f("div", {
+              className: "mhs-td-tile" + (cls ? " " + cls : ""),
+              children: [i("div", { className: "mhs-td-label", children: label }), i("div", { className: "num mhs-td-value", children: value }), sub ? i("div", { className: "mhs-td-sub", children: sub }) : null]
+            });
+          return f("section", {
+            className: "mhs-todo-dash",
+            "aria-label": l === "ar" ? "نظرة عامة على العادات والمهام" : l === "bn" ? "অভ্যাস ও করণীয় সারসংক্ষেপ" : "Habits and to-do overview",
+            children: [f("div", {
+              className: "mhs-td-grid",
+              children: [tile(u.habits, Yr + "/" + Vn.length, l === "ar" ? "اليوم" : l === "bn" ? "আজ" : "today", "is-habits"), tile(l === "ar" ? "المهام" : l === "bn" ? "করণীয়" : "To-dos", tdD + "/" + tw.length, tdA ? tdA + (l === "ar" ? " متبقية" : l === "bn" ? " বাকি" : " open") : tw.length ? l === "ar" ? "اكتملت كلها" : l === "bn" ? "সব শেষ" : "all done" : "", "is-todos"), tile(l === "ar" ? "نقاط اليوم" : l === "bn" ? "আজকের পয়েন্ট" : "Points today", (ptsToday > 0 ? "+" : "") + ptsToday, "", ptsToday >= 0 ? "is-pos" : "is-neg"), tile(l === "ar" ? "معدل ٧ أيام" : l === "bn" ? "৭ দিনের হার" : "7-day rate", wkRate === null ? "—" : wkRate + "%", wkIn + wkTd + (l === "ar" ? " إنجازات" : l === "bn" ? " সম্পন্ন" : " check-ins"), "is-week")]
+            }), f("div", {
+              className: "mhs-td-tools",
+              children: [i("button", {
+                type: "button",
+                className: "mhs-td-tool" + (tcfg ? " is-on" : ""),
+                "aria-expanded": tcfg,
+                "aria-controls": "mhs-td-settings",
+                "data-tour": "todo-settings",
+                onClick: () => tcfgS(v => !v),
+                children: l === "ar" ? "⚙ إعدادات العادات والمهام" : l === "bn" ? "⚙ অভ্যাস ও করণীয় সেটিংস" : "⚙ Habits & To-do settings"
+              }), i("button", {
+                type: "button",
+                className: "mhs-td-tool",
+                onClick: () => n("habits"),
+                children: l === "ar" ? "إدارة العادات →" : l === "bn" ? "অভ্যাস ব্যবস্থাপনা →" : "Manage habits →"
+              })]
+            }), tcfg && f("div", {
+              id: "mhs-td-settings",
+              className: "mhs-td-settings",
+              children: [f("div", {
+                className: "mhs-td-sec",
+                children: [i("h4", { children: l === "ar" ? "افتراضيات المهام الجديدة" : l === "bn" ? "নতুন করণীয়র ডিফল্ট" : "Defaults for new to-dos" }), f("div", {
+                  className: "mhs-td-fields",
+                  children: [f("label", {
+                    children: [i("span", { children: l === "ar" ? "النقاط" : l === "bn" ? "পয়েন্ট" : "Points" }), i("input", { type: "number", min: 0, max: 1000, inputMode: "numeric", value: twP.points, onChange: a => twPS(p => ({ ...p, points: Math.max(0, Math.min(1000, Number(a.target.value) || 0)) })) })]
+                  }), f("label", {
+                    children: [i("span", { children: l === "ar" ? "الخصم" : l === "bn" ? "জরিমানা" : "Penalty" }), i("input", { type: "number", min: 0, max: 1000, inputMode: "numeric", value: twP.penalty, onChange: a => twPS(p => ({ ...p, penalty: Math.max(0, Math.min(1000, Number(a.target.value) || 0)) })) })]
+                  }), f("label", {
+                    children: [i("span", { children: l === "ar" ? "الموعد" : l === "bn" ? "সময়সীমা" : "Deadline" }), i("input", { type: "time", step: 60, value: String(twP.deadline || "23:59:00").slice(0, 5), onChange: a => twPS(p => ({ ...p, deadline: (a.target.value || "23:59") + ":00" })) })]
+                  })]
+                })]
+              }), f("div", {
+                className: "mhs-td-sec",
+                children: [i("h4", { children: l === "ar" ? "عرض المهام" : l === "bn" ? "করণীয় তালিকা" : "To-do list" }), f("label", {
+                  className: "mhs-switch",
+                  children: [i("input", { type: "checkbox", checked: !!twP.hideDone, onChange: a => twPS(p => ({ ...p, hideDone: a.target.checked })) }), l === "ar" ? "إخفاء المكتملة في قائمة الكل" : l === "bn" ? "সব তালিকায় সম্পন্নগুলো লুকান" : "Hide completed to-dos in the All list"]
+                }), f("label", {
+                  className: "mhs-switch",
+                  children: [i("input", { type: "checkbox", checked: !!twP.autoClear, onChange: a => twPS(p => ({ ...p, autoClear: a.target.checked })) }), l === "ar" ? "مسح المكتملة تلقائياً مع كل يوم جديد" : l === "bn" ? "প্রতিদিন সম্পন্ন করণীয় স্বয়ংক্রিয়ভাবে মুছুন" : "Clear completed to-dos at the start of each day"]
+                })]
+              }), f("div", {
+                className: "mhs-td-sec",
+                children: [i("h4", { children: u.habits }), i("p", {
+                  className: "mhs-muted",
+                  children: l === "ar" ? "النقاط والمواعيد وأيام التكرار تُضبط لكل عادة في قسم العادات. أوقات الصلاة والتذكيرات في الإعدادات." : l === "bn" ? "প্রতিটি অভ্যাসের পয়েন্ট, সময়সীমা ও পুনরাবৃত্তি অভ্যাস বিভাগে ঠিক করুন। নামাজের সময় ও রিমাইন্ডার সেটিংসে।" : "Points, deadlines and repeat days are set per habit in the Habits section. Prayer times and deadline reminders live in Settings."
+                }), f("div", {
+                  className: "mhs-actions",
+                  children: [i("button", { type: "button", className: "mhs-btn", onClick: () => n("habits"), children: u.habits + " →" }), i("button", { type: "button", className: "mhs-btn", onClick: () => n("settings"), children: l === "ar" ? "أوقات الصلاة والتذكيرات →" : l === "bn" ? "নামাজের সময় ও রিমাইন্ডার →" : "Prayer times & reminders →" }), i("button", { type: "button", className: "mhs-btn", onClick: xT, children: xD ? l === "ar" ? "إلغاء عذر اليوم" : l === "bn" ? "আজকের অজুহাত বাতিল" : "Cancel today's excuse" : l === "ar" ? "🕊 عذر اليوم" : l === "bn" ? "🕊 আজ অজুহাত" : "🕊 Excuse today" })]
+                })]
+              })]
+            })]
+          });
+        })(), (() => {
           let twDn = tw.filter(x => x.status === "done"),
             twAc = tw.length - twDn.length,
             twPct = tw.length ? Math.round(twDn.length / tw.length * 100) : 0,
             twPts = twDn.reduce((n, x) => n + Math.abs(Number(x.points) || 0), 0),
             twKey = x => x.deadline ? String(x.deadline) : "99",
-            twL = [...tw].filter(x => twFl === "all" || (twFl === "done" ? x.status === "done" : x.status !== "done")).sort((x, y) => (x.status === "done" ? 1 : 0) - (y.status === "done" ? 1 : 0) || (x.status === "done" ? (Number(y.doneAt) || 0) - (Number(x.doneAt) || 0) : twKey(x).localeCompare(twKey(y))));
+            twL = [...tw].filter(x => twFl === "all" ? !(twP.hideDone && x.status === "done") : (twFl === "done" ? x.status === "done" : x.status !== "done")).sort((x, y) => (x.status === "done" ? 1 : 0) - (y.status === "done" ? 1 : 0) || (x.status === "done" ? (Number(y.doneAt) || 0) - (Number(x.doneAt) || 0) : twKey(x).localeCompare(twKey(y))));
           return f("section", {
           className: "mhs-todo-panel panel p-5 sm:p-6",
           "aria-label": "Todo List",
@@ -8413,7 +8685,7 @@ function na() {
                     disabled: done || ms || exd,
                     "aria-label": done ? "Completed" : ms ? "Missed" : exd ? "Excused" : "Mark done",
                     title: done ? "Completed" : ms ? "Missed" : exd ? "Excused" : "Mark done",
-                    className: `mhs-todo-check h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 rounded-xl border-2 flex items-center justify-center transition-all active:scale-[0.97] ${done ? "bg-[hsl(var(--primary))] border-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]" : "border-border hover:border-[hsl(var(--primary)/0.4)]"}`,
+                    className: `mhs-todo-check mhs-circle-check h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 rounded-xl border-2 flex items-center justify-center transition-all active:scale-[0.97] ${done ? "bg-[hsl(var(--primary))] border-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]" : "border-border hover:border-[hsl(var(--primary)/0.4)]"}`,
                     children: done ? "✓" : ms ? "✕" : na ? "🆕" : exd ? "🕊" : ""
                   }), f("div", {
                     className: "min-w-0",
@@ -8631,7 +8903,7 @@ function na() {
                   onClick: () => aa(a),
                   disabled: h || ms || exd,
                   "aria-label": h ? "Completed" : ms ? "Missed" : exd ? "Excused" : "Mark done",
-                  className: `h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 rounded-xl border-2 flex items-center justify-center transition-all active:scale-[0.97] ${h ? "bg-[hsl(var(--primary))] border-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]" : "border-border hover:border-[hsl(var(--primary)/0.4)]"}`,
+                  className: `mhs-circle-check h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 rounded-xl border-2 flex items-center justify-center transition-all active:scale-[0.97] ${h ? "bg-[hsl(var(--primary))] border-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]" : "border-border hover:border-[hsl(var(--primary)/0.4)]"}`,
                   children: h ? "✓" : ms ? "✕" : na ? "🆕" : exd ? "🕊" : ""
                 }), f("div", {
                   className: "min-w-0",
@@ -9304,13 +9576,15 @@ function na() {
               children: ["muhasabah_export_", new Date().toISOString().slice(0, 10), ".json"]
             }), " • Import replaces current data after confirmation • No cloud login required"]
           })]
+        }), i("mhs-sync", {
+          lang: l
         }), i("mhs-pro-tools", {
           lang: l
         }), i("mhs-backup", {
           lang: l
         }), f("div", {
           className: "text-[10px] text-[hsl(var(--muted-foreground)/0.7)]",
-          children: ["v1.3.0 • Saved on this device • ", i(LiveClock, {})]
+          children: ["v1.4.0 • Saved on this device • ", i(LiveClock, {})]
         })]
       })]
     }), i("nav", {
@@ -9322,11 +9596,11 @@ function na() {
       children: [{
         k: "dashboard",
         label: u.dash,
-        icon: "◫"
+        icon: "⌂"
       }, {
         k: "today",
         label: u.today,
-        icon: "◪"
+        icon: "☑"
       }, {
         k: "habits",
         label: u.habits,
@@ -10271,6 +10545,7 @@ function na() {
               let a = pn.data;
               if (a.habits) c(a.habits);
               if (a.todos) twS(Array.isArray(a.todos) ? a.todos.filter(x => x && x.id) : []);
+              if (a.todoPrefs && typeof a.todoPrefs === "object" && !Array.isArray(a.todoPrefs)) twPS(p => ({ ...p, ...a.todoPrefs }));
               if (a.ledger) d(a.ledger);
               if (window.MHSJournal && a.journal !== undefined) window.MHSJournal.restore(a.journal, !!a.journalReminder);
               zu(null), vn(`Imported ${pn.fileName}`), He(!0), setTimeout(() => He(!1), 1000);
