@@ -2,7 +2,7 @@
  * background sync (journal uploads), periodic sync (reminders while closed) and Windows widgets.
  * Bump VERSION whenever app files change so installed apps update automatically.
  */
-const VERSION = "2026-11-06.1";
+const VERSION = "2026-11-08.1";
 const CORE = "mhs-core-" + VERSION;
 const RUNTIME = "mhs-runtime";
 const SHARE = "mhs-share";
